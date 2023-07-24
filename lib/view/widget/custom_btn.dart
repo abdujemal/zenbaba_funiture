@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:zenbaba_funiture/constants.dart';
 
 enum Btn { filled, outlined }
 
 class CustomBtn extends StatefulWidget {
   final Btn btnState;
   final Color color;
+  final Color? tColor;
   final void Function() onTap;
   final String text;
   final double? width;
@@ -14,6 +16,7 @@ class CustomBtn extends StatefulWidget {
     required this.color,
     required this.onTap,
     required this.text,
+    this.tColor,
     this.width,
   });
 
@@ -47,7 +50,7 @@ class _CustomBtnState extends State<CustomBtn> {
         child: Center(
             child: Text(
           widget.text,
-          style: const TextStyle(letterSpacing: 2),
+          style: TextStyle(letterSpacing: 2, color: widget.tColor),
         )),
       ),
     );

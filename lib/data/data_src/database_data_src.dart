@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:io';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -8,6 +9,7 @@ import 'package:zenbaba_funiture/data/model/item_history_model.dart';
 
 import '../../constants.dart';
 import '../model/cutomer_model.dart';
+import '../model/employee_model.dart';
 import '../model/expense_chart_model.dart';
 import '../model/expense_model.dart';
 import '../model/item_model.dart';
@@ -15,7 +17,6 @@ import '../model/order_chart_model.dart';
 import '../model/order_model.dart';
 import '../model/product_model.dart';
 import '../model/user_model.dart';
-
 
 abstract class DatabaseDataSrc {
   Future<List<ExpenseChartModel>> getExpenseChart();
@@ -54,6 +55,8 @@ abstract class DatabaseDataSrc {
   Future<void> updateCustomer(CustomerModel customerModel);
   Future<void> delete(
       String path, String id, String name, bool alsoImage, int? numOfImages);
+  Future<void> addUpdateEmpoloyee(EmployeeModel employeeModel, File? file);
+  Future<List<EmployeeModel>> getEmployees();
 }
 
 class DatabaseDataSrcImpl extends DatabaseDataSrc {
@@ -686,12 +689,60 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         .startAfter([sellerName])
         .limit(5)
         .get();
-        
+
     List<ExpenseModel> expenses = [];
     for (var doc in expenseQs.docs) {
       expenses.add(ExpenseModel.fromFirebase(doc));
     }
 
     return expenses;
+  }
+
+  @override
+  Future<void> addUpdateEmpoloyee(
+      EmployeeModel employeeModel, File? file) async {
+    String imgUrl = "";
+    if (employeeModel.id == null) {
+      String eid = Random().nextInt(5000000).toString();
+      // it is new
+
+      if (file != null) {
+        UploadTask uploadTask =
+            firebaseStorage.ref().child("Employee/$eid").putFile(file);
+        imgUrl =
+            await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
+      }
+      await firebaseFirestore
+          .collection(FirebaseConstants.employees)
+          .doc(eid)
+          .set(
+            employeeModel.copyWith(imgUrl: imgUrl).toMap(),
+          );
+    } else {
+      imgUrl = employeeModel.imgUrl!;
+      if (file != null) {
+        UploadTask uploadTask = firebaseStorage
+            .ref()
+            .child("Employee/${employeeModel.id}")
+            .putFile(file);
+        imgUrl =
+            await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
+      }
+      await firebaseFirestore
+          .collection(FirebaseConstants.employees)
+          .doc(employeeModel.id)
+          .update(employeeModel.copyWith(imgUrl: imgUrl).toMap());
+    }
+  }
+
+  @override
+  Future<List<EmployeeModel>> getEmployees() async {
+    final employeeDs =
+        await firebaseFirestore.collection(FirebaseConstants.employees).get();
+    List<EmployeeModel> employees = [];
+    for (var data in employeeDs.docs) {
+      employees.add(EmployeeModel.fromMap(data));
+    }
+    return employees;
   }
 }

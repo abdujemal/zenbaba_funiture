@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/add_emploee_page.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
+import 'package:zenbaba_funiture/view/widget/employee_item.dart';
 
 import '../../constants.dart';
 
@@ -48,11 +49,19 @@ class _EmployeePageState extends State<EmployeePage> {
         onPressed: () {
           Get.to(() => const AddEmployeePage());
         },
-        child: const Icon(
-          Icons.add,
-          size: 30,
+        child: SvgPicture.asset(
+          "assets/plus.svg",
+          height: 20,
+          width: 20,
         ),
       ),
+      body: Obx(() {
+        return ListView.builder(
+          itemCount: mainConntroller.employees.length,
+          itemBuilder: (context, index) =>
+              EmployeeItem(employeeModel: mainConntroller.employees[index]),
+        );
+      }),
     );
   }
 }

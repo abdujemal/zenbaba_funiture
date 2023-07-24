@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 
 import '../../data/model/cutomer_model.dart';
+import '../../data/model/employee_model.dart';
 import '../../data/model/expense_chart_model.dart';
 import '../../data/model/expense_model.dart';
 import '../../data/model/item_history_model.dart';
@@ -12,8 +13,8 @@ import '../../data/model/product_model.dart';
 import '../../data/model/user_model.dart';
 
 abstract class DatabaseRepo {
-  Future<Either<Exception,List<ExpenseChartModel>>> getExpenseChart();
-  Future<Either<Exception,List<OrderChartModel>>> getOrderChart();
+  Future<Either<Exception, List<ExpenseChartModel>>> getExpenseChart();
+  Future<Either<Exception, List<OrderChartModel>>> getOrderChart();
   Future<Either<Exception, void>> addProduct(
       ProductModel productModel, List<File> files);
   Future<Either<Exception, List<ProductModel>>> getProducts(
@@ -26,8 +27,9 @@ abstract class DatabaseRepo {
   Future<Either<Exception, String>> addOrder(OrderModel orderModel);
   Future<Either<Exception, List<OrderModel>>> getOrders(
       int? quantity, String? status, String? date, bool isNew);
-  Future<Either<Exception,OrderModel>> getOrder(String id);
-  Future<Either<Exception, void>> updateOrder(OrderModel orderModel, String prevState);
+  Future<Either<Exception, OrderModel>> getOrder(String id);
+  Future<Either<Exception, void>> updateOrder(
+      OrderModel orderModel, String prevState);
   Future<Either<Exception, void>> addItem(ItemModel itemModel, File? file);
   Future<Either<Exception, List<ItemModel>>> getItems();
   Future<Either<Exception, void>> updateItem(ItemModel itemModel, File? file,
@@ -35,7 +37,8 @@ abstract class DatabaseRepo {
   Future<Either<Exception, void>> addItemHistory(
       ItemHistoryModel itemHistoryModel, String itemId);
   Future<Either<Exception, void>> addExpense(ExpenseModel expenseModel);
-  Future<Either<Exception, List<ExpenseModel>>> searchExpense(String sellerName);
+  Future<Either<Exception, List<ExpenseModel>>> searchExpense(
+      String sellerName);
   Future<Either<Exception, List<ExpenseModel>>> getExpenses(
       int? quantity, String? status, String? date, bool isNew);
   Future<Either<Exception, void>> updateExpense(ExpenseModel expenseModel);
@@ -49,4 +52,9 @@ abstract class DatabaseRepo {
   Future<Either<Exception, void>> updateCustomer(CustomerModel customerModel);
   Future<Either<Exception, void>> delete(
       String path, String id, String name, bool alsoImage, int? numOfImages);
+  Future<Either<Exception, void>> addUpdateEmpoloyee(
+    EmployeeModel employeeModel,
+    File? file
+  );
+  Future<Either<Exception, List<EmployeeModel>>> getEmployees();
 }

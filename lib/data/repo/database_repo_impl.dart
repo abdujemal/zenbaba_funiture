@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
+import 'package:zenbaba_funiture/data/model/employee_model.dart';
 
 import '../../domain/repo/database_repo.dart';
 import '../data_src/database_data_src.dart';
@@ -97,7 +98,8 @@ class DatabaseRepoImpl extends DatabaseRepo {
   Future<Either<Exception, List<ExpenseModel>>> getExpenses(
       int? quantity, String? status, String? date, bool isNew) async {
     try {
-      final res = await databaseDataSrc.getExpenses(quantity, status, date, isNew);
+      final res =
+          await databaseDataSrc.getExpenses(quantity, status, date, isNew);
       return right(res);
     } on Exception catch (e) {
       return left(e);
@@ -118,7 +120,8 @@ class DatabaseRepoImpl extends DatabaseRepo {
   Future<Either<Exception, List<OrderModel>>> getOrders(
       int? quantity, String? status, String? date, bool isNew) async {
     try {
-      final res = await databaseDataSrc.getOrders(quantity, status, date, isNew);
+      final res =
+          await databaseDataSrc.getOrders(quantity, status, date, isNew);
       return right(res);
     } on Exception catch (e) {
       return left(e);
@@ -181,7 +184,8 @@ class DatabaseRepoImpl extends DatabaseRepo {
   }
 
   @override
-  Future<Either<Exception, void>> updateOrder(OrderModel orderModel, String prevState) async {
+  Future<Either<Exception, void>> updateOrder(
+      OrderModel orderModel, String prevState) async {
     try {
       final res = await databaseDataSrc.updateOrder(orderModel, prevState);
       return right(res);
@@ -212,10 +216,11 @@ class DatabaseRepoImpl extends DatabaseRepo {
   }
 
   @override
-  Future<Either<Exception, void>> delete(
-      String path, String id, String name, bool alsoImage, int? numOfImages) async {
+  Future<Either<Exception, void>> delete(String path, String id, String name,
+      bool alsoImage, int? numOfImages) async {
     try {
-      final res = await databaseDataSrc.delete(path, id, name, alsoImage, numOfImages);
+      final res =
+          await databaseDataSrc.delete(path, id, name, alsoImage, numOfImages);
       return right(res);
     } on Exception catch (e) {
       return left(e);
@@ -243,9 +248,10 @@ class DatabaseRepoImpl extends DatabaseRepo {
       return left(e);
     }
   }
-  
+
   @override
-  Future<Either<Exception, int>> count(String path, String key, String value) async {
+  Future<Either<Exception, int>> count(
+      String path, String key, String value) async {
     try {
       final res = await databaseDataSrc.count(path, key, value);
       return right(res);
@@ -273,7 +279,7 @@ class DatabaseRepoImpl extends DatabaseRepo {
       return left(e);
     }
   }
-  
+
   @override
   Future<Either<Exception, OrderModel>> getOrder(String id) async {
     try {
@@ -283,9 +289,10 @@ class DatabaseRepoImpl extends DatabaseRepo {
       return left(e);
     }
   }
-  
+
   @override
-  Future<Either<Exception, List<ExpenseModel>>> searchExpense(String sellerName) async {
+  Future<Either<Exception, List<ExpenseModel>>> searchExpense(
+      String sellerName) async {
     try {
       final res = await databaseDataSrc.searchExpense(sellerName);
       return right(res);
@@ -293,5 +300,30 @@ class DatabaseRepoImpl extends DatabaseRepo {
       return left(e);
     }
   }
- 
+
+  @override
+  Future<Either<Exception, void>> addUpdateEmpoloyee(
+    EmployeeModel employeeModel,
+    File? file,
+  ) async {
+    try {
+      final res = await databaseDataSrc.addUpdateEmpoloyee(
+        employeeModel,
+        file,
+      );
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<EmployeeModel>>> getEmployees() async {
+    try {
+      final res = await databaseDataSrc.getEmployees();
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
 }

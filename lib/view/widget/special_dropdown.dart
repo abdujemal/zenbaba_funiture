@@ -8,7 +8,7 @@ class SpecialDropdown<T> extends StatefulWidget {
   final double width;
   final T value;
   final List<T> list;
-  final void Function(T value)? onChange;
+  final void Function(dynamic value) onChange;
   const SpecialDropdown({
     super.key,
     required this.title,
@@ -16,7 +16,7 @@ class SpecialDropdown<T> extends StatefulWidget {
     required this.value,
     required this.width,
     required this.list,
-    required this.onChange
+    required this.onChange,
   });
 
   @override
@@ -28,7 +28,7 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
   _SpecialDropdownState(this.list);
   @override
   Widget build(BuildContext context) {
-    var name;
+    // var name;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: widget.margin ?? 23),
       child: Column(
@@ -47,8 +47,9 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
           Container(
             width: widget.width,
             decoration: BoxDecoration(
-                border: Border.all(color: textColor),
-                borderRadius: BorderRadius.circular(3)),
+                color: mainBgColor,
+                // border: Border.all(color: textColor),
+                borderRadius: BorderRadius.circular(15)),
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<T>(
@@ -59,9 +60,18 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
                   icon: const Icon(Icons.keyboard_arrow_down),
                   dropdownColor: backgroundColor,
                   // Array list of items
-                  items: list.map((e) => DropdownMenuItem<T>(
-                    value: e,
-                    child: Text("Othe"),),).toList(),
+                  iconEnabledColor: textColor,
+                  items: list
+                      .map(
+                        (e) => DropdownMenuItem<T>(
+                          value: e,
+                          child: Text(
+                            e.toString(),
+                            // style: TextStyle(color: textColor),
+                          ),
+                        ),
+                      )
+                      .toList(),
                   // After selecting the desired option,it will
                   // change button value to selected value
                   onChanged: widget.onChange

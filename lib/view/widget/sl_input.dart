@@ -76,24 +76,27 @@ class SLInput extends StatelessWidget {
             controller: controller,
             keyboardType: keyboardType,
             decoration: InputDecoration(
+              fillColor: mainBgColor,
+              filled: true,
               enabledBorder: isOutlined
                   ? OutlineInputBorder(
-                      borderSide: BorderSide(color: otherColor ?? inputColor),
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
                     )
                   : UnderlineInputBorder(
                       borderSide: BorderSide(color: otherColor ?? inputColor),
                     ),
               focusedBorder: isOutlined
                   ? OutlineInputBorder(
-                      borderSide: BorderSide(color: whiteColor),
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
                     )
                   : UnderlineInputBorder(
                       borderSide: BorderSide(color: whiteColor),
                     ),
-              // hoverColor: textColor,
               suffixIcon: sufixIcon != null ? Icon(sufixIcon) : null,
               hintText: hint,
-              // hintStyle: TextStyle(color: inputColor),
+              hintStyle: const TextStyle(color: Colors.grey),
               contentPadding: const EdgeInsets.all(18),
             ),
           )

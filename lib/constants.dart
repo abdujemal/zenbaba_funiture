@@ -290,6 +290,7 @@ class FirebaseConstants {
   static String users = 'users';
   static String orderCharts = "orderCharts";
   static String expenseCharts = "expenseCharts";
+  static String employees = "employees";
 }
 
 void toast(String message, ToastType toastType, {bool isLong = false}) {
@@ -332,18 +333,3 @@ Future<File?> displayImage(String imgUrl, String name, String dir) async {
     }
   }
 }
-/**
-A. Your partner’s name
-Mohammed Mussa
-B. Date and time of the conversation
-Jul/19 17:57
-C. Were there any areas of confusion or disagreement in your conversation?
-there is no confusion or disagreement.
-D. What is one thing you learned or better understand as a result of the conversation?
-I learned from Mohammed Mussa that he is not a programmer yet.
-E. Give your own personal “yet” sentence.
-I am not a developer yet.
-F. What is one way you personally plan to practice growth mindset?
-To push my self to learn new things and try to solve difficult problems.
-
- ***/

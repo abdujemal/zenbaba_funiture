@@ -2,8 +2,8 @@
 import 'package:equatable/equatable.dart';
 
 class EmployeeEntity extends Equatable {
-  final String id;
-  final String imgUrl;
+  final String? id;
+  final String? imgUrl;
   final String name;
   final String phoneNo;
   final String age;

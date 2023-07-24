@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:zenbaba_funiture/data/model/employee_model.dart';
+import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
 
 import '../../base_usecase.dart';
 import '../../constants.dart';
@@ -25,6 +27,7 @@ import '../../domain/usecase/add_item_history_usecase.dart';
 import '../../domain/usecase/add_item_usecase.dart';
 import '../../domain/usecase/add_order_usecase.dart';
 import '../../domain/usecase/add_product_usecase.dart';
+import '../../domain/usecase/add_update_employee_usecase.dart';
 import '../../domain/usecase/count_usecase.dart';
 import '../../domain/usecase/delete_usecase.dart';
 import '../../domain/usecase/get_customer_usecase.dart';
@@ -62,6 +65,7 @@ class MainConntroller extends GetxController {
   Rx<RequestState> itemStatus = RequestState.idle.obs;
   Rx<RequestState> customerStatus = RequestState.idle.obs;
   Rx<RequestState> stockStatus = RequestState.idle.obs;
+  Rx<RequestState> employeeStatus = RequestState.idle.obs;
 
   Rx<RequestState> getExpensesStatus = RequestState.idle.obs;
   Rx<RequestState> getOrdersStatus = RequestState.idle.obs;
@@ -69,8 +73,10 @@ class MainConntroller extends GetxController {
   Rx<RequestState> getItemsStatus = RequestState.idle.obs;
   Rx<RequestState> getCustomersStatus = RequestState.idle.obs;
   Rx<RequestState> getUsersStatus = RequestState.idle.obs;
+  Rx<RequestState> getEmployeeStatus = RequestState.idle.obs;
 
   RxList<ExpenseModel> payedExpenses = <ExpenseModel>[].obs;
+  RxList<EmployeeModel> employees = <EmployeeModel>[].obs;
   RxList<ExpenseModel> unPayedExpenses = <ExpenseModel>[].obs;
   RxList<ExpenseModel> searchExpenses = <ExpenseModel>[].obs;
   RxList<OrderModel> pendingOrders = <OrderModel>[].obs;
@@ -109,6 +115,8 @@ class MainConntroller extends GetxController {
   GetOrderChartUsecase getOrderChartUsecase;
   GetSingleOrderUsecase getSingleOrderUsecase;
   SearchExpenseUsecase searchExpenseUsecase;
+  AddUpdateEmployeeUsecase addUpdateEmployeeUsecase;
+  GetEmployeeUsecase getEmployeeUsecase;
 
   Future<SharedPreferences> sharedPreferences = SharedPreferences.getInstance();
 
@@ -139,6 +147,8 @@ class MainConntroller extends GetxController {
     this.getOrderChartUsecase,
     this.getSingleOrderUsecase,
     this.searchExpenseUsecase,
+    this.addUpdateEmployeeUsecase,
+    this.getEmployeeUsecase,
   );
 
   setCurrentTabIndex(int val) {
@@ -152,6 +162,47 @@ class MainConntroller extends GetxController {
 
   toggleAddDialogue() {
     isAddDialogueOpen.value = !isAddDialogueOpen.value;
+  }
+
+  // employeees
+  addUpdateEmployee(EmployeeModel employeeModel, File? file) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+
+    if (connectivityResult == ConnectivityResult.none) {
+      toast("No Network", ToastType.error);
+      return;
+    }
+
+    employeeStatus.value = RequestState.loading;
+
+    final res = await addUpdateEmployeeUsecase(
+        AddUpdateEmployeeParams(employeeModel, file));
+    res.fold(
+      (l) {
+        employeeStatus.value = RequestState.error;
+        toast(l.toString(), ToastType.error, isLong: true);
+      },
+      (r) {
+        employeeStatus.value = RequestState.loaded;
+        getEmployees();
+        Get.back();
+      },
+    );
+  }
+
+  getEmployees() async {
+    getEmployeeStatus.value = RequestState.loading;
+
+    final res = await getEmployeeUsecase.call(const NoParameters());
+
+    res.fold((l) {
+      getUsersStatus.value = RequestState.error;
+      toast(l.toString(), ToastType.error);
+    }, (r) {
+      getUsersStatus.value = RequestState.loaded;
+      employees.value = r;
+      print(r);
+    });
   }
 
   // delete
