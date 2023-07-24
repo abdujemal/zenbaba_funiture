@@ -1,0 +1,83 @@
+{
+  "project_info": {
+    "project_number": "367227212802",
+    "firebase_url": "https://osman-furniture-project-default-rtdb.firebaseio.com",
+    "project_id": "osman-furniture-project",
+    "storage_bucket": "osman-furniture-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:367227212802:android:b25adf4a7b14c512fe431b",
+        "android_client_info": {
+          "package_name": "com.example.bussiness_management"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "367227212802-lghh7rkm3v8pk4rp6fkbei1l2kauls08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlVFAkXn78Uk9VE3ckp5NSM0qhcGPCIvk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "367227212802-lghh7rkm3v8pk4rp6fkbei1l2kauls08.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "367227212802-92pkmjjhtf511527egndts34sekmvsja.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bussinessManagement"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:367227212802:android:ff2ca3b5b5349f77fe431b",
+        "android_client_info": {
+          "package_name": "com.example.zenbaba_funiture"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "367227212802-lghh7rkm3v8pk4rp6fkbei1l2kauls08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAlVFAkXn78Uk9VE3ckp5NSM0qhcGPCIvk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "367227212802-lghh7rkm3v8pk4rp6fkbei1l2kauls08.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "367227212802-92pkmjjhtf511527egndts34sekmvsja.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.bussinessManagement"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
