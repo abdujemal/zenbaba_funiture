@@ -16,6 +16,13 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  @override
+  void initState() {
+    super.initState();
+    mainConntroller.getEmployees();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,11 +63,15 @@ class _EmployeePageState extends State<EmployeePage> {
         ),
       ),
       body: Obx(() {
-        return ListView.builder(
-          itemCount: mainConntroller.employees.length,
-          itemBuilder: (context, index) =>
-              EmployeeItem(employeeModel: mainConntroller.employees[index]),
-        );
+        return mainConntroller.getEmployeeStatus.value == RequestState.loading
+            ? Center(
+                child: CircularProgressIndicator(color: primaryColor),
+              )
+            : ListView.builder(
+                itemCount: mainConntroller.employees.length,
+                itemBuilder: (context, index) => EmployeeItem(
+                    employeeModel: mainConntroller.employees[index]),
+              );
       }),
     );
   }

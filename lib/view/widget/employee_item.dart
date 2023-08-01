@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/constants.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
-import 'package:zenbaba_funiture/view/Pages/add_emploee_page.dart';
+import 'package:zenbaba_funiture/view/Pages/employee_activities_page.dart';
+import 'package:zenbaba_funiture/view/Pages/employee_detail_page.dart';
 
 class EmployeeItem extends StatelessWidget {
   final EmployeeModel employeeModel;
@@ -10,36 +11,66 @@ class EmployeeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        Get.to(() => AddEmployeePage(
-              employeeModel: employeeModel,
-            ));
-      },
-      child: Ink(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 15,
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 15,
+          ),
+          child: Row(
+            children: [
+              FutureBuilder(
+                future: displayImage(employeeModel.imgUrl!, employeeModel.id!,
+                    FirebaseConstants.employees),
+                builder: (context, ds) {
+                  return InkWell(
+                    onTap: () {
+                      Get.to(
+                        () => EmployeeActivityPage(
+                          employeeModel: employeeModel,
+                        ),
+                      );
+                    },
+                    child: Ink(
+                      child: CircleAvatar(
+                        backgroundImage:
+                            ds.data != null ? FileImage(ds.data!) : null,
+                        radius: 35,
+                        child: ds.data == null
+                            ? CircularProgressIndicator(
+                                color: primaryColor,
+                              )
+                            : ds.data!.path == ""
+                                ? const Icon(
+                                    Icons.signal_wifi_off_sharp,
+                                    size: 29,
+                                  )
+                                : null,
+                      ),
+                    ),
+                  );
+                },
               ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(employeeModel.imgUrl!),
-                    radius: 35,
-                  ),
-                  const SizedBox(
-                    width: 30,
-                  ),
-                  Column(
+              const SizedBox(
+                width: 30,
+              ),
+              InkWell(
+                onTap: () {
+                  Get.to(
+                    () => EmployeeDetailsPage(
+                      employeeModel: employeeModel,
+                    ),
+                  );
+                },
+                child: Ink(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         employeeModel.name,
-                        style: const TextStyle(
-                          color: Colors.white70,
+                        style: TextStyle(
+                          color: whiteColor,
                           fontSize: 17,
                         ),
                       ),
@@ -59,20 +90,20 @@ class EmployeeItem extends StatelessWidget {
                         ),
                       ),
                     ],
-                  )
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: Divider(
-                color: textColor,
-                thickness: 1.3,
-              ),
-            )
-          ],
+                  ),
+                ),
+              )
+            ],
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 25),
+          child: Divider(
+            color: textColor,
+            thickness: 1.3,
+          ),
+        )
+      ],
     );
   }
 }

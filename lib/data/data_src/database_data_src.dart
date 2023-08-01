@@ -9,6 +9,7 @@ import 'package:zenbaba_funiture/data/model/item_history_model.dart';
 
 import '../../constants.dart';
 import '../model/cutomer_model.dart';
+import '../model/employee_activity_model.dart';
 import '../model/employee_model.dart';
 import '../model/expense_chart_model.dart';
 import '../model/expense_model.dart';
@@ -57,6 +58,13 @@ abstract class DatabaseDataSrc {
       String path, String id, String name, bool alsoImage, int? numOfImages);
   Future<void> addUpdateEmpoloyee(EmployeeModel employeeModel, File? file);
   Future<List<EmployeeModel>> getEmployees();
+  Future<void> addUpdateEmployeeActivity(
+      EmployeeActivityModel employeeActivity);
+  Future<List<EmployeeActivityModel>> getEmployeeeActivities(
+    String employeeId,
+    int? quantity, {
+    bool isNew = true,
+  });
 }
 
 class DatabaseDataSrcImpl extends DatabaseDataSrc {
@@ -75,6 +83,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   DocumentSnapshot? lastDeliveredOrder;
   DocumentSnapshot? lastUnpayedExpense;
   DocumentSnapshot? lastPayedExpense;
+  DocumentSnapshot? lastEmployeeActivity;
 
   @override
   Future<void> addCustomer(CustomerModel customerModel) async {
@@ -744,5 +753,58 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       employees.add(EmployeeModel.fromMap(data));
     }
     return employees;
+  }
+
+  @override
+  Future<void> addUpdateEmployeeActivity(
+      EmployeeActivityModel employeeActivity) async {
+    if (employeeActivity.id == null) {
+      await firebaseFirestore
+          .collection(FirebaseConstants.employeeActivity)
+          .add(
+            employeeActivity.toMap(),
+          );
+    } else {
+      await firebaseFirestore
+          .collection(FirebaseConstants.employeeActivity)
+          .doc(employeeActivity.id)
+          .update(
+            employeeActivity.toMap(),
+          );
+    }
+  }
+
+  @override
+  Future<List<EmployeeActivityModel>> getEmployeeeActivities(
+      String employeeId, int? quantity,
+      {bool isNew = true}) async {
+    if (isNew) {
+      lastEmployeeActivity = null;
+    }
+    final ds = lastEmployeeActivity == null
+        ? await firebaseFirestore
+            .collection(FirebaseConstants.employeeActivity)
+            .where("employeeId", isEqualTo: employeeId)
+            .orderBy('date')
+            .limitToLast(quantity ?? DateTime.now().day)
+            .get()
+        : await firebaseFirestore
+            .collection(FirebaseConstants.employeeActivity)
+            .where("employeeId", isEqualTo: employeeId)
+            .orderBy('date')
+            .endBeforeDocument(lastEmployeeActivity!)
+            .limitToLast(quantity!)
+            .get();
+
+    if (ds.docs.isNotEmpty) {
+      lastEmployeeActivity = ds.docs[0];
+    }
+
+    List<EmployeeActivityModel> lst = [];
+    for (var data in ds.docs) {
+      lst.add(EmployeeActivityModel.fromMap(data));
+    }
+
+    return lst;
   }
 }

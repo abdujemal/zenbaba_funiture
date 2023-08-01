@@ -63,7 +63,7 @@ class _AddItemState extends State<AddItem> {
 
   setImageFile() async {
     imageFromUrl = await displayImage(
-        urlImage, widget.itemModel!.name, FirebaseConstants.items);
+        urlImage, widget.itemModel!.id!, FirebaseConstants.items);
     if (mounted) {
       setState(() {});
     }

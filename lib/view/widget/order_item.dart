@@ -53,19 +53,17 @@ class _OrderItemState extends State<OrderItem> {
         Container(
           margin: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-              color: isOverDue
-                  ? widget.isFinished
-                      ? primaryColor
-                      : Colors.red
-                  : primaryColor,
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                    color: Colors.black.withAlpha(100),
-                    blurRadius: 8,
-                    offset: const Offset(0, 8))
-              ]),
+            color: mainBgColor,
+            borderRadius: BorderRadius.circular(15),
+            // boxShadow: [
+            //   BoxShadow(
+            //       color: Colors.black.withAlpha(100),
+            //       blurRadius: 8,
+            //       offset: const Offset(0, 8))
+            // ]
+          ),
           child: ListTile(
+            tileColor: mainBgColor,
             onTap: () => Get.to(
               () => AddOrder(orderModel: widget.orderModel),
             ),

@@ -105,10 +105,23 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 },
                 child: selectedFile == null
                     ? imageUrl != null
-                        ? Image.network(
-                            imageUrl!,
-                            width: 120,
-                            height: 120,
+                        ? FutureBuilder(
+                            future: displayImage(
+                              imageUrl!,
+                              widget.employeeModel!.id!,
+                              FirebaseConstants.employees,
+                            ),
+                            builder: (context, ds) {
+                              return ds.data != null
+                                  ? Image.file(
+                                      ds.data!,
+                                      width: 120,
+                                      height: 120,
+                                    )
+                                  : CircularProgressIndicator(
+                                      color: primaryColor,
+                                    );
+                            },
                           )
                         : Ink(
                             child: Icon(
@@ -300,6 +313,10 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                 btnState: Btn.filled,
                                 color: primaryColor,
                                 onTap: () {
+                                  if (paymentTc.text.isEmpty &&
+                                      selectedType == EmployeeType.contract) {
+                                    paymentTc.text = " ";
+                                  }
                                   if (addEmployeeState.currentState!
                                       .validate()) {
                                     if (widget.employeeModel == null) {

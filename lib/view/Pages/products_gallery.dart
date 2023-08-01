@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/Pages/add_product.dart';
 
 import '../../constants.dart';
 import '../../data/model/product_model.dart';
@@ -34,10 +35,12 @@ class _ProductGalleryState extends State<ProductGallery> {
         for (String url in model.images) {
           images.add({
             "url": url,
-            'sku': "${model.sku}$i",
+            'id': "${model.sku}$i",
+            'sku': model.sku,
             'name': model.name,
             'price': model.price,
             'file': null,
+            'model': model,
           });
           i++;
         }
@@ -52,24 +55,24 @@ class _ProductGalleryState extends State<ProductGallery> {
       ).toList()[0];
     } else {}
 
-    setImageFile();
+    // setImageFile();
   }
 
-  setImageFile() async {
-    int i = 0;
-    for (var image in images) {
-      File? file = await displayImage(
-        image["url"].toString(),
-        image["sku"].toString(),
-        FirebaseConstants.products,
-      );
-      images[i]['file'] = file;
-      if (mounted) {
-        setState(() {});
-      }
-      i++;
-    }
-  }
+  // setImageFile() async {
+  //   int i = 0;
+  //   for (var image in images) {
+  //     File? file = await displayImage(
+  //       image["url"].toString(),
+  //       image["sku"].toString(),
+  //       "${FirebaseConstants.products}/${widget.productModel.sku}",
+  //     );
+  //     images[i]['file'] = file;
+  //     if (mounted) {
+  //       setState(() {});
+  //     }
+  //     i++;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -111,9 +114,8 @@ class _ProductGalleryState extends State<ProductGallery> {
                           child: Text(
                             "${images[index]['price']} Br",
                             style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: Colors.green
-                            ),
+                                fontWeight: FontWeight.w600,
+                                color: Colors.green),
                           ),
                         ),
                       ),
@@ -122,32 +124,52 @@ class _ProductGalleryState extends State<ProductGallery> {
                 ),
               ],
             ),
-            body: Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: images[index]['file'] != null
-                  ? BoxDecoration(
-                      image: DecorationImage(
-                        fit: BoxFit.contain,
-                        image: FileImage(
-                          images[index]['file'] as File,
-                        ),
-                      ),
-                    )
-                  : null,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  images[index]['file'] == null
-                      ? CircularProgressIndicator(
-                          color: primaryColor,
+            body: FutureBuilder(
+                future: displayImage(
+                  images[index]["url"].toString(),
+                  images[index]["id"].toString(),
+                  "${FirebaseConstants.products}/${images[index]["sku"].toString()}",
+                ),
+                builder: (context, snap) {
+                  return snap.data != null
+                      ? GestureDetector(
+                          onTap: () {
+                            Get.to(
+                              () => AddProduct(
+                                productModel:
+                                    images[index]["model"] as ProductModel,
+                              ),
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            decoration: snap.data!.path != ""
+                                ? BoxDecoration(
+                                    image: DecorationImage(
+                                      fit: BoxFit.contain,
+                                      image: FileImage(
+                                        snap.data!,
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                snap.data!.path == ""
+                                    ? const Text("No Network.")
+                                    : const SizedBox(),
+                              ],
+                            ),
+                          ),
                         )
-                      : (images[index]['file'] as File).path == ""
-                          ? const Text("No Network.")
-                          : const SizedBox(),
-                ],
-              ),
-            ),
+                      : Center(
+                          child: CircularProgressIndicator(
+                            color: primaryColor,
+                          ),
+                        );
+                }),
           );
         },
       ),

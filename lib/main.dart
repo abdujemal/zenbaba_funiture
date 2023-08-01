@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:zenbaba_funiture/view/Pages/splash_screen.dart';
 import 'package:zenbaba_funiture/view/controller/get_bindings.dart';
@@ -35,9 +36,16 @@ class MyApp extends StatelessWidget {
       initialBinding: GetBindings(),
       debugShowCheckedModeBanner: false,
       title: 'Zenbaba Furniture',
-      theme: ThemeData.dark().copyWith(
-        primaryColor: mainColor,
+      theme: ThemeData(
+        primarySwatch: Colors.orange, // Set your desired primary color
       ),
+      darkTheme: ThemeData.dark().copyWith(
+        primaryColor: mainColor,
+        textTheme: TextTheme(
+          bodyText2: GoogleFonts.montserrat(),
+        ),
+      ),
+      themeMode: ThemeMode.dark,
       home: const SplashScreen(),
     );
   }

@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dartz/dartz.dart';
+import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 
 import '../../data/model/cutomer_model.dart';
 import '../../data/model/employee_model.dart';
@@ -53,8 +54,13 @@ abstract class DatabaseRepo {
   Future<Either<Exception, void>> delete(
       String path, String id, String name, bool alsoImage, int? numOfImages);
   Future<Either<Exception, void>> addUpdateEmpoloyee(
-    EmployeeModel employeeModel,
-    File? file
-  );
+      EmployeeModel employeeModel, File? file);
   Future<Either<Exception, List<EmployeeModel>>> getEmployees();
+  Future<Either<Exception, void>> addUpdateEmployeeActivity(
+      EmployeeActivityModel employeeActivityModel);
+  Future<Either<Exception, List<EmployeeActivityModel>>> getEmployeeeActivities(
+    String employeeId,
+    int? quantity, {
+    bool isNew = true,
+  });
 }

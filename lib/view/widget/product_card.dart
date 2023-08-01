@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 import '../../constants.dart';
 import '../../data/model/product_model.dart';
@@ -21,22 +20,19 @@ class ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<ProductCard> {
-  File? file;
-  
   MainConntroller mainConntroller = Get.find<MainConntroller>();
-  @override
-  void initState() {
-    super.initState();
-    setImageFile();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // setImageFile();
+  // }
 
-  setImageFile() async {
-    file = await displayImage(widget.productModel.images[0],
-        '${widget.productModel.sku}0', FirebaseConstants.products);
-    if (mounted) {
-      setState(() {});
-    }
-  }
+  // setImageFile() async {
+  //   file = await
+  //   if (mounted) {
+  //     setState(() {});
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -69,39 +65,59 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Stack(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: file == null
-                            ? SizedBox(
-                                height: 110,
-                                width: 110,
-                                child: Center(
-                                  child: CircularProgressIndicator(
-                                    color: primaryColor,
-                                  ),
-                                ),
-                              )
-                            : file!.path == ""
-                                ? Container(
-                                    height: 110,
-                                    width: 110,
-                                    color: mainBgColor,
-                                    child: const Center(
-                                      child: Text("No Network"),
-                                    ),
-                                  )
-                                : InkWell(
-                                    onTap: widget.onClickImage,
-                                    child: Ink(
-                                      child: Image.file(
-                                        file!,
-                                        width: 110,
-                                        height: 110,
-                                        fit: BoxFit.cover,
+                      FutureBuilder(
+                          future: displayImage(
+                            widget.productModel.images[0],
+                            '${widget.productModel.sku}0',
+                            "${FirebaseConstants.products}/${widget.productModel.sku}",
+                          ),
+                          builder: (context, snap) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: snap.data == null
+                                  ? SizedBox(
+                                      height: 110,
+                                      width: 110,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: primaryColor,
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                      ),
+                                    )
+                                  : snap.data!.path == ""
+                                      ? Container(
+                                          height: 110,
+                                          width: 110,
+                                          color: mainBgColor,
+                                          child: const Center(
+                                            child: Text("No Network"),
+                                          ),
+                                        )
+                                      : InkWell(
+                                          onTap: widget.onClickImage,
+                                          child: Ink(
+                                            child:
+                                                //     Container(
+                                                //   height: 110,
+                                                //   width: 110,
+                                                //   decoration: BoxDecoration(
+                                                //     image: DecorationImage(
+                                                //       image: FileImage(snap.data!),
+                                                //       fit: BoxFit.cover,
+                                                //     ),
+                                                //   ),
+                                                // )
+
+                                                Image.file(
+                                              snap.data!,
+                                              width: 110,
+                                              height: 110,
+                                              fit: BoxFit.cover,
+                                            ),
+                                          ),
+                                        ),
+                            );
+                          }),
                       widget.productModel.images.length != 1
                           ? Positioned(
                               bottom: 0,
@@ -129,7 +145,6 @@ class _ProductCardState extends State<ProductCard> {
                         widget.productModel.name,
                         style: const TextStyle(fontSize: 22),
                         overflow: TextOverflow.ellipsis,
-
                       ),
                       Text(
                         '${widget.productModel.price} Br',
@@ -154,9 +169,10 @@ class _ProductCardState extends State<ProductCard> {
               ),
               Text(
                 widget.productModel.description,
-                style: const TextStyle(fontSize: 17,),
+                style: const TextStyle(
+                  fontSize: 17,
+                ),
                 overflow: TextOverflow.clip,
-                
               ),
               const SizedBox(
                 height: 10,
@@ -167,7 +183,8 @@ class _ProductCardState extends State<ProductCard> {
                   widget.productModel.tags.length,
                   (index) => GestureDetector(
                     onTap: () {
-                      mainConntroller.searchProducts("name", "#${widget.productModel.tags[index]}", 5);
+                      mainConntroller.searchProducts(
+                          "name", "#${widget.productModel.tags[index]}", 5);
                       Get.to(() => SearchPage(
                             path: FirebaseConstants.products,
                             tag: "#${widget.productModel.tags[index]}",

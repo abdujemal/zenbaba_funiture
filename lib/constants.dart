@@ -49,10 +49,10 @@ Gradient bgGradient = LinearGradient(
     end: Alignment.bottomCenter,
     colors: [const Color.fromRGBO(50, 70, 98, 1), mainColor]);
 
-Widget title(String val) => Text(val,
-    style: GoogleFonts.playfairDisplay(
-      textStyle: TextStyle(fontSize: 25, letterSpacing: 1.4),
-    ));
+Widget title(String val) => Text(
+      val,
+      style: TextStyle(fontSize: 25, letterSpacing: 1.4),
+    );
 
 class CustomerSource {
   static String faceBook = 'facebook';
@@ -291,6 +291,7 @@ class FirebaseConstants {
   static String orderCharts = "orderCharts";
   static String expenseCharts = "expenseCharts";
   static String employees = "employees";
+  static String employeeActivity = "employees Activities";
 }
 
 void toast(String message, ToastType toastType, {bool isLong = false}) {
@@ -308,13 +309,14 @@ enum ToastType { success, error }
 
 enum RequestState { idle, loaded, loading, error }
 
-Future<File?> displayImage(String imgUrl, String name, String dir) async {
-  final directory = await getApplicationDocumentsDirectory();
+Future<File?> displayImage(String? imgUrl, String name, String dir) async {
+  final directory = await getApplicationSupportDirectory();
   final filePath = "${directory.path}/$dir/$name.jpg";
+  print(filePath);
   if (await File(filePath).exists()) {
-    print("file exist");
+    print("file exsists: ${filePath}");
     return File(filePath);
-  } else {
+  } else if (imgUrl != null) {
     try {
       // Get a reference to the Firebase Storage object
       // final ref = FirebaseStorage.instance.refFromURL(imgUrl);
@@ -331,5 +333,7 @@ Future<File?> displayImage(String imgUrl, String name, String dir) async {
       print(e.toString());
       return File("");
     }
+  } else {
+    return null;
   }
 }

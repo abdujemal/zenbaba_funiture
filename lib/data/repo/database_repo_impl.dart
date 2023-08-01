@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartz/dartz.dart';
+import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 
 import '../../domain/repo/database_repo.dart';
@@ -321,6 +322,32 @@ class DatabaseRepoImpl extends DatabaseRepo {
   Future<Either<Exception, List<EmployeeModel>>> getEmployees() async {
     try {
       final res = await databaseDataSrc.getEmployees();
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
+
+  @override
+  Future<Either<Exception, void>> addUpdateEmployeeActivity(
+      EmployeeActivityModel employeeActivityModel) async {
+    try {
+      final res = await databaseDataSrc
+          .addUpdateEmployeeActivity(employeeActivityModel);
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
+
+  @override
+  Future<Either<Exception, List<EmployeeActivityModel>>> getEmployeeeActivities(
+    String employeeId,
+    int? quantity, {
+    bool isNew = true,
+  }) async {
+    try {
+      final res = await databaseDataSrc.getEmployeeeActivities(employeeId, quantity, isNew: isNew);
       return right(res);
     } on Exception catch (e) {
       return left(e);

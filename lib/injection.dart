@@ -3,7 +3,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:zenbaba_funiture/domain/usecase/add_update_employee_activity_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/add_update_employee_usecase.dart';
+import 'package:zenbaba_funiture/domain/usecase/get_employee_activities.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
@@ -83,6 +85,8 @@ void setup() {
       di(),
       di(),
       di(),
+      di(),
+      di(),
     ),
   );
 
@@ -105,6 +109,8 @@ void setup() {
   di.registerLazySingleton<DatabaseRepo>(() => DatabaseRepoImpl(di()));
 
   // usecase
+  di.registerLazySingleton(() => GetEmployeeActivitiesUsecase(di()));
+  di.registerLazySingleton(() => AddUpdateEmployeeActivityUsecase(di()));
   di.registerLazySingleton(() => GetEmployeeUsecase(di()));
   di.registerLazySingleton(() => AddUpdateEmployeeUsecase(databaseRepo: di()));
   di.registerLazySingleton(() => AddCustomerUsecase(di()));

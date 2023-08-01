@@ -90,7 +90,7 @@ class _AddProductState extends State<AddProduct> {
       File? file = await displayImage(
         url,
         "${widget.productModel!.sku}$i",
-        FirebaseConstants.products,
+        "${FirebaseConstants.products}/${widget.productModel!.sku}",
       );
       imageFromUrls.add(file);
       i++;

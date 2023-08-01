@@ -1,19 +1,19 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
-class EmployeeActivity extends Equatable {
-  final String id;
+class EmployeeActivityEntity extends Equatable {
+  final String? id;
+  final String employeeId;
   final String date;
-  final String orderName;
-  final String orderId;
+  final List<String> orders;
   final bool morning;
   final bool afternoon;
   final List<String> itemsUsed;
-  EmployeeActivity({
+  const EmployeeActivityEntity({
     required this.id,
+    required this.employeeId,
     required this.date,
-    required this.orderName,
-    required this.orderId,
+    required this.orders,
     required this.morning,
     required this.afternoon,
     required this.itemsUsed,
@@ -22,8 +22,9 @@ class EmployeeActivity extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        employeeId,
         date,
-        orderName,
+        orders,
         morning,
         afternoon,
         itemsUsed,

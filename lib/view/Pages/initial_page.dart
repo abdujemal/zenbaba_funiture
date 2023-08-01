@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/main.dart';
 import 'package:zenbaba_funiture/view/Pages/employee_page.dart';
 import 'package:zenbaba_funiture/view/Pages/stock_page.dart';
 import 'package:zenbaba_funiture/view/Pages/users_page.dart';
@@ -46,31 +46,42 @@ class _InitialPageState extends State<InitialPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ZoomDrawer(
-        controller: mainConntroller.z.value,
-        borderRadius: 24,
-        style: DrawerStyle.defaultStyle,
-        showShadow: true,
-        shadowLayer1Color: backgroundColor,
-        shadowLayer2Color: backgroundColor,
-        menuScreenWidth: 200,
-        boxShadow: [
-          BoxShadow(
-              color: primaryColor.withAlpha(15),
-              blurRadius: 30,
-              spreadRadius: 30,
-              offset: const Offset(0, 4))
-        ],
-        openCurve: Curves.fastOutSlowIn,
-        slideWidth: MediaQuery.of(context).size.width * 0.6,
-        duration: const Duration(milliseconds: 500),
-        angle: 0.0,
-        menuBackgroundColor: mainBgColor,
-        mainScreen: GetBuilder<MainConntroller>(
-            builder: (controller) =>
-            lsController.currentUser.value.priority == UserPriority.Admin?
-             tabs[controller.mainIndex.value]:
-             tabs2[controller.mainIndex.value]),
-        menuScreen: const MyDrawer());
+    return WillPopScope(
+      onWillPop: () async {
+        if (mainConntroller.mainIndex.value != 0) {
+          mainConntroller.mainIndex.value = 0;
+          mainConntroller.update();
+          return false;
+        } else {
+          return true;
+        }
+      },
+      child: ZoomDrawer(
+          controller: mainConntroller.z.value,
+          borderRadius: 24,
+          style: DrawerStyle.defaultStyle,
+          showShadow: true,
+          shadowLayer1Color: backgroundColor,
+          shadowLayer2Color: backgroundColor,
+          menuScreenWidth: 200,
+          boxShadow: [
+            BoxShadow(
+                color: primaryColor.withAlpha(15),
+                blurRadius: 30,
+                spreadRadius: 30,
+                offset: const Offset(0, 4))
+          ],
+          openCurve: Curves.fastOutSlowIn,
+          slideWidth: MediaQuery.of(context).size.width * 0.6,
+          duration: const Duration(milliseconds: 500),
+          angle: 0.0,
+          menuBackgroundColor: mainBgColor,
+          mainScreen: GetBuilder<MainConntroller>(
+              builder: (controller) =>
+                  lsController.currentUser.value.priority == UserPriority.Admin
+                      ? tabs[controller.mainIndex.value]
+                      : tabs2[controller.mainIndex.value]),
+          menuScreen: const MyDrawer()),
+    );
   }
 }

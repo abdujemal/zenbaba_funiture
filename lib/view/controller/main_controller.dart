@@ -1,11 +1,10 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
@@ -13,6 +12,7 @@ import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
 import '../../base_usecase.dart';
 import '../../constants.dart';
 import '../../data/model/cutomer_model.dart';
+import '../../data/model/employee_activity_model.dart';
 import '../../data/model/expense_chart_model.dart';
 import '../../data/model/expense_model.dart';
 import '../../data/model/item_history_model.dart';
@@ -27,10 +27,12 @@ import '../../domain/usecase/add_item_history_usecase.dart';
 import '../../domain/usecase/add_item_usecase.dart';
 import '../../domain/usecase/add_order_usecase.dart';
 import '../../domain/usecase/add_product_usecase.dart';
+import '../../domain/usecase/add_update_employee_activity_usecase.dart';
 import '../../domain/usecase/add_update_employee_usecase.dart';
 import '../../domain/usecase/count_usecase.dart';
 import '../../domain/usecase/delete_usecase.dart';
 import '../../domain/usecase/get_customer_usecase.dart';
+import '../../domain/usecase/get_employee_activities.dart';
 import '../../domain/usecase/get_expense_chart_usecase.dart';
 import '../../domain/usecase/get_expense_usecase.dart';
 import '../../domain/usecase/get_items_usecase.dart';
@@ -66,7 +68,9 @@ class MainConntroller extends GetxController {
   Rx<RequestState> customerStatus = RequestState.idle.obs;
   Rx<RequestState> stockStatus = RequestState.idle.obs;
   Rx<RequestState> employeeStatus = RequestState.idle.obs;
+  Rx<RequestState> employeeActivityStatus = RequestState.idle.obs;
 
+  Rx<RequestState> getEmployeeActivityStatus = RequestState.idle.obs;
   Rx<RequestState> getExpensesStatus = RequestState.idle.obs;
   Rx<RequestState> getOrdersStatus = RequestState.idle.obs;
   Rx<RequestState> getProductsStatus = RequestState.idle.obs;
@@ -77,6 +81,8 @@ class MainConntroller extends GetxController {
 
   RxList<ExpenseModel> payedExpenses = <ExpenseModel>[].obs;
   RxList<EmployeeModel> employees = <EmployeeModel>[].obs;
+  RxList<EmployeeActivityModel> employeesActivities =
+      <EmployeeActivityModel>[].obs;
   RxList<ExpenseModel> unPayedExpenses = <ExpenseModel>[].obs;
   RxList<ExpenseModel> searchExpenses = <ExpenseModel>[].obs;
   RxList<OrderModel> pendingOrders = <OrderModel>[].obs;
@@ -117,6 +123,8 @@ class MainConntroller extends GetxController {
   SearchExpenseUsecase searchExpenseUsecase;
   AddUpdateEmployeeUsecase addUpdateEmployeeUsecase;
   GetEmployeeUsecase getEmployeeUsecase;
+  GetEmployeeActivitiesUsecase getEmployeeActivitiesUsecase;
+  AddUpdateEmployeeActivityUsecase addUpdateEmployeeActivityUsecase;
 
   Future<SharedPreferences> sharedPreferences = SharedPreferences.getInstance();
 
@@ -149,6 +157,8 @@ class MainConntroller extends GetxController {
     this.searchExpenseUsecase,
     this.addUpdateEmployeeUsecase,
     this.getEmployeeUsecase,
+    this.addUpdateEmployeeActivityUsecase,
+    this.getEmployeeActivitiesUsecase,
   );
 
   setCurrentTabIndex(int val) {
@@ -174,6 +184,7 @@ class MainConntroller extends GetxController {
     }
 
     employeeStatus.value = RequestState.loading;
+    String employeeName = employeeModel.id!;
 
     final res = await addUpdateEmployeeUsecase(
         AddUpdateEmployeeParams(employeeModel, file));
@@ -183,9 +194,51 @@ class MainConntroller extends GetxController {
         toast(l.toString(), ToastType.error, isLong: true);
       },
       (r) {
+        // deleting previously downloaded files
+        if (file != null) {
+          displayImage(null, employeeName, FirebaseConstants.employees)
+              .then((value) {
+            if (value != null) {
+              value.delete();
+            }
+          });
+        }
         employeeStatus.value = RequestState.loaded;
         getEmployees();
         Get.back();
+      },
+    );
+  }
+
+  addUpdateEmployeeActivity(
+    EmployeeActivityModel employeeActivityModel, {
+    bool getBack = true,
+  }) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+
+    if (connectivityResult == ConnectivityResult.none) {
+      toast("No Network", ToastType.error);
+      return;
+    }
+
+    employeeActivityStatus.value = RequestState.loading;
+
+    final res = await addUpdateEmployeeActivityUsecase.call(
+      AddUpdateEmployeeActivityParams(
+          employeeActivityModel: employeeActivityModel),
+    );
+
+    res.fold(
+      (l) {
+        employeeActivityStatus.value = RequestState.error;
+        toast(l.toString(), ToastType.error);
+      },
+      (r) {
+        employeeActivityStatus.value = RequestState.error;
+        getEmployeeActivity(employeeActivityModel.employeeId);
+        if (getBack) {
+          Get.back();
+        }
       },
     );
   }
@@ -196,11 +249,42 @@ class MainConntroller extends GetxController {
     final res = await getEmployeeUsecase.call(const NoParameters());
 
     res.fold((l) {
-      getUsersStatus.value = RequestState.error;
+      getEmployeeStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
     }, (r) {
-      getUsersStatus.value = RequestState.loaded;
+      getEmployeeStatus.value = RequestState.loaded;
       employees.value = r;
+    });
+  }
+
+  Future<void> getEmployeeActivity(String employeeId,
+      {int? quantity, bool isNew = true}) async {
+    if (isNew) {
+      employeesActivities.value = [];
+      getEmployeeActivityStatus.value = RequestState.loading;
+    }
+
+    final res = await getEmployeeActivitiesUsecase.call(
+      GetEmployeeActivityParams(
+        employeeId,
+        quantity,
+        isNew: isNew,
+      ),
+    );
+
+    res.fold((l) {
+      getEmployeeActivityStatus.value = RequestState.error;
+      toast(l.toString(), ToastType.error);
+    }, (r) {
+      getEmployeeActivityStatus.value = RequestState.loaded;
+      if (isNew) {
+        employeesActivities.value = r;
+      } else {
+        employeesActivities.value = [
+          ...r,
+          ...employeesActivities,
+        ];
+      }
       print(r);
     });
   }
@@ -560,6 +644,10 @@ class MainConntroller extends GetxController {
       return;
     }
 
+    final directory = await getApplicationSupportDirectory();
+
+    final String sku = productModel.sku;
+
     productStatus.value = RequestState.loading;
 
     final res = await updateProductUsecase
@@ -569,6 +657,11 @@ class MainConntroller extends GetxController {
       productStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
     }, (r) {
+      // deleting previously downloaded files
+      if (files.isNotEmpty) {
+        Directory("${directory.path}/${FirebaseConstants.products}/$sku")
+            .delete(recursive: true);
+      }
       productStatus.value = RequestState.loaded;
       // getProducts();
       Get.back();
@@ -771,10 +864,20 @@ class MainConntroller extends GetxController {
     final res = await updateItemUsecase
         .call(UpdateItemParams(file, itemModel, quantity: quantity));
 
+    String itemName = itemModel.id!;
+
     res.fold((l) {
       itemStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
     }, (r) async {
+      // deleting previously downloaded files
+      if (file != null) {
+        displayImage(null, itemName, FirebaseConstants.items).then((value) {
+          if (value != null) {
+            value.delete();
+          }
+        });
+      }
       itemStatus.value = RequestState.loaded;
       await getItems();
       getItemHistories(items.where((p0) => p0.id == itemModel.id).toList()[0]);

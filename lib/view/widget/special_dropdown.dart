@@ -8,6 +8,8 @@ class SpecialDropdown<T> extends StatefulWidget {
   final double width;
   final T value;
   final List<T> list;
+  final Color? bgColor;
+  final Color? titleColor;
   final void Function(dynamic value) onChange;
   const SpecialDropdown({
     super.key,
@@ -17,6 +19,8 @@ class SpecialDropdown<T> extends StatefulWidget {
     required this.width,
     required this.list,
     required this.onChange,
+    this.bgColor,
+    this.titleColor,
   });
 
   @override
@@ -38,7 +42,7 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
             padding: const EdgeInsets.only(left: 15),
             child: Text(
               widget.title,
-              style: TextStyle(color: textColor),
+              style: TextStyle(color: widget.titleColor ?? textColor),
             ),
           ),
           SizedBox(
@@ -47,7 +51,7 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
           Container(
             width: widget.width,
             decoration: BoxDecoration(
-                color: mainBgColor,
+                color: widget.bgColor ?? mainBgColor,
                 // border: Border.all(color: textColor),
                 borderRadius: BorderRadius.circular(15)),
             padding: const EdgeInsets.symmetric(horizontal: 18),
