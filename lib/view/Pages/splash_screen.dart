@@ -35,6 +35,10 @@ class _SplashScreenState extends State<SplashScreen> {
     );
     mainConntroller.getOrders(
       quantity: numOfDocToGet,
+      status: OrderStatus.proccessing,
+    );
+    mainConntroller.getOrders(
+      quantity: numOfDocToGet,
       status: OrderStatus.Delivered,
     );
     // mainConntroller.getProducts();
@@ -42,7 +46,6 @@ class _SplashScreenState extends State<SplashScreen> {
     mainConntroller.getExpenseChart();
     mainConntroller.getOrderChart();
     mainConntroller.getCustomers();
-
   }
 
   @override

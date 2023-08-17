@@ -3,17 +3,23 @@ import 'package:equatable/equatable.dart';
 
 class OrderEntity extends Equatable {
   final String? id;
+  final String? customerId;
+  final List<String> itemsUsed;
+  final List<String> employees;
   final String customerName;
   final String customerGender;
   final String phoneNumber;
   final String productName;
   final double productPrice;
+  final double deliveryPrice;
   final double payedPrice;
   final String productSku;
   final int quantity;
   final String orderedDate;
   final String finishedDate;
   final String status;
+  final String color;
+  final String size;
   final String sefer;
   final String customerSource;
   final String kk;
@@ -23,6 +29,12 @@ class OrderEntity extends Equatable {
   final String imgUrl;
   final String productDescription;
   const OrderEntity({
+    required this.itemsUsed,
+    required this.employees,
+    required this.deliveryPrice,
+    required this.customerId,
+    required this.color,
+    required this.size,
     required this.id,
     required this.customerName,
     required this.phoneNumber,
@@ -48,10 +60,12 @@ class OrderEntity extends Equatable {
   @override
   List<Object?> get props => [
         id,
+        customerId,
         customerName,
         phoneNumber,
         productName,
         productPrice,
+        deliveryPrice,
         productSku,
         quantity,
         orderedDate,
@@ -67,5 +81,9 @@ class OrderEntity extends Equatable {
         imgUrl,
         productDescription,
         payedPrice,
+        color,
+        size,
+        itemsUsed,
+        employees,
       ];
 }

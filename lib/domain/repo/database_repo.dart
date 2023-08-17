@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:dartz/dartz.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 
+import '../../data/data_src/database_data_src.dart';
 import '../../data/model/cutomer_model.dart';
 import '../../data/model/employee_model.dart';
 import '../../data/model/expense_chart_model.dart';
@@ -45,7 +46,7 @@ abstract class DatabaseRepo {
   Future<Either<Exception, void>> updateExpense(ExpenseModel expenseModel);
   Future<Either<Exception, List<UserModel>>> getUsers();
   Future<Either<Exception, void>> updateUser(UserModel userModel);
-  Future<Either<Exception, void>> addCustomer(CustomerModel customerModel);
+  Future<Either<Exception, String>> addCustomer(CustomerModel customerModel);
   Future<Either<Exception, List<CustomerModel>>> getCustomers(
       int? start, int? end);
   Future<Either<Exception, List<CustomerModel>>> searchCustomers(
@@ -63,4 +64,10 @@ abstract class DatabaseRepo {
     int? quantity, {
     bool isNew = true,
   });
+  Future<Either<Exception, List>> search(
+    String firebasePath,
+    String key,
+    String val,
+    SearchType searchType,
+  );
 }

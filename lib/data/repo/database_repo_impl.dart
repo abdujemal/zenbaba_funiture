@@ -20,7 +20,7 @@ class DatabaseRepoImpl extends DatabaseRepo {
   DatabaseDataSrc databaseDataSrc;
   DatabaseRepoImpl(this.databaseDataSrc);
   @override
-  Future<Either<Exception, void>> addCustomer(
+  Future<Either<Exception, String>> addCustomer(
       CustomerModel customerModel) async {
     try {
       final res = await databaseDataSrc.addCustomer(customerModel);
@@ -347,7 +347,24 @@ class DatabaseRepoImpl extends DatabaseRepo {
     bool isNew = true,
   }) async {
     try {
-      final res = await databaseDataSrc.getEmployeeeActivities(employeeId, quantity, isNew: isNew);
+      final res = await databaseDataSrc
+          .getEmployeeeActivities(employeeId, quantity, isNew: isNew);
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
+
+  @override
+  Future<Either<Exception, List>> search(
+    String firebasePath,
+    String key,
+    String val,
+    SearchType searchType,
+  ) async {
+    try {
+      final res =
+          await databaseDataSrc.search(firebasePath, key, val, searchType);
       return right(res);
     } on Exception catch (e) {
       return left(e);

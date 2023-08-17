@@ -50,7 +50,11 @@ class _CustomBtnState extends State<CustomBtn> {
         child: Center(
             child: Text(
           widget.text,
-          style: TextStyle(letterSpacing: 2, color: widget.tColor),
+          style: TextStyle(
+            letterSpacing: 1.5,
+            color: widget.tColor,
+            fontWeight: FontWeight.bold,
+          ),
         )),
       ),
     );

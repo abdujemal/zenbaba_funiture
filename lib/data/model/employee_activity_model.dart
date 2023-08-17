@@ -1,14 +1,12 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first, overridden_fields
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
-
 import 'package:zenbaba_funiture/domain/entity/employee_activity_entity.dart';
 
 class EmployeeActivityModel extends EmployeeActivityEntity {
   final String? id;
   final String employeeId;
+  final String employeeName;
+  final double payment;
   final String date;
   final List<String> orders;
   final bool morning;
@@ -17,29 +15,35 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
   const EmployeeActivityModel({
     required this.id,
     required this.employeeId,
+    required this.employeeName,
     required this.date,
     required this.orders,
     required this.morning,
     required this.afternoon,
     required this.itemsUsed,
+    required this.payment,
   }) : super(
           id: id,
           employeeId: employeeId,
+          employeeName: employeeName,
           date: date,
           orders: orders,
           morning: morning,
           afternoon: afternoon,
           itemsUsed: itemsUsed,
+          payment: payment,
         );
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'employeeId': employeeId,
+      'employeeName': employeeName,
       'date': date,
       'orders': orders,
       'morning': morning,
       'afternoon': afternoon,
       'itemsUsed': itemsUsed,
+      'payment': payment,
     };
   }
 
@@ -48,7 +52,9 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
     return EmployeeActivityModel(
       id: snap.id,
       employeeId: map['employeeId'] as String,
+      employeeName: map['employeeName'] as String,
       date: map['date'] as String,
+      payment: map['payment'],
       orders:
           (map['orders'] as List<dynamic>).map((e) => e.toString()).toList(),
       morning: map['morning'] as bool,
@@ -63,7 +69,9 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
   EmployeeActivityModel copyWith({
     String? id,
     String? employeeId,
+    String? employeeName,
     String? date,
+    double? payment,
     List<String>? orders,
     bool? morning,
     bool? afternoon,
@@ -71,41 +79,14 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
   }) {
     return EmployeeActivityModel(
       id: id ?? this.id,
+      employeeName: employeeName ?? this.employeeName,
       employeeId: employeeId ?? this.employeeId,
       date: date ?? this.date,
       orders: orders ?? this.orders,
       morning: morning ?? this.morning,
       afternoon: afternoon ?? this.afternoon,
       itemsUsed: itemsUsed ?? this.itemsUsed,
+      payment: payment ?? this.payment,
     );
-  }
-
-  @override
-  String toString() {
-    return 'EmployeeActivityModel(id: $id, employeeId: $employeeId, date: $date, orders: $orders, morning: $morning, afternoon: $afternoon, itemsUsed: $itemsUsed)';
-  }
-
-  @override
-  bool operator ==(covariant EmployeeActivityModel other) {
-    if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.employeeId == employeeId &&
-        other.date == date &&
-        listEquals(other.orders, orders) &&
-        other.morning == morning &&
-        other.afternoon == afternoon &&
-        listEquals(other.itemsUsed, itemsUsed);
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        employeeId.hashCode ^
-        date.hashCode ^
-        orders.hashCode ^
-        morning.hashCode ^
-        afternoon.hashCode ^
-        itemsUsed.hashCode;
   }
 }

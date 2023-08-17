@@ -43,7 +43,9 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
           EmployeeActivityModel(
             id: null,
             employeeId: widget.employeeModel.id!,
+            employeeName: widget.employeeModel.name,
             date: today,
+            payment: 0,
             orders: const [],
             morning: false,
             afternoon: false,
@@ -71,6 +73,8 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
                 .add(Duration(days: -(i - 1)))
                 .toString()
                 .split(" ")[0],
+            employeeName: widget.employeeModel.name,
+            payment: 0,
             orders: const [],
             morning: false,
             afternoon: false,
@@ -99,7 +103,6 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
       floatingActionButton: isAtTheBottom
           ? null
           : FloatingActionButton(
@@ -112,6 +115,7 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
                 _scrollToEnd();
               },
             ),
+      backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 80,
         elevation: 0,

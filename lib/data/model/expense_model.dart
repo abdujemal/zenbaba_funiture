@@ -2,7 +2,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:zenbaba_funiture/domain/entity/expense_entity.dart';
 
-
 class ExpenseModel extends ExpenseEntity {
   final String? id;
   final String category;
@@ -11,6 +10,7 @@ class ExpenseModel extends ExpenseEntity {
   final String expenseStatus;
   final String date;
   final String seller;
+  final String? employeeId;
   const ExpenseModel({
     required this.id,
     required this.category,
@@ -18,21 +18,25 @@ class ExpenseModel extends ExpenseEntity {
     required this.price,
     required this.expenseStatus,
     required this.seller,
-    required this.date
+    required this.date,
+    required this.employeeId,
   }) : super(
-            id: id,
-            category: category,
-            description: description,
-            price: price,
-            expenseStatus: expenseStatus,
-            date: date,
-            seller: seller);
+          id: id,
+          category: category,
+          description: description,
+          price: price,
+          expenseStatus: expenseStatus,
+          date: date,
+          seller: seller,
+          employeeId: employeeId,
+        );
 
   factory ExpenseModel.fromFirebase(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
     return ExpenseModel(
         id: snapshot.id,
         seller: data['seller'],
+        employeeId: data['employeeId'],
         date: data['date'],
         category: data['category'],
         description: data['description'],
@@ -47,11 +51,10 @@ class ExpenseModel extends ExpenseEntity {
       'price': price,
       'expenseStatus': expenseStatus,
       'seller': seller,
-      'date': date
+      'date': date,
+      'employeeId': employeeId,
     };
   }
-
-  
 
   ExpenseModel copyWith({
     String? id,
@@ -61,9 +64,11 @@ class ExpenseModel extends ExpenseEntity {
     String? expenseStatus,
     String? date,
     String? seller,
+    String? employeeId,
   }) {
     return ExpenseModel(
       id: id ?? this.id,
+      employeeId: employeeId ?? this.employeeId,
       category: category ?? this.category,
       description: description ?? this.description,
       price: price ?? this.price,

@@ -331,6 +331,18 @@ class _HomeTabState extends State<HomeTab>
               mainConntroller.getExpenseChart();
               mainConntroller.getOrderChart();
               mainConntroller.getCustomers();
+              mainConntroller.getOrders(
+                quantity: numOfDocToGet,
+                status: OrderStatus.Pending,
+              );
+              mainConntroller.getOrders(
+                quantity: numOfDocToGet,
+                status: OrderStatus.proccessing,
+              );
+              mainConntroller.getOrders(
+                quantity: numOfDocToGet,
+                status: OrderStatus.completed,
+              );
               calculateCustomers();
             },
             icon: const Icon(
@@ -427,7 +439,7 @@ class _HomeTabState extends State<HomeTab>
                                     }
                                   });
                                 },
-                                child: Padding(               
+                                child: Padding(
                                   padding: const EdgeInsets.all(6),
                                   child: Text(
                                     dataType[index],
@@ -562,7 +574,7 @@ class _HomeTabState extends State<HomeTab>
             ),
             Container(
               width: double.infinity,
-              height: 270,
+              height: 290,
               padding: const EdgeInsets.only(
                   top: 5, left: 15, right: 15, bottom: 20),
               decoration: BoxDecoration(

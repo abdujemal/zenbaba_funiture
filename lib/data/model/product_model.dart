@@ -8,6 +8,7 @@ class ProductModel extends ProductEntity {
   final String sku;
   final String category;
   final String description;
+  final String size;
   final List<dynamic> images;
   final double price;
   final List<dynamic> tags;
@@ -20,6 +21,7 @@ class ProductModel extends ProductEntity {
     required this.images,
     required this.price,
     required this.tags,
+    required this.size,
   }) : super(
           id: id,
           name: name,
@@ -29,19 +31,22 @@ class ProductModel extends ProductEntity {
           images: images,
           price: price,
           tags: tags,
+          size: size,
         );
 
   factory ProductModel.fromFirebase(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
     return ProductModel(
-        id: snapshot.id,
-        name: data['name'],
-        sku: data['sku'],
-        category: data['category'],
-        description: data['description'],
-        images: data['images'],
-        price: data['price'],
-        tags: data['tags']);
+      id: snapshot.id,
+      name: data['name'],
+      sku: data['sku'],
+      category: data['category'],
+      description: data['description'],
+      images: data['images'],
+      price: data['price'],
+      tags: data['tags'],
+      size: data["size"] ?? "",
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -52,11 +57,10 @@ class ProductModel extends ProductEntity {
       'description': description,
       'images': images,
       'price': price,
-      'tags': tags
+      'tags': tags,
+      "size": size,
     };
   }
-
-  
 
   ProductModel copyWith({
     String? id,
@@ -67,6 +71,7 @@ class ProductModel extends ProductEntity {
     List<dynamic>? images,
     double? price,
     List<dynamic>? tags,
+    String? size,
   }) {
     return ProductModel(
       id: id ?? this.id,
@@ -77,6 +82,7 @@ class ProductModel extends ProductEntity {
       images: images ?? this.images,
       price: price ?? this.price,
       tags: tags ?? this.tags,
+      size: size ?? this.size,
     );
   }
 }

@@ -1,12 +1,14 @@
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
+import '../../data/model/employee_model.dart';
 import '../../data/model/expense_model.dart';
 import '../controller/main_controller.dart';
 import '../widget/custom_btn.dart';
-import '../widget/my_dropdown.dart';
 import '../widget/sl_input.dart';
 
 class AddExpense extends StatefulWidget {
@@ -33,6 +35,10 @@ class _AddExpenseState extends State<AddExpense> {
 
   var expenseFormState = GlobalKey<FormState>();
 
+  List<EmployeeModel> employees = [];
+
+  EmployeeModel? selectedEmployee;
+
   @override
   void dispose() {
     descriptionTc.dispose();
@@ -45,6 +51,9 @@ class _AddExpenseState extends State<AddExpense> {
   @override
   void initState() {
     super.initState();
+    mainConntroller.getEmployees().then((value) {
+      employees = mainConntroller.employees;
+    });
 
     currentDate = DateTime.now().toString().split(' ')[0];
 
@@ -70,7 +79,6 @@ class _AddExpenseState extends State<AddExpense> {
           return const Iterable<ExpenseModel>.empty();
         } else {
           if (mainConntroller.getExpensesStatus.value != RequestState.loading) {
-           
             await mainConntroller.searchExpense(textEditingValue.text);
 
             return mainConntroller.searchExpenses;
@@ -167,7 +175,7 @@ class _AddExpenseState extends State<AddExpense> {
                 const SizedBox(
                   height: 20,
                 ),
-                MyDropdown(
+                SpecialDropdown<String>(
                     value: expenseCategory,
                     width: double.infinity,
                     list: ExpenseCategory.list,
@@ -175,6 +183,11 @@ class _AddExpenseState extends State<AddExpense> {
                     onChange: (value) {
                       setState(() {
                         expenseCategory = value!;
+                        if (value == ExpenseCategory.employee) {
+                          selectedEmployee = employees[0];
+                        } else {
+                          selectedEmployee = null;
+                        }
                       });
                     }),
                 const SizedBox(
@@ -204,18 +217,28 @@ class _AddExpenseState extends State<AddExpense> {
                 const SizedBox(
                   height: 15,
                 ),
-                sellerFeild(),
-                // SLInput(
-                //   title: expenseCategory == ExpenseCategory.employee
-                //       ? "Employee"
-                //       : "Seller",
-                //   hint: "Tofiq",
-                //   keyboardType: TextInputType.text,
-                //   controller: sellerTc,
-                //   inputColor: whiteColor,
-                //   otherColor: textColor,
-                //   isOutlined: true,
-                // ),
+                expenseCategory != ExpenseCategory.employee
+                    ? sellerFeild()
+                    : SpecialDropdown<EmployeeModel>(
+                        title: "Employee",
+                        value: selectedEmployee!,
+                        width: double.infinity,
+                        list: employees,
+                        onChange: (v) {
+                          setState(() {
+                            selectedEmployee = v;
+                            sellerTc.text = selectedEmployee!.name;
+                          });
+                        },
+                        items: employees
+                            .map(
+                              (e) => DropdownMenuItem<EmployeeModel>(
+                                value: e,
+                                child: Text(e.name),
+                              ),
+                            )
+                            .toList(),
+                      ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -256,12 +279,25 @@ class _AddExpenseState extends State<AddExpense> {
                       DateTimePicker(
                         initialValue: currentDate,
                         decoration: InputDecoration(
-                          suffix: const Icon(Icons.event),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          suffix: SvgPicture.asset(
+                            'assets/calander icon.svg',
+                            height: 30,
+                            width: 30,
+                            color: textColor,
+                          ),
+                          filled: true,
+                          fillColor: mainBgColor,
                           enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: textColor),
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(15),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: whiteColor),
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(15),
                           ),
                         ),
                         type: DateTimePickerType.date,
@@ -307,6 +343,9 @@ class _AddExpenseState extends State<AddExpense> {
                                   expenseStatus: expenseState,
                                   seller: sellerTc.text,
                                   date: currentDate,
+                                  employeeId: selectedEmployee == null
+                                      ? null
+                                      : selectedEmployee!.id,
                                 ),
                               );
                             } else {
@@ -318,6 +357,9 @@ class _AddExpenseState extends State<AddExpense> {
                                   expenseStatus: expenseState,
                                   seller: sellerTc.text,
                                   date: currentDate,
+                                  employeeId: selectedEmployee == null
+                                      ? null
+                                      : selectedEmployee!.id,
                                 ),
                               );
                             }

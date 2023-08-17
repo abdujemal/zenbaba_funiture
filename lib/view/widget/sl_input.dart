@@ -7,18 +7,20 @@ class SLInput extends StatelessWidget {
   final TextInputType keyboardType;
   final TextEditingController controller;
   final Color inputColor;
+  final Color? bgColor;
   final Color? otherColor;
   final bool isObscure;
   final void Function(String val)? onChanged;
-  final String? Function(String? val)? validation;
+  String? Function(String? val)? validation;
   final bool isOutlined;
+  final bool jumpIt;
   final IconData? sufixIcon;
   final void Function()? onTap;
   final bool? readOnly;
   final double? width;
   final double? margin;
   final FocusNode? focusNode;
-  const SLInput(
+  SLInput(
       {Key? key,
       this.isOutlined = false,
       this.inputColor = const Color(0xff898989),
@@ -32,6 +34,8 @@ class SLInput extends StatelessWidget {
       this.margin,
       this.focusNode,
       this.onChanged,
+      this.jumpIt = false,
+      this.bgColor,
       required this.title,
       required this.hint,
       required this.keyboardType,
@@ -40,6 +44,14 @@ class SLInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    validation = validation ??
+        (value) {
+          if (value!.isEmpty) {
+            return "This Field is required.";
+          }
+          return null;
+        };
+
     return Container(
       width: width,
       margin: margin == null
@@ -60,24 +72,34 @@ class SLInput extends StatelessWidget {
           ),
           TextFormField(
             focusNode: focusNode,
-            maxLines: keyboardType == TextInputType.multiline ? 5 : 1,
+            maxLines: keyboardType == TextInputType.multiline ? 3 : 1,
             readOnly: readOnly ?? false,
             onTap: onTap,
             onChanged: onChanged,
-            validator: validation ??
-                (value) {
-                  if (value!.isEmpty) {
-                    return "This Field is required.";
-                  }
-                  return null;
-                },
+            validator: jumpIt ? null : validation,
             obscureText: isObscure,
             style: TextStyle(color: inputColor),
             controller: controller,
             keyboardType: keyboardType,
             decoration: InputDecoration(
-              fillColor: mainBgColor,
+              fillColor: bgColor ?? mainBgColor,
               filled: true,
+              errorBorder: isOutlined
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: otherColor ?? inputColor),
+                    ),
+              focusedErrorBorder: isOutlined
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(color: otherColor ?? inputColor),
+                    ),
               enabledBorder: isOutlined
                   ? OutlineInputBorder(
                       borderRadius: BorderRadius.circular(15),

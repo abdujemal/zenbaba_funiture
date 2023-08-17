@@ -39,6 +39,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.orange, // Set your desired primary color
       ),
+      
       darkTheme: ThemeData.dark().copyWith(
         primaryColor: mainColor,
         textTheme: TextTheme(

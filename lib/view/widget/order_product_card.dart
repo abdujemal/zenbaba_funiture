@@ -16,53 +16,66 @@ class OrderProductCard extends StatefulWidget {
 }
 
 class _OrderProductCardState extends State<OrderProductCard> {
-  File? file;
-
-  @override
-  void initState() {
-    super.initState();
-    loadImage();
-  }
-
-  loadImage() async {
-    if (widget.productModel.images.isNotEmpty) {
-      file = await displayImage(widget.productModel.images[0],
-          '${widget.productModel.sku}0', FirebaseConstants.products);
-      setState(() {});
-    } else {
-      file = File("");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(3),
       child: Row(
         children: [
-          file != null
-              ? file!.path == ""
-                  ? const Icon(
-                      Icons.more_horiz,
-                      size: 50,
-                    )
-                  : Image.file(
-                      file!,
-                      height: 50,
-                      width: 50,
-                      fit: BoxFit.cover,
-                    )
-              : Center(
-                  child: CircularProgressIndicator(color: primaryColor),
-                ),
+          FutureBuilder(
+              future: displayImage(
+                widget.productModel.images[0],
+                '${widget.productModel.sku}0',
+                "${FirebaseConstants.products}/${widget.productModel.sku}",
+              ),
+              builder: (context, snap) {
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: snap.data == null
+                      ? SizedBox(
+                          height: 50,
+                          width: 50,
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: primaryColor,
+                            ),
+                          ),
+                        )
+                      : snap.data!.path == ""
+                          ? Container(
+                              height: 110,
+                              width: 110,
+                              color: mainBgColor,
+                              child: const Center(
+                                child: Text("No Network"),
+                              ),
+                            )
+                          : Image.file(
+                              snap.data!,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                            ),
+                );
+              }),
           const SizedBox(
             width: 20,
           ),
-          Text(
-            widget.productModel.name,
-            style: const TextStyle(
-              fontSize: 18,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                widget.productModel.name,
+                style: const TextStyle(
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(
+                height: 5,
+              ),
+              Text("Size: ${widget.productModel.size}")
+            ],
           )
         ],
       ),

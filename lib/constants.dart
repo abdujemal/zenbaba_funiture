@@ -51,7 +51,10 @@ Gradient bgGradient = LinearGradient(
 
 Widget title(String val) => Text(
       val,
-      style: TextStyle(fontSize: 25, letterSpacing: 1.4),
+      style: const TextStyle(
+        fontSize: 27,
+        fontWeight: FontWeight.w300,
+      ),
     );
 
 class CustomerSource {
@@ -292,6 +295,7 @@ class FirebaseConstants {
   static String expenseCharts = "expenseCharts";
   static String employees = "employees";
   static String employeeActivity = "employees Activities";
+  static String reviews = "reviews";
 }
 
 void toast(String message, ToastType toastType, {bool isLong = false}) {
@@ -312,9 +316,9 @@ enum RequestState { idle, loaded, loading, error }
 Future<File?> displayImage(String? imgUrl, String name, String dir) async {
   final directory = await getApplicationSupportDirectory();
   final filePath = "${directory.path}/$dir/$name.jpg";
-  print(filePath);
+  // print(filePath);
   if (await File(filePath).exists()) {
-    print("file exsists: ${filePath}");
+    // print("file exsists: ${filePath}");
     return File(filePath);
   } else if (imgUrl != null) {
     try {
@@ -336,4 +340,70 @@ Future<File?> displayImage(String? imgUrl, String name, String dir) async {
   } else {
     return null;
   }
+}
+
+Widget section({
+  required List<Widget> children,
+  double paddingv = 13,
+  double paddingh = 8,
+  double mv = 20,
+  double mh = 20,
+  double mb = 0
+}) {
+  return Container(
+    margin: EdgeInsets.only(
+      top: mv,
+      left: mh,
+      right: mh,
+      bottom: mb
+    ),
+    padding: EdgeInsets.symmetric(
+      horizontal: paddingh,
+      vertical: paddingv,
+    ),
+    width: double.infinity,
+    decoration: BoxDecoration(
+      color: mainBgColor,
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(50),
+          blurRadius: 6,
+          spreadRadius: 2,
+          offset: const Offset(0, 0),
+        )
+      ],
+      borderRadius: BorderRadius.circular(10),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: children,
+    ),
+  );
+}
+
+Widget keyVal(String key, String val, {double pl = 15, double pr = 0}) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: EdgeInsets.only(
+          left: pl,
+          top: 0,
+          right: pr,
+        ),
+        child: Text(
+          key,
+          style: TextStyle(color: primaryColor),
+        ),
+      ),
+      Padding(
+        padding: EdgeInsets.only(
+          left: pl + 15,
+          top: 4,
+          right: pr,
+        ),
+        child: Text(val),
+      ),
+    ],
+  );
 }

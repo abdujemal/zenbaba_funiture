@@ -2,7 +2,14 @@ import 'dart:io';
 
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:textfield_tags/textfield_tags.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
 import '../../data/model/cutomer_model.dart';
@@ -10,7 +17,6 @@ import '../../data/model/order_model.dart';
 import '../../data/model/product_model.dart';
 import '../controller/main_controller.dart';
 import '../widget/custom_btn.dart';
-import '../widget/my_dropdown.dart';
 import '../widget/order_dialog.dart';
 import '../widget/order_product_card.dart';
 import '../widget/sl_input.dart';
@@ -24,22 +30,20 @@ class AddOrder extends StatefulWidget {
 }
 
 class _AddOrderState extends State<AddOrder> {
-  var custumerNameTc = TextEditingController(text: "  ");
-
-  var phoneNumberTc = TextEditingController();
-
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 
   List<ProductModel> products = [
     ProductModel(
-        id: "1",
-        name: "Custom",
-        sku: " ",
-        category: ProductCategory.Custom,
-        description: " ",
-        images: [],
-        price: 0,
-        tags: []),
+      id: "1",
+      name: "Custom",
+      sku: " ",
+      category: ProductCategory.Custom,
+      description: " ",
+      images: const [],
+      price: 0,
+      tags: const [],
+      size: " ",
+    ),
   ];
 
   int numOfProduct = 1;
@@ -52,47 +56,70 @@ class _AddOrderState extends State<AddOrder> {
 
   String deliveryState = DeliveryOption.delivery;
 
-  var seferTc = TextEditingController();
+  String selectedCategory = ProductCategory.ShoeShelf;
 
-  var goLocationTc = TextEditingController();
+  String orderState = OrderStatus.Pending;
 
-  var productSkuTc = TextEditingController();
+  TextEditingController _seferTc = TextEditingController();
+  TextEditingController _custumerNameTc = TextEditingController(text: "  ");
+  TextEditingController _phoneNumberTc = TextEditingController();
+  TextEditingController _goLocationTc = TextEditingController();
+  TextEditingController _productSkuTc = TextEditingController();
+  TextEditingController _deliveryPriceTc = TextEditingController();
+  TextEditingController _productNameTc = TextEditingController();
+  TextEditingController _productPriceTc = TextEditingController();
+  TextEditingController _productDescriptionTc = TextEditingController();
+  TextEditingController _payedPriceTc = TextEditingController();
+  TextEditingController _colorTc = TextEditingController();
+  TextEditingController _sizeTc = TextEditingController();
 
-  var productNameTc = TextEditingController();
-
-  var productPriceTc = TextEditingController();
-
-  var selectedProduct = ProductModel(
-      tags: [],
-      id: "1",
-      name: "Custom",
-      sku: " ",
-      category: ProductCategory.Custom,
-      description: " ",
-      images: [],
-      price: 0);
-
-  var selectedGender = Gender.Male;
-
-  var selectedSource = CustomerSource.customer;
-
-  var selectedKK = KK.AddisKetema;
-
-  var selectedPaymentMethod = PaymentMethod.CBE;
-
-  var orderState = OrderStatus.Pending;
+  TextfieldTagsController tagsController = TextfieldTagsController();
 
   bool isCustomerExist = false;
 
+  ProductModel selectedProduct = ProductModel(
+    tags: const [],
+    id: "1",
+    name: "Custom",
+    sku: " ",
+    category: ProductCategory.Custom,
+    description: " ",
+    images: const [],
+    price: 0,
+    size: " ",
+  );
+
+  String selectedGender = Gender.Male;
+
+  String selectedSource = CustomerSource.customer;
+
+  String selectedKK = KK.AddisKetema;
+
+  String selectedPaymentMethod = PaymentMethod.CBE;
+
+  CustomerModel? selectedCustomer;
+
+  List<File> selectedImages = [];
+
   bool isPickup = false;
 
-  var orderFormKey = GlobalKey<FormState>();
+  Color productColor = Colors.white;
 
-  var productDescriptionTc = TextEditingController();
+  GlobalKey<FormState> orderFormKey = GlobalKey<FormState>();
 
   File? file;
 
-  TextEditingController payedPriceTc = TextEditingController();
+  bool isNewProduct = false;
+
+  bool isNewCustomer = false;
+
+  var _distanceToField;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _distanceToField = MediaQuery.of(context).size.width - 46;
+  }
 
   @override
   void initState() {
@@ -112,24 +139,24 @@ class _AddOrderState extends State<AddOrder> {
 
     if (widget.orderModel != null) {
       orderState = widget.orderModel!.status;
-      custumerNameTc.text = widget.orderModel!.customerName;
+      _custumerNameTc.text = widget.orderModel!.customerName;
       selectedGender = widget.orderModel!.customerGender;
-      phoneNumberTc.text = widget.orderModel!.phoneNumber;
+      _phoneNumberTc.text = widget.orderModel!.phoneNumber;
       numOfProduct = widget.orderModel!.quantity;
-      productNameTc.text = widget.orderModel!.productName;
-      productPriceTc.text = widget.orderModel!.productPrice.toString();
-      payedPriceTc.text = widget.orderModel!.payedPrice.toString();
-      productSkuTc.text = widget.orderModel!.productSku;
+      _productNameTc.text = widget.orderModel!.productName;
+      _productPriceTc.text = widget.orderModel!.productPrice.toString();
+      _payedPriceTc.text = widget.orderModel!.payedPrice.toString();
+      _productSkuTc.text = widget.orderModel!.productSku;
       selectedSource = widget.orderModel!.customerSource;
       startDate = widget.orderModel!.orderedDate;
       endDate = widget.orderModel!.finishedDate;
       deliveryState = widget.orderModel!.deliveryOption;
-      seferTc.text = widget.orderModel!.sefer;
+      _seferTc.text = widget.orderModel!.sefer;
       selectedKK = widget.orderModel!.kk;
-      goLocationTc.text = widget.orderModel!.location;
+      _goLocationTc.text = widget.orderModel!.location;
       selectedPaymentMethod = widget.orderModel!.paymentMethod;
       selectedProductImage = widget.orderModel!.imgUrl;
-      productDescriptionTc.text = widget.orderModel!.productDescription;
+      _productDescriptionTc.text = widget.orderModel!.productDescription;
     }
 
     if (widget.orderModel != null) {
@@ -149,26 +176,30 @@ class _AddOrderState extends State<AddOrder> {
 
   @override
   void dispose() {
-    custumerNameTc.dispose();
-    phoneNumberTc.dispose();
-    productPriceTc.dispose();
-    productSkuTc.dispose();
-    seferTc.dispose();
-    goLocationTc.dispose();
-    productDescriptionTc.dispose();
+    _custumerNameTc.dispose();
+    _phoneNumberTc.dispose();
+    _productPriceTc.dispose();
+    _productSkuTc.dispose();
+    _seferTc.dispose();
+    _goLocationTc.dispose();
+    _productDescriptionTc.dispose();
+    _productSkuTc.dispose();
+    _deliveryPriceTc.dispose();
+    _productNameTc.dispose();
+    _payedPriceTc.dispose();
     super.dispose();
   }
 
   customerField() {
     return RawAutocomplete<CustomerModel>(
-      initialValue: TextEditingValue(text: custumerNameTc.text),
+      initialValue: TextEditingValue(text: _custumerNameTc.text),
       displayStringForOption: (option) {
         return option.name;
       },
       optionsBuilder: (TextEditingValue textEditingValue) async {
         if (textEditingValue.text == '') {
           return const Iterable<CustomerModel>.empty();
-        } else {
+        } else if (!isNewCustomer) {
           if (mainConntroller.getCustomersStatus.value !=
               RequestState.loading) {
             await mainConntroller.searchCustomers(
@@ -178,17 +209,21 @@ class _AddOrderState extends State<AddOrder> {
           } else {
             return const Iterable<CustomerModel>.empty();
           }
+        } else {
+          return const Iterable<CustomerModel>.empty();
         }
       },
       onSelected: (CustomerModel customerModel) {
-        custumerNameTc.text = customerModel.name;
+        _custumerNameTc.text = customerModel.name;
         selectedGender = customerModel.gender;
         selectedKK = customerModel.kk;
         selectedSource = customerModel.source;
-        goLocationTc.text = customerModel.location;
-        seferTc.text = customerModel.sefer;
-        phoneNumberTc.text = customerModel.phone;
+        _goLocationTc.text = customerModel.location;
+        _seferTc.text = customerModel.sefer;
+        _phoneNumberTc.text = customerModel.phone;
         isCustomerExist = true;
+
+        selectedCustomer = customerModel;
         setState(() {});
       },
       fieldViewBuilder: (BuildContext context,
@@ -205,7 +240,7 @@ class _AddOrderState extends State<AddOrder> {
           isOutlined: true,
           focusNode: focusNode,
           onChanged: (val) {
-            custumerNameTc.text = val;
+            _custumerNameTc.text = val;
           },
         );
       },
@@ -230,12 +265,13 @@ class _AddOrderState extends State<AddOrder> {
                               onSelected(opt);
                             },
                             child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 23),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 23),
                               child: Card(
                                 child: Container(
                                   color: mainBgColor,
                                   width: double.infinity,
-                                  padding: EdgeInsets.all(10),
+                                  padding: const EdgeInsets.all(10),
                                   child: Text(opt.name),
                                 ),
                               ),
@@ -259,10 +295,10 @@ class _AddOrderState extends State<AddOrder> {
       inputColor: whiteColor,
       otherColor: textColor,
       keyboardType: TextInputType.text,
-      controller: productNameTc,
+      controller: _productNameTc,
       isOutlined: true,
       onChanged: (val) {
-        if (val.isNotEmpty) {
+        if (val.isNotEmpty && !isNewProduct) {
           if (mainConntroller.getCustomersStatus.value !=
               RequestState.loading) {
             mainConntroller.searchProducts('name', val, 5);
@@ -287,9 +323,10 @@ class _AddOrderState extends State<AddOrder> {
                 width: 10,
               ),
               Container(
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(5),
-                  border: Border.all(color: textColor, width: 1),
+                  borderRadius: BorderRadius.circular(15),
+                  color: mainBgColor,
                 ),
                 child: Row(
                   children: [
@@ -336,52 +373,132 @@ class _AddOrderState extends State<AddOrder> {
             ],
           ),
         ),
-        Obx(
-          () {
-            return mainConntroller.getProductsStatus.value ==
-                    RequestState.loading
-                ? SizedBox(
-                    height: 70,
-                    width: MediaQuery.of(context).size.width,
-                    child: Center(
-                        child: CircularProgressIndicator(
-                      color: primaryColor,
-                    )),
-                  )
-                : SizedBox(
-                    height: 82,
-                    width: MediaQuery.of(context).size.width,
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: mainConntroller.products
-                            .map((element) => Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 25, vertical: 5),
-                                  child: InkWell(
-                                    onTap: () {
-                                      productNameTc.text = element.name;
-                                      productPriceTc.text =
-                                          element.price.toString();
-                                      productSkuTc.text = element.sku;
-                                      selectedProductImage = element.images[0];
-                                      payedPriceTc.text = '0';
-                                      setState(() {});
-                                    },
-                                    child: OrderProductCard(
-                                      productModel: element,
+        if (!isNewProduct)
+          Obx(
+            () {
+              return mainConntroller.getProductsStatus.value ==
+                      RequestState.loading
+                  ? SizedBox(
+                      height: 70,
+                      width: MediaQuery.of(context).size.width,
+                      child: Center(
+                          child: CircularProgressIndicator(
+                        color: primaryColor,
+                      )),
+                    )
+                  : SizedBox(
+                      height: 82,
+                      width: MediaQuery.of(context).size.width,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: mainConntroller.products
+                              .map((element) => Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 25, vertical: 5),
+                                    child: InkWell(
+                                      onTap: () {
+                                        _productNameTc.text = element.name;
+                                        _productPriceTc.text =
+                                            element.price.toString();
+                                        _productSkuTc.text = element.sku;
+                                        selectedProductImage =
+                                            element.images[0];
+                                        _payedPriceTc.text = '0';
+                                        _sizeTc.text = element.size;
+                                        setState(() {});
+                                      },
+                                      child: OrderProductCard(
+                                        productModel: element,
+                                      ),
                                     ),
-                                  ),
-                                ))
-                            .toList(),
+                                  ))
+                              .toList(),
+                        ),
                       ),
-                    ),
-                  );
-          },
-        )
+                    );
+            },
+          )
       ],
     );
+  }
+
+  image(VoidCallback onTap) {
+    if (selectedImages.isNotEmpty) {
+      return Container(
+        height: 200,
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 23),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: mainBgColor,
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                itemCount: selectedImages.length,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Image.file(
+                          selectedImages[index],
+                          height: 150,
+                          width: 150,
+                          fit: BoxFit.cover,
+                        ),
+                      ));
+                },
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                CustomBtn(
+                  btnState: Btn.outlined,
+                  color: textColor,
+                  onTap: onTap,
+                  text: "Change",
+                ),
+                Text("${selectedImages.length} Images"),
+              ],
+            ),
+          ],
+        ),
+      );
+    } else {
+      return Container(
+        height: 100,
+        width: double.infinity,
+        margin: const EdgeInsets.symmetric(horizontal: 23),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(15),
+          color: mainBgColor,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Center(
+              child: CustomBtn(
+                btnState: Btn.filled,
+                color: backgroundColor,
+                onTap: onTap,
+                text: "Attach img",
+              ),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   inputDates() {
@@ -405,12 +522,25 @@ class _AddOrderState extends State<AddOrder> {
               DateTimePicker(
                 initialValue: startDate,
                 decoration: InputDecoration(
-                  suffix: const Icon(Icons.event),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  suffix: SvgPicture.asset(
+                    'assets/calander icon.svg',
+                    height: 30,
+                    width: 30,
+                    color: textColor,
+                  ),
+                  fillColor: mainBgColor,
+                  filled: true,
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: textColor),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: whiteColor),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                 ),
                 type: DateTimePickerType.date,
@@ -448,12 +578,25 @@ class _AddOrderState extends State<AddOrder> {
               DateTimePicker(
                 initialValue: endDate,
                 decoration: InputDecoration(
-                  suffix: const Icon(Icons.event),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 12,
+                  ),
+                  suffix: SvgPicture.asset(
+                    'assets/calander icon.svg',
+                    height: 30,
+                    width: 30,
+                    color: textColor,
+                  ),
+                  fillColor: mainBgColor,
+                  filled: true,
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: textColor),
+                    borderRadius: BorderRadius.circular(15),
+                    borderSide: BorderSide.none,
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: whiteColor),
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
                   ),
                 ),
                 type: DateTimePickerType.date,
@@ -472,35 +615,177 @@ class _AddOrderState extends State<AddOrder> {
     );
   }
 
+  Future<void> _openGoogleMaps() async {
+    const url = 'https://maps.google.com/';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+
+//  Future<void> _handleReturnedUrl() async {
+//   final url = await getInitkjhialUrl();
+//   // Parse the URL to extract the location data
+//   // ...
+// }
+
+  inputtags() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 13),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 25),
+            child: Text(
+              'tags',
+              style: TextStyle(color: textColor),
+            ),
+          ),
+          TextFieldTags(
+            textfieldTagsController: tagsController,
+            textSeparators: const [','],
+            letterCase: LetterCase.normal,
+            validator: (String tag) {
+              if (tagsController.getTags!.contains(tag)) {
+                return 'you already entered that';
+              }
+
+              return null;
+            },
+            inputfieldBuilder:
+                (context, tec, fn, error, onChanged, onSubmitted) {
+              return ((context, sc, tags, onTagDelete) {
+                return Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: TextFormField(
+                    controller: tec,
+                    focusNode: fn,
+                    validator: (value) {
+                      if (tags.isEmpty) {
+                        return "This Feild is required";
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      fillColor: mainBgColor,
+                      filled: true,
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide.none,
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      hintText: tagsController.hasTags ? '' : "Enter tag...",
+                      hintStyle: TextStyle(color: textColor),
+                      errorText: error,
+                      prefixIconConstraints:
+                          BoxConstraints(maxWidth: _distanceToField * 0.60),
+                      suffixIcon: GestureDetector(
+                          onTap: () {
+                            tagsController.clearTags();
+                          },
+                          child: const Icon(
+                            Icons.delete,
+                            color: Colors.red,
+                          )),
+                      prefixIcon: tags.isNotEmpty
+                          ? SingleChildScrollView(
+                              controller: sc,
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: tags.map((String tag) {
+                                  return Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: const BorderRadius.all(
+                                        Radius.circular(20.0),
+                                      ),
+                                      color: primaryColor,
+                                    ),
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 5.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10.0, vertical: 5.0),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        InkWell(
+                                          child: Text(
+                                            '#$tag',
+                                            style: const TextStyle(
+                                                color: Colors.white),
+                                          ),
+                                          onTap: () {
+                                            print("$tag selected");
+                                          },
+                                        ),
+                                        const SizedBox(width: 4.0),
+                                        InkWell(
+                                          child: const Icon(
+                                            Icons.cancel,
+                                            size: 14.0,
+                                            color: Color.fromARGB(
+                                                255, 233, 233, 233),
+                                          ),
+                                          onTap: () {
+                                            onTagDelete(tag);
+                                          },
+                                        )
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            )
+                          : null,
+                    ),
+                    onChanged: onChanged,
+                    // onSubmitted: onSubmitted,
+                  ),
+                );
+              });
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
-          centerTitle: true,
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          title:
-              title(widget.orderModel != null ? "Order Detail" : "New Order"),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Get.back();
-            },
-          ),
-          actions: [
-            if (widget.orderModel != null)
-              IconButton(
-                onPressed: () {
-                  Get.dialog(
-                      OrderDialog(
-                        orderModel: widget.orderModel!,
-                      ),
-                      barrierColor: const Color.fromARGB(200, 0, 0, 0));
-                },
-                icon: const Icon(Icons.qr_code),
-              ),
-          ]),
+        centerTitle: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        title: title(widget.orderModel != null
+            ? "Order #${widget.orderModel!.id}"
+            : "New Order"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Get.back();
+          },
+        ),
+        actions: [
+          if (widget.orderModel != null)
+            IconButton(
+              onPressed: () {
+                Get.dialog(
+                    OrderDialog(
+                      orderModel: widget.orderModel!,
+                    ),
+                    barrierColor: const Color.fromARGB(200, 0, 0, 0));
+              },
+              icon: const Icon(Icons.qr_code),
+            ),
+        ],
+      ),
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Form(
@@ -524,114 +809,191 @@ class _AddOrderState extends State<AddOrder> {
                 const SizedBox(
                   height: 20,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    OrderStatus.list.length,
-                    (index) {
-                      return SizedBox(
-                        width: 160,
-                        child: RadioListTile(
-                          activeColor: whiteColor,
-                          title: Text(OrderStatus.list[index]),
-                          value: OrderStatus.list[index],
-                          groupValue: orderState,
-                          onChanged: (val) {
-                            setState(() {
-                              orderState = val.toString();
-                            });
-                          },
-                        ),
-                      );
-                    },
-                  ),
+                SpecialDropdown<String>(
+                  title: "Status",
+                  value: orderState,
+                  width: double.infinity,
+                  list: OrderStatus.list,
+                  onChange: (v) {
+                    setState(() {
+                      orderState = v;
+                    });
+                  },
+                ),
+
+                const SizedBox(
+                  height: 15,
+                ),
+                CheckboxListTile(
+                  value: isNewCustomer,
+                  title: const Text("New Customer"),
+                  activeColor: primaryColor,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 23),
+                  onChanged: (val) {
+                    setState(() {
+                      isNewCustomer = val!;
+                    });
+                  },
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
                 const SizedBox(
                   height: 15,
                 ),
                 customerField(),
+                if (isNewCustomer)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                if (isNewCustomer)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: List.generate(
+                      Gender.list.length,
+                      (index) => Row(
+                        children: [
+                          Radio(
+                            activeColor: whiteColor,
+                            value: Gender.list[index],
+                            groupValue: selectedGender,
+                            onChanged: (value) {
+                              setState(() {
+                                selectedGender = value!;
+                              });
+                            },
+                          ),
+                          Text(Gender.list[index])
+                        ],
+                      ),
+                    ),
+                  ),
+                if (isNewCustomer)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                if (isNewCustomer)
+                  SLInput(
+                    title: "Phone number",
+                    hint: '092345656',
+                    inputColor: whiteColor,
+                    otherColor: textColor,
+                    keyboardType: TextInputType.text,
+                    controller: _phoneNumberTc,
+                    isOutlined: true,
+                  ),
+
                 const SizedBox(
                   height: 15,
                 ),
-                MyDropdown(
-                  value: selectedGender,
-                  list: Gender.list,
-                  title: "Gender",
-                  width: double.infinity,
-                  onChange: (value) {
+                CheckboxListTile(
+                  value: isNewProduct,
+                  title: const Text("New Product"),
+                  activeColor: primaryColor,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 23),
+                  onChanged: (val) {
                     setState(() {
-                      selectedGender = value!;
+                      isNewProduct = val!;
                     });
                   },
+                  controlAffinity: ListTileControlAffinity.leading,
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-                SLInput(
-                  title: "Phone number",
-                  hint: '092345656',
-                  inputColor: whiteColor,
-                  otherColor: textColor,
-                  keyboardType: TextInputType.text,
-                  controller: phoneNumberTc,
-                  isOutlined: true,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
+                if (isNewProduct)
+                  image(
+                    () async {
+                      List<XFile> xFiles =
+                          await ImagePicker().pickMultiImage(imageQuality: 10);
+                      selectedImages = [];
+                      if (xFiles.isNotEmpty) {
+                        for (XFile xFile in xFiles) {
+                          selectedImages.add(File(xFile.path));
+                          setState(() {});
+                        }
+                      } else {
+                        setState(() {});
+                        toast("No image is selected.", ToastType.error);
+                      }
+                    },
+                  ),
+                if (isNewProduct)
+                  const SizedBox(
+                    height: 15,
+                  ),
                 productsAndQuantity(),
+                if (isNewProduct)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                if (isNewProduct)
+                  SLInput(
+                    title: "Product sku",
+                    hint: '5678',
+                    inputColor: whiteColor,
+                    otherColor: textColor,
+                    keyboardType: TextInputType.text,
+                    controller: _productSkuTc,
+                    isOutlined: true,
+                  ),
+                if (isNewProduct)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                if (isNewProduct)
+                  SpecialDropdown<String>(
+                    title: "Product Category",
+                    value: selectedCategory,
+                    width: double.infinity,
+                    list: ProductCategory.list,
+                    onChange: (v) {
+                      setState(() {
+                        selectedCategory = v;
+                      });
+                    },
+                  ),
                 const SizedBox(
                   height: 15,
                 ),
                 SLInput(
-                  title: "Product Descrpition",
-                  hint: 'Description',
-                  inputColor: whiteColor,
-                  otherColor: textColor,
-                  keyboardType: TextInputType.multiline,
-                  controller: productDescriptionTc,
-                  isOutlined: true,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                SLInput(
-                  title: "Product price",
-                  hint: '10000',
-                  inputColor: whiteColor,
-                  otherColor: textColor,
-                  keyboardType: TextInputType.number,
-                  controller: productPriceTc,
-                  isOutlined: true,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                SLInput(
-                  title: "Advance Payment",
-                  hint: '10000',
-                  inputColor: whiteColor,
-                  otherColor: textColor,
-                  keyboardType: TextInputType.number,
-                  controller: payedPriceTc,
-                  isOutlined: true,
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
-                SLInput(
-                  title: "Product sku",
-                  hint: '5678',
+                  title: "Color",
+                  hint: 'white',
                   inputColor: whiteColor,
                   otherColor: textColor,
                   keyboardType: TextInputType.text,
-                  controller: productSkuTc,
+                  controller: _colorTc,
                   isOutlined: true,
                 ),
+
                 const SizedBox(
                   height: 15,
                 ),
-                MyDropdown(
+
+                SLInput(
+                  title: "Size",
+                  hint: '23 cm * 100 cm * 10',
+                  inputColor: whiteColor,
+                  otherColor: textColor,
+                  keyboardType: TextInputType.text,
+                  controller: _sizeTc,
+                  isOutlined: true,
+                ),
+                if (isNewProduct)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                if (isNewProduct)
+                  SLInput(
+                    title: "Product Descrpition",
+                    hint: 'Description',
+                    inputColor: whiteColor,
+                    otherColor: textColor,
+                    keyboardType: TextInputType.multiline,
+                    controller: _productDescriptionTc,
+                    isOutlined: true,
+                  ),
+
+                const SizedBox(
+                  height: 15,
+                ),
+
+                SpecialDropdown<String>(
                   value: selectedSource,
                   list: CustomerSource.list,
                   title: "Source",
@@ -645,7 +1007,6 @@ class _AddOrderState extends State<AddOrder> {
                 const SizedBox(
                   height: 15,
                 ),
-                inputDates(),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(
@@ -662,8 +1023,8 @@ class _AddOrderState extends State<AddOrder> {
                             setState(() {
                               if (val == DeliveryOption.pickUp) {
                                 isPickup = true;
-                                seferTc.text = " ";
-                                goLocationTc.text = " ";
+                                _seferTc.text = " ";
+                                _goLocationTc.text = " ";
                               } else {
                                 isPickup = false;
                               }
@@ -675,60 +1036,148 @@ class _AddOrderState extends State<AddOrder> {
                     },
                   ),
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
-
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isPickup ? 0 : 23),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.max,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      if (!isPickup)
-                        SLInput(
-                          width: 100,
-                          title: "Sefer",
-                          hint: 'Arabsa',
-                          inputColor: whiteColor,
-                          otherColor: textColor,
-                          keyboardType: TextInputType.text,
-                          controller: seferTc,
-                          isOutlined: true,
-                          margin: 10,
-                        ),
-                      Expanded(
-                        child: MyDropdown(
-                          value: selectedKK,
-                          margin: isPickup ? null : 10,
-                          list: KK.list,
-                          title: "Kifle Ketema",
-                          width: isPickup ? double.infinity : 200,
-                          onChange: (value) {
-                            setState(() {
-                              selectedKK = value!;
-                            });
-                          },
-                        ),
-                      )
-                    ],
+                inputDates(),
+                if (isNewCustomer)
+                  const SizedBox(
+                    height: 15,
                   ),
-                ),
-                if (!isPickup)
+                if (isNewCustomer)
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: isPickup ? 0 : 23),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.max,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        if (!isPickup)
+                          SLInput(
+                            width: 100,
+                            title: "Sefer",
+                            hint: 'Arabsa',
+                            inputColor: whiteColor,
+                            otherColor: textColor,
+                            keyboardType: TextInputType.text,
+                            controller: _seferTc,
+                            isOutlined: true,
+                            margin: 0,
+                          ),
+                        const SizedBox(
+                          width: 20,
+                        ),
+                        Expanded(
+                          child: SpecialDropdown<String>(
+                            value: selectedKK,
+                            margin: isPickup ? null : 0,
+                            list: KK.list,
+                            title: "Kifle Ketema",
+                            width: double.infinity,
+                            onChange: (value) {
+                              setState(() {
+                                selectedKK = value!;
+                              });
+                            },
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+
+                if (!isPickup && isNewCustomer)
                   SLInput(
                     title: "",
                     hint: 'Google location',
                     inputColor: whiteColor,
                     otherColor: textColor,
                     keyboardType: TextInputType.text,
-                    controller: goLocationTc,
+                    controller: _goLocationTc,
                     isOutlined: true,
+                  ),
+                if (!isPickup && isNewCustomer)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                if (!isPickup && isNewCustomer)
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 23,
+                      ),
+                      child: InkWell(
+                        onTap: () async {
+                          await _openGoogleMaps();
+                          // await _retrieveSelectedLocation();
+                        },
+                        child: Ink(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Icon(
+                                Icons.location_on_rounded,
+                                color: greyColor,
+                              ),
+                              Text(
+                                "Pick Location",
+                                style: TextStyle(color: textColor),
+                              )
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 const SizedBox(
                   height: 15,
                 ),
-                MyDropdown(
+                SLInput(
+                  title: "Product price",
+                  hint: '10000',
+                  inputColor: whiteColor,
+                  otherColor: textColor,
+                  keyboardType: TextInputType.number,
+                  controller: _productPriceTc,
+                  isOutlined: true,
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                if (isNewProduct) inputtags(),
+                if (isNewProduct)
+                  const SizedBox(
+                    height: 8,
+                  ),
+
+                if (!isPickup)
+                  SLInput(
+                    title: "Delivery price",
+                    hint: '10000',
+                    inputColor: whiteColor,
+                    otherColor: textColor,
+                    keyboardType: TextInputType.number,
+                    controller: _deliveryPriceTc,
+                    isOutlined: true,
+                  ),
+                if (!isPickup)
+                  const SizedBox(
+                    height: 15,
+                  ),
+                SLInput(
+                  title: "PrePayment",
+                  hint: '10000',
+                  inputColor: whiteColor,
+                  otherColor: textColor,
+                  keyboardType: TextInputType.number,
+                  controller: _payedPriceTc,
+                  isOutlined: true,
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
+                SpecialDropdown<String>(
                   value: selectedPaymentMethod,
                   list: PaymentMethod.list,
                   title: "Payment method",
@@ -763,83 +1212,127 @@ class _AddOrderState extends State<AddOrder> {
                               CustomBtn(
                                 btnState: Btn.filled,
                                 color: primaryColor,
+                                tColor: mainBgColor,
                                 text: 'Save',
                                 onTap: () async {
+                                  String? cid = selectedCustomer != null
+                                      ? selectedCustomer!.id
+                                      : null;
+
                                   if (orderFormKey.currentState!.validate()) {
                                     if (widget.orderModel == null) {
-                                      if (!isCustomerExist) {
-                                        await mainConntroller.addCustomer(
+                                      if (isNewCustomer) {
+                                        cid = await mainConntroller.addCustomer(
                                           CustomerModel(
                                             source: selectedSource,
                                             gender: selectedGender,
-                                            name: custumerNameTc.text,
+                                            name: _custumerNameTc.text,
                                             id: null,
-                                            phone: phoneNumberTc.text,
-                                            sefer: seferTc.text,
+                                            phone: _phoneNumberTc.text,
+                                            sefer: _seferTc.text,
                                             kk: selectedKK,
-                                            location: goLocationTc.text,
+                                            location: _goLocationTc.text,
                                           ),
                                         );
                                       }
+                                      if (isNewProduct) {
+                                        if (selectedImages.isNotEmpty) {
+                                          await mainConntroller.addProduct(
+                                            ProductModel(
+                                              id: null,
+                                              name: _productNameTc.text,
+                                              sku: _productSkuTc.text,
+                                              category: selectedCategory,
+                                              description:
+                                                  _productDescriptionTc.text,
+                                              images: const [],
+                                              price: double.parse(
+                                                  _productPriceTc.text),
+                                              tags: tagsController.getTags!,
+                                              size: _sizeTc.text,
+                                            ),
+                                            selectedImages,
+                                          );
+                                        } else {
+                                          toast("images are not selected",
+                                              ToastType.error);
+                                        }
+                                      }
                                       await mainConntroller.addOrder(
                                         OrderModel(
-                                            id: null,
-                                            customerName: custumerNameTc.text,
-                                            phoneNumber: phoneNumberTc.text,
-                                            productName: productNameTc.text,
-                                            productPrice: double.parse(
-                                                productPriceTc.text),
-                                            payedPrice:
-                                                double.parse(payedPriceTc.text),
-                                            productSku: productSkuTc.text,
-                                            quantity: numOfProduct,
-                                            orderedDate: startDate,
-                                            finishedDate: endDate,
-                                            status: orderState,
-                                            sefer: seferTc.text,
-                                            customerSource: selectedSource,
-                                            kk: selectedKK,
-                                            location: goLocationTc.text,
-                                            paymentMethod:
-                                                selectedPaymentMethod,
-                                            deliveryOption: deliveryState,
-                                            customerGender: selectedGender,
-                                            imgUrl: selectedProductImage,
-                                            productDescription:
-                                                productDescriptionTc.text),
+                                          id: null,
+                                          customerId: cid,
+                                          customerName: _custumerNameTc.text,
+                                          phoneNumber: _phoneNumberTc.text,
+                                          productName: _productNameTc.text,
+                                          color: _colorTc.text,
+                                          size: _sizeTc.text,
+                                          productPrice: double.parse(
+                                              _productPriceTc.text),
+                                          payedPrice:
+                                              double.parse(_payedPriceTc.text),
+                                          deliveryPrice: double.parse(
+                                              _deliveryPriceTc.text),
+                                          productSku: _productSkuTc.text,
+                                          quantity: numOfProduct,
+                                          orderedDate: startDate,
+                                          finishedDate: endDate,
+                                          status: orderState,
+                                          sefer: _seferTc.text,
+                                          customerSource: selectedSource,
+                                          kk: selectedKK,
+                                          location: _payedPriceTc.text,
+                                          paymentMethod: selectedPaymentMethod,
+                                          deliveryOption: deliveryState,
+                                          customerGender: selectedGender,
+                                          imgUrl: selectedProductImage,
+                                          productDescription:
+                                              _productDescriptionTc.text,
+                                          employees: const [],
+                                          itemsUsed: const [],
+                                        ),
                                       );
                                     } else {
                                       await mainConntroller.updateOrder(
-                                          OrderModel(
-                                            id: widget.orderModel!.id,
-                                            customerName: custumerNameTc.text,
-                                            phoneNumber: phoneNumberTc.text,
-                                            productName: productNameTc.text,
-                                            productPrice: double.parse(
-                                                productPriceTc.text),
-                                            payedPrice:
-                                                double.parse(payedPriceTc.text),
-                                            productSku: productSkuTc.text,
-                                            quantity: numOfProduct,
-                                            orderedDate: startDate,
-                                            finishedDate: endDate,
-                                            status: orderState,
-                                            sefer: seferTc.text,
-                                            customerSource: selectedSource,
-                                            kk: selectedKK,
-                                            location: goLocationTc.text,
-                                            paymentMethod:
-                                                selectedPaymentMethod,
-                                            deliveryOption: deliveryState,
-                                            customerGender: selectedGender,
-                                            imgUrl: selectedProductImage,
-                                            productDescription:
-                                                productDescriptionTc.text,
-                                          ),
-                                          widget.orderModel!.status);
+                                        OrderModel(
+                                          id: widget.orderModel!.id,
+                                          customerId:
+                                              widget.orderModel!.customerId,
+                                          deliveryPrice: double.parse(
+                                              _deliveryPriceTc.text),
+                                          customerName: _custumerNameTc.text,
+                                          phoneNumber: _phoneNumberTc.text,
+                                          productName: _productNameTc.text,
+                                          color: _colorTc.text,
+                                          size: _sizeTc.text,
+                                          productPrice: double.parse(
+                                              _productPriceTc.text),
+                                          payedPrice:
+                                              double.parse(_payedPriceTc.text),
+                                          productSku: _productSkuTc.text,
+                                          quantity: numOfProduct,
+                                          orderedDate: startDate,
+                                          finishedDate: endDate,
+                                          status: orderState,
+                                          sefer: _seferTc.text,
+                                          customerSource: selectedSource,
+                                          kk: selectedKK,
+                                          location: _goLocationTc.text,
+                                          paymentMethod: selectedPaymentMethod,
+                                          deliveryOption: deliveryState,
+                                          customerGender: selectedGender,
+                                          imgUrl: selectedProductImage,
+                                          productDescription:
+                                              _productDescriptionTc.text,
+                                          employees:
+                                              widget.orderModel!.employees,
+                                          itemsUsed:
+                                              widget.orderModel!.itemsUsed,
+                                        ),
+                                        widget.orderModel!.status,
+                                      );
                                     }
                                   }
-                                
                                 },
                               ),
                               widget.orderModel != null

@@ -23,6 +23,12 @@ class EmployeeActivityItem extends StatefulWidget {
 
 class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
   @override
+  void initState() {
+    super.initState();
+
+    
+  }
+  @override
   Widget build(BuildContext context) {
     String morning =
         widget.employeeActivityModel.morning ? "Present" : "Absent";
@@ -54,11 +60,13 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
           onTap: () {
             Get.bottomSheet(
               UpdateEmployeeActivity(
-                  employeeActivityModel: widget.employeeActivityModel),
+                employeeActivityModel: widget.employeeActivityModel,
+              ),
             );
           },
           isLast: widget.isLast,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Column(
                 children: [
@@ -106,7 +114,37 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                     ),
-                  )
+                  ),
+                  if (widget.employeeActivityModel.payment > 0.5)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(1.5),
+                            decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: primaryColor, width: 2),
+                                shape: BoxShape.circle),
+                            child: Icon(
+                              Icons.arrow_outward,
+                              color: primaryColor,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 20,
+                          ),
+                          Text(
+                            "${widget.employeeActivityModel.payment.round()} br",
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
                 ],
               ),
               const Spacer()

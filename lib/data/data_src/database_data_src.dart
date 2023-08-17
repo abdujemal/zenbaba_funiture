@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:zenbaba_funiture/data/model/item_history_model.dart';
+import 'package:zenbaba_funiture/data/model/review_model.dart';
 
 import '../../constants.dart';
 import '../model/cutomer_model.dart';
@@ -49,7 +50,7 @@ abstract class DatabaseDataSrc {
   Future<void> updateExpense(ExpenseModel expenseModel);
   Future<List<UserModel>> getUsers();
   Future<void> updateUser(UserModel userModel);
-  Future<void> addCustomer(CustomerModel customerModel);
+  Future<String> addCustomer(CustomerModel customerModel);
   Future<List<CustomerModel>> getCustomers(int? quantity, int? end);
   Future<List<CustomerModel>> searchCustomers(
       String key, String value, int length);
@@ -65,6 +66,8 @@ abstract class DatabaseDataSrc {
     int? quantity, {
     bool isNew = true,
   });
+  Future<List> search(
+      String firebasePath, String key, String val, SearchType searchType);
 }
 
 class DatabaseDataSrcImpl extends DatabaseDataSrc {
@@ -80,23 +83,49 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
   DocumentSnapshot? lastProductDoc;
   DocumentSnapshot? lastPendingOrder;
-  DocumentSnapshot? lastDeliveredOrder;
+  DocumentSnapshot? lastProccessingOrder;
+  DocumentSnapshot? lastCompletedOrder;
   DocumentSnapshot? lastUnpayedExpense;
   DocumentSnapshot? lastPayedExpense;
   DocumentSnapshot? lastEmployeeActivity;
 
   @override
-  Future<void> addCustomer(CustomerModel customerModel) async {
-    await firebaseFirestore
+  Future<String> addCustomer(CustomerModel customerModel) async {
+    final ref = await firebaseFirestore
         .collection(FirebaseConstants.customers)
         .add(customerModel.toMap());
+
+    return ref.id;
   }
 
   @override
   Future<void> addExpense(ExpenseModel expenseModel) async {
+    if (expenseModel.category == ExpenseCategory.employee) {
+      final activityQs = await firebaseFirestore
+          .collection(FirebaseConstants.employeeActivity)
+          .where('employeeId', isEqualTo: expenseModel.employeeId)
+          .where('date', isEqualTo: expenseModel.date)
+          .get();
+
+      if (activityQs.docs.isNotEmpty) {
+        await firebaseFirestore
+            .collection(FirebaseConstants.employeeActivity)
+            .doc(activityQs.docs[0].id)
+            .update(
+          {
+            'payment': expenseModel.price,
+          },
+        );
+      } else {
+        throw Exception(
+            "There is not employee Activity, please go and create employee activity for ${expenseModel.seller}.");
+      }
+    }
+
     final ds = await firebaseFirestore
         .collection(FirebaseConstants.expenses)
         .add(expenseModel.toMap());
+
     await addExpenseChart(
       ExpenseChartModel(
         id: ds.id,
@@ -142,13 +171,18 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
   @override
   Future<String> addOrder(OrderModel orderModel) async {
-    final res = await firebaseFirestore
+    int id = Random().nextInt(999999);
+    String orderId =
+        "${List.generate(6 - "$id".length, (index) => "0").join()}$id";
+
+    await firebaseFirestore
         .collection(FirebaseConstants.orders)
-        .add(orderModel.toMap());
+        .doc(orderId)
+        .set(orderModel.toMap());
 
     await addOrderChart(
       OrderChartModel(
-        orderId: res.id,
+        orderId: orderId,
         date: orderModel.orderedDate,
         price: orderModel.payedPrice,
       ),
@@ -157,15 +191,16 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     if (orderModel.status == OrderStatus.Delivered) {
       await addOrderChart(
         OrderChartModel(
-          orderId: res.id,
+          orderId: orderId,
           date: orderModel.finishedDate,
-          price: (orderModel.productPrice * orderModel.quantity) -
-              orderModel.payedPrice,
+          price: ((orderModel.productPrice * orderModel.quantity) -
+                  orderModel.payedPrice) +
+              orderModel.deliveryPrice,
         ),
       );
     }
 
-    return res.id.toString();
+    return orderId;
   }
 
   @override
@@ -297,8 +332,16 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       int? quantity, String? status, String? date, bool isNew) async {
     QuerySnapshot orderqs;
 
-    DocumentSnapshot? lastDoc =
-        status == OrderStatus.Pending ? lastPendingOrder : lastDeliveredOrder;
+    DocumentSnapshot? lastDoc;
+
+    if (status == OrderStatus.Pending) {
+      lastDoc = lastPendingOrder;
+    } else if (status == OrderStatus.proccessing) {
+      lastDoc = lastPendingOrder;
+    } else {
+      lastDoc = lastCompletedOrder;
+    }
+
     if (isNew) {
       lastDoc = null;
     }
@@ -321,8 +364,10 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         if (orderqs.docs.isNotEmpty) {
           if (status == OrderStatus.Pending) {
             lastPendingOrder = orderqs.docs[orderqs.docs.length - 1];
+          } else if (status == OrderStatus.proccessing) {
+            lastProccessingOrder = orderqs.docs[orderqs.docs.length - 1];
           } else {
-            lastDeliveredOrder = orderqs.docs[orderqs.docs.length - 1];
+            lastCompletedOrder = orderqs.docs[orderqs.docs.length - 1];
           }
         }
       } else {
@@ -346,6 +391,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       OrderModel orderModel = OrderModel.fromFirebase(snap);
       orders.add(orderModel);
     }
+
+    print("orders: ${orders.length}");
 
     return orders;
   }
@@ -776,12 +823,14 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
   @override
   Future<List<EmployeeActivityModel>> getEmployeeeActivities(
-      String employeeId, int? quantity,
+      String? employeeId, int? quantity,
       {bool isNew = true}) async {
     if (isNew) {
       lastEmployeeActivity = null;
     }
-    final ds = lastEmployeeActivity == null
+    QuerySnapshot? ds;
+
+    ds = lastEmployeeActivity == null
         ? await firebaseFirestore
             .collection(FirebaseConstants.employeeActivity)
             .where("employeeId", isEqualTo: employeeId)
@@ -807,4 +856,50 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
     return lst;
   }
+
+  @override
+  Future<List> search(
+    String firebasePath,
+    String key,
+    String val,
+    SearchType searchType,
+  ) async {
+    QuerySnapshot? ds;
+    if (searchType == SearchType.normalOrder) {
+      ds = await firebaseFirestore
+          .collection(firebasePath)
+          .orderBy(key)
+          .startAt([val])
+          .limit(numOfDocToGet)
+          .get();
+    } else if (searchType == SearchType.fromArrayOfValEmployeeActivitty) {
+      ds = await firebaseFirestore
+          .collection(firebasePath)
+          .where(key, arrayContains: val)
+          .get();
+    } else if (searchType == SearchType.normalreviews) {
+      ds = await firebaseFirestore
+          .collection(firebasePath)
+          .where(key, isEqualTo: val)
+          .get();
+    }
+    List lst = [];
+
+    for (var data in ds!.docs) {
+      if (searchType == SearchType.normalOrder) {
+        lst.add(OrderModel.fromFirebase(data));
+      } else if (searchType == SearchType.fromArrayOfValEmployeeActivitty) {
+        lst.add(EmployeeActivityModel.fromMap(data));
+      } else if (searchType == SearchType.normalreviews) {
+        lst.add(ReviewModel.fromMap(data));
+      }
+    }
+    return lst;
+  }
+}
+
+enum SearchType {
+  normalOrder,
+  fromArrayOfValEmployeeActivitty,
+  normalreviews,
 }

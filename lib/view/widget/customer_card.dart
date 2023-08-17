@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zenbaba_funiture/view/Pages/customer_details_page.dart';
 
 import '../../constants.dart';
 import '../../data/model/cutomer_model.dart';
-import '../Pages/add_cutomer.dart';
 
 class CustomerCard extends StatelessWidget {
   final CustomerModel customerModel;
@@ -15,7 +16,7 @@ class CustomerCard extends StatelessWidget {
     return ListTile(
       onTap: () {
         Get.to(
-          () => AddCutomer(
+          () => CustomerDetailsPage(
             customerModel: customerModel,
           ),
         );
@@ -26,7 +27,12 @@ class CustomerCard extends StatelessWidget {
               ? const Icon(Icons.male)
               : const Icon(Icons.female)),
       title: Text(customerModel.name),
-      subtitle: Text("${customerModel.sefer}, ${customerModel.kk}"),
+      subtitle: Text(
+        "${customerModel.sefer}, ${customerModel.kk}",
+        style: TextStyle(
+          color: textColor,
+        ),
+      ),
       trailing: SizedBox(
         width: 100,
         child: Row(
@@ -35,16 +41,23 @@ class CustomerCard extends StatelessWidget {
               onPressed: () {
                 launchUrl(Uri.parse("tel://${customerModel.phone}"));
               },
-              icon: const Icon(Icons.call),
+              icon: Icon(
+                Icons.call,
+                color: textColor,
+              ),
             ),
             IconButton(
-              onPressed: () {
-                if (customerModel.location != " ") {
-                  launchUrl(Uri.parse(customerModel.location));
-                }
-              },
-              icon: const Icon(Icons.map),
-            )
+                onPressed: () async {
+                  if (await canLaunchUrl(Uri.parse(customerModel.location))) {
+                    await launchUrl(Uri.parse(customerModel.location));
+                  }
+                },
+                icon: SvgPicture.asset(
+                  'assets/pickup.svg',
+                  color: textColor,
+                  height: 25,
+                  width: 25,
+                ))
           ],
         ),
       ),

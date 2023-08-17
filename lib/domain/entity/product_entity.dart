@@ -5,6 +5,7 @@ class ProductEntity extends Equatable {
   final String? id;
   final String name;
   final String sku;
+  final String size;
   final String category;
   final String description;
   final List<dynamic> images;
@@ -18,10 +19,20 @@ class ProductEntity extends Equatable {
     required this.description,
     required this.images,
     required this.price,
-    required this.tags
+    required this.tags,
+    required this.size,
   });
 
   @override
-  List<Object?> get props =>
-      [id, name, sku, category, description, images, price, tags];
+  List<Object?> get props => [
+        id,
+        name,
+        sku,
+        category,
+        description,
+        images,
+        price,
+        tags,
+        size,
+      ];
 }

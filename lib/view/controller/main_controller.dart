@@ -11,6 +11,7 @@ import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
 
 import '../../base_usecase.dart';
 import '../../constants.dart';
+import '../../data/data_src/database_data_src.dart';
 import '../../data/model/cutomer_model.dart';
 import '../../data/model/employee_activity_model.dart';
 import '../../data/model/expense_chart_model.dart';
@@ -44,6 +45,7 @@ import '../../domain/usecase/get_users_usecase.dart';
 import '../../domain/usecase/search_customers_usecase.dart';
 import '../../domain/usecase/search_expense_usecase.dart';
 import '../../domain/usecase/search_products_usecase.dart';
+import '../../domain/usecase/search_usecase.dart';
 import '../../domain/usecase/update_cutomer_usecase.dart';
 import '../../domain/usecase/update_expense_usecase.dart';
 import '../../domain/usecase/update_item_usecase.dart';
@@ -86,7 +88,9 @@ class MainConntroller extends GetxController {
   RxList<ExpenseModel> unPayedExpenses = <ExpenseModel>[].obs;
   RxList<ExpenseModel> searchExpenses = <ExpenseModel>[].obs;
   RxList<OrderModel> pendingOrders = <OrderModel>[].obs;
-  RxList<OrderModel> deliveredOrders = <OrderModel>[].obs;
+  RxList<OrderModel> processingOrders = <OrderModel>[].obs;
+  RxList<OrderModel> completedOrders = <OrderModel>[].obs;
+  // RxList<OrderModel> searchorders = <OrderModel>[].obs;
   RxList<ExpenseChartModel> expensesChart = <ExpenseChartModel>[].obs;
   RxList<OrderChartModel> ordersChart = <OrderChartModel>[].obs;
   RxList<ProductModel> products = <ProductModel>[].obs;
@@ -123,6 +127,7 @@ class MainConntroller extends GetxController {
   SearchExpenseUsecase searchExpenseUsecase;
   AddUpdateEmployeeUsecase addUpdateEmployeeUsecase;
   GetEmployeeUsecase getEmployeeUsecase;
+  SearchUsecase searchUsecase;
   GetEmployeeActivitiesUsecase getEmployeeActivitiesUsecase;
   AddUpdateEmployeeActivityUsecase addUpdateEmployeeActivityUsecase;
 
@@ -159,6 +164,7 @@ class MainConntroller extends GetxController {
     this.getEmployeeUsecase,
     this.addUpdateEmployeeActivityUsecase,
     this.getEmployeeActivitiesUsecase,
+    this.searchUsecase,
   );
 
   setCurrentTabIndex(int val) {
@@ -172,6 +178,37 @@ class MainConntroller extends GetxController {
 
   toggleAddDialogue() {
     isAddDialogueOpen.value = !isAddDialogueOpen.value;
+  }
+
+  // Search
+  Future<List> search(
+    String firebasePath,
+    String key,
+    String val,
+    SearchType searchType,
+  ) async {
+    // getOrdersStatus.value = RequestState.loading;
+
+    final res = await searchUsecase.call(
+      Search1Params(
+        firebasePath: firebasePath,
+        key: key,
+        val: val,
+        searchType: searchType,
+      ),
+    );
+
+    List searchLst = [];
+
+    res.fold((l) {
+      // getOrdersStatus.value = RequestState.error;
+      toast(l.toString(), ToastType.error);
+    }, (r) {
+      // getOrdersStatus.value = RequestState.loaded;
+      searchLst = r;
+    });
+
+    return searchLst;
   }
 
   // employeees
@@ -243,7 +280,7 @@ class MainConntroller extends GetxController {
     );
   }
 
-  getEmployees() async {
+  Future<void> getEmployees() async {
     getEmployeeStatus.value = RequestState.loading;
 
     final res = await getEmployeeUsecase.call(const NoParameters());
@@ -257,8 +294,11 @@ class MainConntroller extends GetxController {
     });
   }
 
-  Future<void> getEmployeeActivity(String employeeId,
-      {int? quantity, bool isNew = true}) async {
+  Future<void> getEmployeeActivity(
+    String? employeeId, {
+    int? quantity,
+    bool isNew = true,
+  }) async {
     if (isNew) {
       employeesActivities.value = [];
       getEmployeeActivityStatus.value = RequestState.loading;
@@ -266,7 +306,7 @@ class MainConntroller extends GetxController {
 
     final res = await getEmployeeActivitiesUsecase.call(
       GetEmployeeActivityParams(
-        employeeId,
+        employeeId!,
         quantity,
         isNew: isNew,
       ),
@@ -689,21 +729,27 @@ class MainConntroller extends GetxController {
     }, (r) {
       getOrdersStatus.value = RequestState.loaded;
 
+      String? currentDate = pref.getString("CurrentDate");
+      String today = DateTime.now().toString().split(" ")[0];
+
       if (status == OrderStatus.Pending) {
         if (isNew) {
-          String? currentDate = pref.getString("CurrentDate");
-          String today = DateTime.now().toString().split(" ")[0];
-
           pendingOrders.value = r;
-          pendingOrders.sort((a, b) => DateTime.parse(a.finishedDate)
-              .compareTo(DateTime.parse(b.finishedDate)));
+        } else {
+          pendingOrders.addAll(r);
+        }
+        pendingOrders.sort((a, b) => DateTime.parse(b.finishedDate)
+            .compareTo(DateTime.parse(a.finishedDate)));
+      } else if (status == OrderStatus.proccessing) {
+        if (isNew) {
+          processingOrders.value = r;
 
           if (currentDate == null || currentDate != today) {
             pref.setString("CurrentDate", today);
 
-            final list = pendingOrders.length <= 3
-                ? pendingOrders
-                : pendingOrders.sublist(0, 3);
+            final list = processingOrders.length <= 3
+                ? processingOrders
+                : processingOrders.sublist(0, 3);
 
             int i = 0;
             for (OrderModel orderModel in list) {
@@ -713,27 +759,25 @@ class MainConntroller extends GetxController {
               NotificationService().showNotification(
                 i,
                 orderModel.productName,
-                "for: ${orderModel.customerName},   $daysLeft days left",
+                "for: ${orderModel.customerName},   ${daysLeft - 1} days left",
                 const Duration(days: 1),
               );
               i++;
             }
           }
         } else {
-          pendingOrders.addAll(r);
-          pendingOrders.sort((a, b) => DateTime.parse(a.finishedDate)
-              .compareTo(DateTime.parse(b.finishedDate)));
+          processingOrders.addAll(r);
         }
+        processingOrders.sort((a, b) => DateTime.parse(a.finishedDate)
+            .compareTo(DateTime.parse(b.finishedDate)));
       } else {
         if (isNew) {
-          deliveredOrders.value = r;
-          deliveredOrders.sort((a, b) => DateTime.parse(a.finishedDate)
-              .compareTo(DateTime.parse(b.finishedDate)));
+          completedOrders.value = r;
         } else {
-          deliveredOrders.addAll(r);
-          deliveredOrders.sort((a, b) => DateTime.parse(a.finishedDate)
-              .compareTo(DateTime.parse(b.finishedDate)));
+          completedOrders.addAll(r);
         }
+        completedOrders.sort((a, b) => DateTime.parse(a.finishedDate)
+            .compareTo(DateTime.parse(b.finishedDate)));
       }
     });
   }
@@ -770,6 +814,7 @@ class MainConntroller extends GetxController {
     res.fold((l) {
       orderStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
+      print(l.toString());
     }, (r) {
       orderStatus.value = RequestState.loaded;
       Get.back();
@@ -781,7 +826,11 @@ class MainConntroller extends GetxController {
     });
   }
 
-  updateOrder(OrderModel orderModel, String prevState) async {
+  updateOrder(
+    OrderModel orderModel,
+    String prevState, {
+    bool isBack = true,
+  }) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -798,7 +847,10 @@ class MainConntroller extends GetxController {
       toast(l.toString(), ToastType.error);
     }, (r) {
       orderStatus.value = RequestState.loaded;
-      Get.back();
+
+      if (isBack) {
+        Get.back();
+      }
     });
   }
 
@@ -919,12 +971,14 @@ class MainConntroller extends GetxController {
     });
   }
 
-  addCustomer(CustomerModel customerModel) async {
+  Future<String?> addCustomer(CustomerModel customerModel) async {
     var connectivityResult = await Connectivity().checkConnectivity();
+
+    String? cid;
 
     if (connectivityResult == ConnectivityResult.none) {
       toast("No Network", ToastType.error);
-      return;
+      return null;
     }
 
     customerStatus.value = RequestState.loading;
@@ -934,10 +988,13 @@ class MainConntroller extends GetxController {
       customerStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
     }, (r) {
+      cid = r;
       customerStatus.value = RequestState.loaded;
       toast("New Customer is Added", ToastType.success);
       Get.back();
     });
+
+    return cid;
   }
 
   updateCustomer(CustomerModel customerModel) async {

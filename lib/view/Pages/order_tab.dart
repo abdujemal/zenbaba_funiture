@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -41,11 +43,11 @@ class _OrderTabState extends State<OrderTab>
           isNew: false,
         );
         pageNum = pageNum + 1;
-        if (selectedTabIndex == 0) {
-          print("${mainConntroller.pendingOrders.length} orders");
-        } else {
-          print("${mainConntroller.deliveredOrders.length} orders");
-        }
+        // if (selectedTabIndex == 0) {
+        //   print("${mainConntroller.pendingOrders.length} orders");
+        // } else {
+        //   print("${mainConntroller.deliveredOrders.length} orders");
+        // }
       }
     }
   }
@@ -78,22 +80,6 @@ class _OrderTabState extends State<OrderTab>
               },
               icon: const Icon(Icons.qr_code_scanner),
             ),
-            IconButton(
-              onPressed: () {
-                mainConntroller.getOrders(
-                  quantity: numOfDocToGet,
-                  status: OrderStatus.Pending,
-                );
-                mainConntroller.getOrders(
-                  quantity: numOfDocToGet,
-                  status: OrderStatus.Delivered,
-                );
-              },
-              icon: const Icon(
-                Icons.refresh_rounded,
-                size: 30,
-              ),
-            )
           ],
         ),
         body: Column(
@@ -135,7 +121,7 @@ class _OrderTabState extends State<OrderTab>
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 40, top: 10),
+                padding: const EdgeInsets.only(bottom: 10, top: 10),
                 child: Obx(
                   () {
                     List<dynamic> orders = [];
@@ -155,7 +141,9 @@ class _OrderTabState extends State<OrderTab>
 
                     for (OrderModel orderModel in selectedTabIndex == 0
                         ? mainConntroller.pendingOrders
-                        : mainConntroller.deliveredOrders) {
+                        : selectedTabIndex == 1
+                            ? mainConntroller.processingOrders
+                            : mainConntroller.completedOrders) {
                       if (currentDate != orderModel.finishedDate) {
                         if (today == orderModel.finishedDate) {
                           orders.add("Today");
@@ -185,7 +173,13 @@ class _OrderTabState extends State<OrderTab>
                       );
                     }
                     if (selectedTabIndex == 1 &&
-                        mainConntroller.deliveredOrders.isEmpty) {
+                        mainConntroller.processingOrders.isEmpty) {
+                      return const Center(
+                        child: Text("No Orders."),
+                      );
+                    }
+                    if (selectedTabIndex == 2 &&
+                        mainConntroller.completedOrders.isEmpty) {
                       return const Center(
                         child: Text("No Orders."),
                       );
@@ -195,30 +189,51 @@ class _OrderTabState extends State<OrderTab>
                         Expanded(
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: ListView.builder(
-                              controller: controller,
-                              // physics: const BouncingScrollPhysics(),
-                              itemCount: orders.length,
-                              itemBuilder: (context, index) {
-                                if (orders[index].runtimeType.toString() ==
-                                    "String") {
-                                  return DateItem(
-                                    date: orders[index],
-                                    style: orders[index] == "Finished orders"
-                                        ? TextStyle(
-                                            color: primaryColor, fontSize: 18)
-                                        : null,
-                                  );
-                                } else {
-                                  return OrderItem(
-                                    isFinished: orders[index].status ==
-                                        OrderStatus.Delivered,
-                                    isDelivery: orders[index].deliveryOption ==
-                                        DeliveryOption.delivery,
-                                    orderModel: orders[index],
-                                  );
-                                }
+                            child: RefreshIndicator(
+                              color: primaryColor,
+                              onRefresh: () async {
+                                await mainConntroller.getOrders(
+                                  quantity: numOfDocToGet,
+                                  status: OrderStatus.Pending,
+                                );
+                                await mainConntroller.getOrders(
+                                  quantity: numOfDocToGet,
+                                  status: OrderStatus.proccessing,
+                                );
+                                await mainConntroller.getOrders(
+                                  quantity: numOfDocToGet,
+                                  status: OrderStatus.Delivered,
+                                );
                               },
+                              backgroundColor: backgroundColor,
+                              child: ListView.builder(
+                                controller: controller,
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: orders.length,
+                                itemBuilder: (context, index) {
+                                  if (orders[index].runtimeType.toString() ==
+                                      "String") {
+                                    return DateItem(
+                                      date: orders[index],
+                                      style: orders[index] == "Finished orders"
+                                          ? TextStyle(
+                                              color: primaryColor,
+                                              fontSize: 18,
+                                            )
+                                          : null,
+                                    );
+                                  } else {
+                                    return OrderItem(
+                                      isFinished: orders[index].status ==
+                                          OrderStatus.completed,
+                                      isDelivery:
+                                          orders[index].deliveryOption ==
+                                              DeliveryOption.delivery,
+                                      orderModel: orders[index],
+                                    );
+                                  }
+                                },
+                              ),
                             ),
                           ),
                         ),

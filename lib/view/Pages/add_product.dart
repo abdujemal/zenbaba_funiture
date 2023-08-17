@@ -22,19 +22,19 @@ class AddProduct extends StatefulWidget {
 }
 
 class _AddProductState extends State<AddProduct> {
-  var productNameTc = TextEditingController();
+  TextEditingController productNameTc = TextEditingController();
 
-  var productSkuTc = TextEditingController();
+  TextEditingController productSkuTc = TextEditingController();
 
-  var selectedCategory = ProductCategory.BadyBed;
+  String selectedCategory = ProductCategory.BadyBed;
 
-  var productPriceTc = TextEditingController();
+  TextEditingController productPriceTc = TextEditingController();
 
-  var productDescriptionTc = TextEditingController();
+  TextEditingController sizeTc = TextEditingController();
 
-  var _controller = TextfieldTagsController();
+  TextEditingController productDescriptionTc = TextEditingController();
 
-  var _distanceToField;
+  TextfieldTagsController _controller = TextfieldTagsController();
 
   List<String> initialTags = [];
 
@@ -47,6 +47,8 @@ class _AddProductState extends State<AddProduct> {
   List<String> urlImages = [];
 
   List<File?> imageFromUrls = [];
+
+  var _distanceToField;
 
   @override
   void didChangeDependencies() {
@@ -64,6 +66,7 @@ class _AddProductState extends State<AddProduct> {
       selectedCategory = widget.productModel!.category;
       productPriceTc.text = widget.productModel!.price.toString();
       productDescriptionTc.text = widget.productModel!.description;
+      sizeTc.text = widget.productModel!.size;
       initialTags = widget.productModel!.tags.map((e) => e as String).toList();
       setImageFile();
     }
@@ -78,6 +81,7 @@ class _AddProductState extends State<AddProduct> {
     productNameTc.dispose();
     productSkuTc.dispose();
     productPriceTc.dispose();
+    sizeTc.dispose();
     productDescriptionTc.dispose();
     _controller.dispose();
     super.dispose();
@@ -188,9 +192,7 @@ class _AddProductState extends State<AddProduct> {
             initialTags: initialTags,
             letterCase: LetterCase.normal,
             validator: (String tag) {
-              if (tag == 'php') {
-                return 'No, please just no';
-              } else if (_controller.getTags!.contains(tag)) {
+              if (_controller.getTags!.contains(tag)) {
                 return 'you already entered that';
               }
               return null;
@@ -360,6 +362,18 @@ class _AddProductState extends State<AddProduct> {
                 const SizedBox(
                   height: 15,
                 ),
+                SLInput(
+                  title: "Size",
+                  hint: '120m',
+                  inputColor: whiteColor,
+                  otherColor: textColor,
+                  keyboardType: TextInputType.text,
+                  controller: sizeTc,
+                  isOutlined: true,
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
                 MyDropdown(
                   value: selectedCategory,
                   list: ProductCategory.list,
@@ -434,6 +448,7 @@ class _AddProductState extends State<AddProduct> {
                                                 price: double.parse(
                                                     productPriceTc.text),
                                                 tags: _controller.getTags!,
+                                                size: sizeTc.text,
                                               ),
                                               selectedImages);
                                         } else {
@@ -445,17 +460,19 @@ class _AddProductState extends State<AddProduct> {
                                       } else {
                                         mainConntroller.updateProduct(
                                             ProductModel(
-                                                id: widget.productModel!.id,
-                                                name: productNameTc.text,
-                                                sku: productSkuTc.text,
-                                                category: selectedCategory,
-                                                description:
-                                                    productDescriptionTc.text,
-                                                images:
-                                                    widget.productModel!.images,
-                                                price: double.parse(
-                                                    productPriceTc.text),
-                                                tags: _controller.getTags!),
+                                              id: widget.productModel!.id,
+                                              name: productNameTc.text,
+                                              sku: productSkuTc.text,
+                                              category: selectedCategory,
+                                              description:
+                                                  productDescriptionTc.text,
+                                              images:
+                                                  widget.productModel!.images,
+                                              price: double.parse(
+                                                  productPriceTc.text),
+                                              tags: _controller.getTags!,
+                                              size: sizeTc.text,
+                                            ),
                                             selectedImages);
                                       }
                                     } else {

@@ -494,6 +494,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                             numOfItems,
                                         expenseStatus: expenseState,
                                         date: startDate!,
+                                        employeeId: ""!,
                                         seller: sellerTc.text),
                                     goBack: false,
                                   );

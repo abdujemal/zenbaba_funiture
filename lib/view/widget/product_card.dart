@@ -96,19 +96,7 @@ class _ProductCardState extends State<ProductCard> {
                                       : InkWell(
                                           onTap: widget.onClickImage,
                                           child: Ink(
-                                            child:
-                                                //     Container(
-                                                //   height: 110,
-                                                //   width: 110,
-                                                //   decoration: BoxDecoration(
-                                                //     image: DecorationImage(
-                                                //       image: FileImage(snap.data!),
-                                                //       fit: BoxFit.cover,
-                                                //     ),
-                                                //   ),
-                                                // )
-
-                                                Image.file(
+                                            child: Image.file(
                                               snap.data!,
                                               width: 110,
                                               height: 110,
@@ -178,28 +166,34 @@ class _ProductCardState extends State<ProductCard> {
                 height: 10,
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: List.generate(
-                  widget.productModel.tags.length,
-                  (index) => GestureDetector(
-                    onTap: () {
-                      mainConntroller.searchProducts(
-                          "name", "#${widget.productModel.tags[index]}", 5);
-                      Get.to(() => SearchPage(
-                            path: FirebaseConstants.products,
-                            tag: "#${widget.productModel.tags[index]}",
-                          ));
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(5),
-                      child: Text(
-                        "#${widget.productModel.tags[index]} ",
-                        style: const TextStyle(
-                            color: Color.fromARGB(255, 125, 196, 255)),
+                children: [
+                  Text("Size: ${widget.productModel.size}"),
+                  const Spacer(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: List.generate(
+                      widget.productModel.tags.length,
+                      (index) => GestureDetector(
+                        onTap: () {
+                          mainConntroller.searchProducts(
+                              "name", "#${widget.productModel.tags[index]}", 5);
+                          Get.to(() => SearchPage(
+                                path: FirebaseConstants.products,
+                                tag: "#${widget.productModel.tags[index]}",
+                              ));
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(5),
+                          child: Text(
+                            "#${widget.productModel.tags[index]} ",
+                            style: const TextStyle(
+                                color: Color.fromARGB(255, 125, 196, 255)),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               )
             ],
           ),

@@ -11,7 +11,8 @@ class SpecialDropdown<T> extends StatefulWidget {
   final Color? bgColor;
   final Color? titleColor;
   final void Function(dynamic value) onChange;
-  const SpecialDropdown({
+  List<DropdownMenuItem<T>>? items;
+  SpecialDropdown({
     super.key,
     required this.title,
     this.margin,
@@ -19,20 +20,27 @@ class SpecialDropdown<T> extends StatefulWidget {
     required this.width,
     required this.list,
     required this.onChange,
+    this.items,
     this.bgColor,
     this.titleColor,
   });
 
   @override
-  State<SpecialDropdown> createState() => _SpecialDropdownState<T>(list);
+  // ignore: no_logic_in_create_state
+  State<SpecialDropdown<T>> createState() => _SpecialDropdownState<T>(list);
 }
 
-class _SpecialDropdownState<T> extends State<SpecialDropdown> {
+class _SpecialDropdownState<T> extends State<SpecialDropdown<T>> {
   final List<T> list;
   _SpecialDropdownState(this.list);
   @override
   Widget build(BuildContext context) {
-    // var name;
+    widget.items ??= list
+        .map(
+          (e) => DropdownMenuItem<T>(value: e, child: Text(e.toString())),
+        )
+        .toList();
+
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: widget.margin ?? 23),
       child: Column(
@@ -45,7 +53,7 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
               style: TextStyle(color: widget.titleColor ?? textColor),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 10,
           ),
           Container(
@@ -57,31 +65,14 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown> {
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<T>(
-                  // Initial Value
-                  value: widget.value,
-
-                  // Down Arrow Icon
-                  icon: const Icon(Icons.keyboard_arrow_down),
-                  dropdownColor: backgroundColor,
-                  // Array list of items
-                  iconEnabledColor: textColor,
-                  items: list
-                      .map(
-                        (e) => DropdownMenuItem<T>(
-                          value: e,
-                          child: Text(
-                            e.toString(),
-                            // style: TextStyle(color: textColor),
-                          ),
-                        ),
-                      )
-                      .toList(),
-                  // After selecting the desired option,it will
-                  // change button value to selected value
-                  onChanged: widget.onChange
-                  // expenseCategoryTc.text = newValue;
-
-                  ),
+                padding: const EdgeInsets.all(4),
+                value: widget.value,
+                icon: const Icon(Icons.keyboard_arrow_down),
+                dropdownColor: backgroundColor,
+                iconEnabledColor: textColor,
+                items: widget.items,
+                onChanged: widget.onChange,
+              ),
             ),
           ),
         ],

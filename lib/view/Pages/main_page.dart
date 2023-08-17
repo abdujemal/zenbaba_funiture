@@ -39,7 +39,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       length: 4,
       vsync: this,
     );
-
     super.initState();
   }
 

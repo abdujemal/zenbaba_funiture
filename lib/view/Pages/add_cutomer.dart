@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
 import '../../data/model/cutomer_model.dart';
 import '../controller/main_controller.dart';
 import '../widget/custom_btn.dart';
-import '../widget/my_dropdown.dart';
 import '../widget/sl_input.dart';
 
 class AddCutomer extends StatefulWidget {
@@ -95,7 +95,7 @@ class _AddCutomerState extends State<AddCutomer> {
               const SizedBox(
                 height: 15,
               ),
-              MyDropdown(
+              SpecialDropdown<String>(
                 value: selectedGender,
                 width: double.infinity,
                 list: Gender.list,
@@ -109,7 +109,7 @@ class _AddCutomerState extends State<AddCutomer> {
               const SizedBox(
                 height: 20,
               ),
-              MyDropdown(
+              SpecialDropdown<String>(
                 value: selectedSource,
                 width: double.infinity,
                 list: CustomerSource.list,
@@ -136,7 +136,7 @@ class _AddCutomerState extends State<AddCutomer> {
                 height: 15,
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 23),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -153,17 +153,22 @@ class _AddCutomerState extends State<AddCutomer> {
                       isOutlined: true,
                       margin: 10,
                     ),
-                    MyDropdown(
-                      value: selectedKK,
-                      margin: 10,
-                      list: KK.list,
-                      title: "Kifle Ketema",
-                      width: 200,
-                      onChange: (value) {
-                        setState(() {
-                          selectedKK = value!;
-                        });
-                      },
+                    const SizedBox(
+                      width: 10,
+                    ),
+                    Expanded(
+                      child: SpecialDropdown<String>(
+                        value: selectedKK,
+                        margin: 0,
+                        list: KK.list,
+                        title: "Kifle Ketema",
+                        width: 200,
+                        onChange: (value) {
+                          setState(() {
+                            selectedKK = value!;
+                          });
+                        },
+                      ),
                     )
                   ],
                 ),
@@ -259,7 +264,9 @@ class _AddCutomerState extends State<AddCutomer> {
                   ],
                 );
               }),
-              const SizedBox(height: 30,)
+              const SizedBox(
+                height: 30,
+              )
             ],
           ),
         ),

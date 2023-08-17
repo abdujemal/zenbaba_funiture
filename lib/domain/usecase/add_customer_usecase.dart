@@ -5,11 +5,11 @@ import '../../base_usecase.dart';
 import '../../data/model/cutomer_model.dart';
 import '../repo/database_repo.dart';
 
-class AddCustomerUsecase extends BaseUseCase<void, AddCutomerParams> {
+class AddCustomerUsecase extends BaseUseCase<String, AddCutomerParams> {
   DatabaseRepo databaseRepo;
   AddCustomerUsecase(this.databaseRepo);
   @override
-  Future<Either<Exception, void>> call(AddCutomerParams parameters) async {
+  Future<Either<Exception, String>> call(AddCutomerParams parameters) async {
     final res = await databaseRepo.addCustomer(parameters.customerModel);
     return res;
   }

@@ -7,14 +7,15 @@ class LeftLined extends StatelessWidget {
   final VoidCallback onTap;
   final bool isLast;
   final Widget child;
+  final double pt;
   const LeftLined({
     super.key,
     required this.circleColor,
-    this.topHeight = double.infinity,
+    this.topHeight = 35,
     required this.onTap,
-    required this.isLast, 
+    required this.isLast,
     required this.child,
-    
+    this.pt = 10,
   });
 
   @override
@@ -37,70 +38,16 @@ class LeftLined extends StatelessWidget {
             margin: const EdgeInsets.only(left: 2.7),
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 20),
-              padding: const EdgeInsets.symmetric(vertical: 10),
+              padding: EdgeInsets.only(top: pt, bottom: pt),
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(
                     color: whiteColor,
-                    width: .2,
+                    width: .5,
                   ),
                 ),
               ),
               child: child,
-              // child: Row(
-              //   children: [
-              //     Column(
-              //       children: [
-              //         Text(
-              //           DateFormat("EEE, MMM dd, yyyy").format(
-              //             (DateTime.parse(widget.employeeActivityModel.date)),
-              //           ),
-              //           style: const TextStyle(fontWeight: FontWeight.w200),
-              //         ),
-              //         if (widget.employeeActivityModel.orders.isNotEmpty)
-              //           ...List.generate(
-              //             widget.employeeActivityModel.orders.length,
-              //             (index) => Text(
-              //               widget.employeeActivityModel.orders[index],
-              //               style: TextStyle(color: primaryColor),
-              //             ),
-              //           ),
-              //         if (widget.employeeActivityModel.orders.isEmpty)
-              //           Center(
-              //             child: Text(
-              //               "...",
-              //               style: TextStyle(color: primaryColor),
-              //             ),
-              //           ),
-              //         if (widget.employeeActivityModel.itemsUsed.isNotEmpty)
-              //           const Text("Item used"),
-              //         if (widget.employeeActivityModel.itemsUsed.isNotEmpty)
-              //           ...List.generate(
-              //             widget.employeeActivityModel.itemsUsed.length,
-              //             (index) => Text(
-              //               widget.employeeActivityModel.itemsUsed[index],
-              //             ),
-              //           ),
-              //       ],
-              //     ),
-              //     const Spacer(),
-              //     Column(
-              //       children: [
-              //         Text(
-              //           "morning & afternoon",
-              //           style: TextStyle(color: primaryColor),
-              //         ),
-              //         Text(
-              //           "$morning | $afternoon",
-              //           style: const TextStyle(
-              //             fontWeight: FontWeight.bold,
-              //           ),
-              //         )
-              //       ],
-              //     ),
-              //     const Spacer()
-              //   ],
-              // ),
             ),
           ),
         ),
@@ -108,7 +55,7 @@ class LeftLined extends StatelessWidget {
           Positioned(
             left: 2.7,
             child: Container(
-              height: 35,
+              height: topHeight,
               width: 1.5,
               decoration: BoxDecoration(
                 color: primaryColor,
@@ -116,7 +63,7 @@ class LeftLined extends StatelessWidget {
             ),
           ),
         Positioned(
-          top: 30,
+          top: topHeight,
           child: Container(
             height: 7,
             width: 7,
