@@ -6,7 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
 import 'package:zenbaba_funiture/data/model/order_model.dart';
 import 'package:zenbaba_funiture/data/model/review_model.dart';
+import 'package:zenbaba_funiture/view/Pages/add_order.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
+import 'package:zenbaba_funiture/view/widget/order_dialog.dart';
 import 'package:zenbaba_funiture/view/widget/review_item.dart';
 
 import '../../constants.dart';
@@ -59,14 +61,31 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              Get.dialog(
+                OrderDialog(
+                  orderModel: widget.orderModel,
+                ),
+                barrierColor: const Color.fromARGB(200, 0, 0, 0),
+              );
+            },
+            icon: const Icon(Icons.qr_code),
+          ),
+          IconButton(
+            onPressed: () {
+              Get.to(
+                () => AddOrder(
+                  orderModel: widget.orderModel,
+                ),
+              );
+            },
             icon: SvgPicture.asset(
               'assets/edit.svg',
               color: whiteColor,
               height: 20,
               width: 20,
             ),
-          )
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -93,7 +112,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     future: displayImage(
                         widget.orderModel.imgUrl,
                         '${widget.orderModel.productSku}0',
-                        FirebaseConstants.products),
+                        "${FirebaseConstants.products}/${widget.orderModel.productSku}"),
                     builder: (context, snapshot) {
                       return widget.orderModel.imgUrl == ""
                           ? const Icon(
@@ -348,7 +367,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         "Review",
                         style: TextStyle(fontSize: 17),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 10,
                       ),
                       ...List.generate(
@@ -359,7 +378,10 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         ),
                       ),
                     ],
-                  )
+                  ),
+            const SizedBox(
+              height: 20,
+            ),
           ],
         ),
       ),

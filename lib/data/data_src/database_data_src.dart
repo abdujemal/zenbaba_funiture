@@ -67,7 +67,13 @@ abstract class DatabaseDataSrc {
     bool isNew = true,
   });
   Future<List> search(
-      String firebasePath, String key, String val, SearchType searchType);
+    String firebasePath,
+    String key,
+    String val,
+    SearchType searchType, {
+    required String? key2,
+    required String? val2,
+  });
 }
 
 class DatabaseDataSrcImpl extends DatabaseDataSrc {
@@ -88,6 +94,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   DocumentSnapshot? lastUnpayedExpense;
   DocumentSnapshot? lastPayedExpense;
   DocumentSnapshot? lastEmployeeActivity;
+  DocumentSnapshot? lastItemHistory;
 
   @override
   Future<String> addCustomer(CustomerModel customerModel) async {
@@ -138,10 +145,16 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
   @override
   Future<void> addItem(ItemModel itemModel, File? file) async {
+    int id = Random().nextInt(999999);
+
+    String itemId =
+        "${List.generate(6 - "$id".length, (index) => "0").join()}$id";
+
     if (itemModel.image != null && file == null) {
       await firebaseFirestore
           .collection(FirebaseConstants.items)
-          .add(itemModel.toMap());
+          .doc(itemId)
+          .set(itemModel.toMap());
     } else {
       final ref = firebaseStorage
           .ref()
@@ -154,7 +167,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
       await firebaseFirestore
           .collection(FirebaseConstants.items)
-          .add(newItem.toMap());
+          .doc(itemId)
+          .set(newItem.toMap());
     }
   }
 
@@ -162,11 +176,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   Future<void> addItemHistory(
       ItemHistoryModel itemHistoryModel, String itemId) async {
     await firebaseFirestore
-        .collection(FirebaseConstants.items)
-        .doc(itemId)
-        .update({
-      'history': FieldValue.arrayUnion([itemHistoryModel.toMap()])
-    });
+        .collection(FirebaseConstants.itemsHistories)
+        .add(itemHistoryModel.toMap());
   }
 
   @override
@@ -494,7 +505,9 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
                   'unit': itemModel.unit,
                   'pricePerUnit': itemModel.pricePerUnit,
                   'description': itemModel.description,
-                  'quantity': quantity
+                  "lastUsedFor": itemModel.lastUsedFor,
+                  'quantity': quantity,
+                  'timeLine': itemModel.timeLine.map((x) => x.toMap()).toList(),
                 }
               : {
                   'image': itemModel.image,
@@ -503,6 +516,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
                   'unit': itemModel.unit,
                   'pricePerUnit': itemModel.pricePerUnit,
                   'description': itemModel.description,
+                  'timeLine': itemModel.timeLine.map((x) => x.toMap()).toList(),
                 });
     } else {
       final ref = firebaseStorage
@@ -862,15 +876,30 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     String firebasePath,
     String key,
     String val,
-    SearchType searchType,
-  ) async {
+    SearchType searchType, {
+    required String? key2,
+    required String? val2,
+  }) async {
     QuerySnapshot? ds;
     if (searchType == SearchType.normalOrder) {
+      ds = key2 == null
+          ? await firebaseFirestore
+              .collection(firebasePath)
+              .orderBy(key)
+              .startAt([val])
+              .limit(numOfDocToGet)
+              .get()
+          : await firebaseFirestore
+              .collection(firebasePath)
+              .where(key2, isEqualTo: val2)
+              .orderBy(key)
+              .startAt([val])
+              .limit(numOfDocToGet)
+              .get();
+    } else if (searchType == SearchType.specificOrder) {
       ds = await firebaseFirestore
           .collection(firebasePath)
-          .orderBy(key)
-          .startAt([val])
-          .limit(numOfDocToGet)
+          .where(key, isEqualTo: val)
           .get();
     } else if (searchType == SearchType.fromArrayOfValEmployeeActivitty) {
       ds = await firebaseFirestore
@@ -882,16 +911,31 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
           .collection(firebasePath)
           .where(key, isEqualTo: val)
           .get();
+    } else if (searchType == SearchType.normalItemHistories) {
+      if (val == "*") {
+        ds =
+            await firebaseFirestore.collection(firebasePath).orderBy(key).get();
+      } else {
+        ds = await firebaseFirestore
+            .collection(firebasePath)
+            .where(key, isEqualTo: val)
+            .get();
+      }
     }
     List lst = [];
 
     for (var data in ds!.docs) {
       if (searchType == SearchType.normalOrder) {
         lst.add(OrderModel.fromFirebase(data));
+      }
+      if (searchType == SearchType.specificOrder) {
+        lst.add(OrderModel.fromFirebase(data));
       } else if (searchType == SearchType.fromArrayOfValEmployeeActivitty) {
         lst.add(EmployeeActivityModel.fromMap(data));
       } else if (searchType == SearchType.normalreviews) {
         lst.add(ReviewModel.fromMap(data));
+      } else if (searchType == SearchType.normalItemHistories) {
+        lst.add(ItemHistoryModel.fromMap(data));
       }
     }
     return lst;
@@ -900,6 +944,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
 enum SearchType {
   normalOrder,
+  specificOrder,
   fromArrayOfValEmployeeActivitty,
   normalreviews,
+  normalItemHistories
 }

@@ -23,11 +23,11 @@ class _ProductTabState extends State<ProductTab>
 
   RequestState categoryStatus = RequestState.idle;
 
-  @override
-  void initState() {
-    super.initState();
-    // calculateQuantity();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   // calculateQuantity();
+  // }
 
   // calculateQuantity() async {
   //   categoryStatus = RequestState.loading;

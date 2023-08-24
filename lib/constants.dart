@@ -25,7 +25,7 @@ Color primaryColor = const Color(0xfff2bd57);
 
 Color whiteColor = const Color(0xfff7f7f7);
 
-Color textColor = const Color(0xff898989);
+Color textColor = const Color.fromARGB(255, 190, 190, 190);
 
 Color greyColor = const Color.fromARGB(255, 114, 137, 150);
 
@@ -296,6 +296,7 @@ class FirebaseConstants {
   static String employees = "employees";
   static String employeeActivity = "employees Activities";
   static String reviews = "reviews";
+  static String itemsHistories = 'Items Histories';
 }
 
 void toast(String message, ToastType toastType, {bool isLong = false}) {
@@ -342,28 +343,25 @@ Future<File?> displayImage(String? imgUrl, String name, String dir) async {
   }
 }
 
-Widget section({
-  required List<Widget> children,
-  double paddingv = 13,
-  double paddingh = 8,
-  double mv = 20,
-  double mh = 20,
-  double mb = 0
-}) {
+Widget section(
+    {required List<Widget> children,
+    double paddingv = 13,
+    double paddingh = 8,
+    double mv = 20,
+    double mh = 20,
+    double mb = 0,
+    double b = 10,
+    Color? bgColor,
+    CrossAxisAlignment? crossAxisAlignment}) {
   return Container(
-    margin: EdgeInsets.only(
-      top: mv,
-      left: mh,
-      right: mh,
-      bottom: mb
-    ),
+    margin: EdgeInsets.only(top: mv, left: mh, right: mh, bottom: mb),
     padding: EdgeInsets.symmetric(
       horizontal: paddingh,
       vertical: paddingv,
     ),
     width: double.infinity,
     decoration: BoxDecoration(
-      color: mainBgColor,
+      color: bgColor ?? mainBgColor,
       boxShadow: [
         BoxShadow(
           color: Colors.black.withAlpha(50),
@@ -372,10 +370,10 @@ Widget section({
           offset: const Offset(0, 0),
         )
       ],
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(b),
     ),
     child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: crossAxisAlignment ?? CrossAxisAlignment.start,
       children: children,
     ),
   );

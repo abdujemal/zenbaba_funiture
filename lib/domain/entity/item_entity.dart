@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../data/model/time_line_model.dart';
+
 class ItemEntity extends Equatable {
   final String? id;
   final String? image;
@@ -7,10 +9,13 @@ class ItemEntity extends Equatable {
   final String category;
   final String unit;
   final double pricePerUnit;
-  final String description;
+  final String description, lastUsedFor;
   final int quantity;
-  final List<dynamic> history;
+  final List<TimeLineModel> timeLine;
+
   const ItemEntity({
+    required this.lastUsedFor,
+    required this.timeLine,
     required this.id,
     required this.image,
     required this.name,
@@ -19,7 +24,6 @@ class ItemEntity extends Equatable {
     required this.pricePerUnit,
     required this.description,
     required this.quantity,
-    required this.history,
   });
 
   @override
@@ -34,6 +38,7 @@ class ItemEntity extends Equatable {
         pricePerUnit,
         description,
         quantity,
-        history
+        timeLine,
+        lastUsedFor,
       ];
 }

@@ -68,6 +68,8 @@ abstract class DatabaseRepo {
     String firebasePath,
     String key,
     String val,
-    SearchType searchType,
-  );
+    SearchType searchType, {
+    required String? key2,
+    required String? val2,
+  });
 }

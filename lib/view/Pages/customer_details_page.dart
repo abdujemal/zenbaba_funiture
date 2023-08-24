@@ -200,11 +200,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
               height: 30,
             ),
             orders.isEmpty
-                ? const SizedBox(
-                    height: 200,
-                    child: Center(
-                      child: Text("No Order"),
-                    ),
+                ? const Center(
+                    child: Text("No Order"),
                   )
                 : Expanded(
                     child: section(
@@ -241,18 +238,27 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                             itemBuilder: (context, index) {
                               DateTime currentDay =
                                   DateTime.parse(orders[index].finishedDate);
+
                               DateTime lastDay = index > 0
                                   ? DateTime.parse(
                                       orders[index - 1].finishedDate)
                                   : DateTime.parse(orders[index].finishedDate);
+
+                              DateTime nextDay = index < orders.length - 1
+                                  ? DateTime.parse(
+                                      orders[index + 1].finishedDate)
+                                  : DateTime.parse(orders[index].finishedDate);
+                                  
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  if (currentDay.compareTo(lastDay) >= 0)
+                                  if (currentDay.compareTo(lastDay) != 0 ||
+                                      index == 0)
                                     const SizedBox(
                                       height: 5,
                                     ),
-                                  if (currentDay.compareTo(lastDay) >= 0)
+                                  if (currentDay.compareTo(lastDay) != 0 ||
+                                      index == 0)
                                     Text(
                                       DateFormat("EEE / dd - MMMM").format(
                                         (DateTime.parse(
@@ -260,7 +266,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                                       ),
                                       style: TextStyle(color: textColor),
                                     ),
-                                  if (currentDay.compareTo(lastDay) >= 0)
+                                  if (currentDay.compareTo(lastDay) != 0 ||
+                                      index == 0)
                                     const SizedBox(
                                       height: 5,
                                     ),
@@ -268,7 +275,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                                     pt: 0,
                                     topHeight: 55,
                                     circleColor: primaryColor,
-                                    isLast: index == orders.length - 1,
+                                    isLast: index == orders.length - 1 || nextDay.compareTo(currentDay) > 0,
                                     onTap: () {},
                                     child: Column(
                                       children: [

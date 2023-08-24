@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../base_usecase.dart';
@@ -60,7 +59,7 @@ class LSController extends GetxController {
     });
   }
 
-  Future<Widget?> getUser() async {
+  Future<void> getUser() async {
     final res = await getUserUsecase.call(const NoParameters());
 
     res.fold((l) {

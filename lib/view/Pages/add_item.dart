@@ -3,11 +3,12 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 import '../../constants.dart';
 import '../../data/model/item_model.dart';
+import '../../data/model/time_line_model.dart';
 import '../controller/main_controller.dart';
 import '../widget/custom_btn.dart';
-import '../widget/my_dropdown.dart';
 import '../widget/sl_input.dart';
 
 class AddItem extends StatefulWidget {
@@ -63,7 +64,11 @@ class _AddItemState extends State<AddItem> {
 
   setImageFile() async {
     imageFromUrl = await displayImage(
-        urlImage, widget.itemModel!.id!, FirebaseConstants.items);
+      urlImage,
+      widget.itemModel!.id!,
+      FirebaseConstants.items,
+    );
+
     if (mounted) {
       setState(() {});
     }
@@ -113,7 +118,9 @@ class _AddItemState extends State<AddItem> {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: title(widget.itemModel != null ? "Item Detail" : "New Item"),
+        title: title(widget.itemModel != null
+            ? "Item#${widget.itemModel!.id}"
+            : "New Item"),
         leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () {
@@ -157,7 +164,7 @@ class _AddItemState extends State<AddItem> {
                 const SizedBox(
                   height: 15,
                 ),
-                MyDropdown(
+                SpecialDropdown<String>(
                   value: selectedCategory,
                   list: ItemCategory.list,
                   title: "Category",
@@ -171,7 +178,7 @@ class _AddItemState extends State<AddItem> {
                 const SizedBox(
                   height: 15,
                 ),
-                MyDropdown(
+                SpecialDropdown<String>(
                   value: selectedUnit,
                   list: Units.list,
                   title: "Unit",
@@ -199,7 +206,7 @@ class _AddItemState extends State<AddItem> {
                 ),
                 SLInput(
                   title: "Description",
-                  hint: 'add Description',
+                  hint: 'Description',
                   inputColor: whiteColor,
                   otherColor: textColor,
                   keyboardType: TextInputType.text,
@@ -224,37 +231,57 @@ class _AddItemState extends State<AddItem> {
                               onTap: () {
                                 if (itemFormState.currentState!.validate()) {
                                   if (widget.itemModel != null) {
+                                    List<TimeLineModel> timeLine =
+                                        widget.itemModel!.timeLine;
+
+                                    if (widget.itemModel!.pricePerUnit !=
+                                        double.parse(pricePerUnitTc.text)) {
+                                      // print("Not Equal price");
+                                      timeLine.add(
+                                        TimeLineModel(
+                                          date: DateTime.now().toString(),
+                                          price:
+                                              double.parse(pricePerUnitTc.text),
+                                        ),
+                                      );
+                                      print(timeLine
+                                          .map((x) => x.toMap())
+                                          .toList());
+                                    }
+
                                     if (selectedImage != null) {
                                       mainConntroller.updateItem(
                                         selectedImage!,
                                         ItemModel(
-                                          id: widget.itemModel!.id,
-                                          image: null,
-                                          name: itemNameTc.text,
-                                          category: selectedCategory,
-                                          unit: selectedUnit,
-                                          pricePerUnit:
-                                              double.parse(pricePerUnitTc.text),
-                                          description: itemDescriptionTc.text,
-                                          quantity: 0,
-                                          history: const [],
-                                        ),
+                                            id: widget.itemModel!.id,
+                                            image: null,
+                                            name: itemNameTc.text,
+                                            category: selectedCategory,
+                                            unit: selectedUnit,
+                                            pricePerUnit: double.parse(
+                                                pricePerUnitTc.text),
+                                            description: itemDescriptionTc.text,
+                                            quantity: 0,
+                                            timeLine: timeLine,
+                                            lastUsedFor:
+                                                widget.itemModel!.lastUsedFor),
                                       );
                                     } else {
                                       mainConntroller.updateItem(
                                         null,
                                         ItemModel(
-                                          id: widget.itemModel!.id,
-                                          image: urlImage,
-                                          name: itemNameTc.text,
-                                          category: selectedCategory,
-                                          unit: selectedUnit,
-                                          pricePerUnit:
-                                              double.parse(pricePerUnitTc.text),
-                                          description: itemDescriptionTc.text,
-                                          quantity: 0,
-                                          history: const [],
-                                        ),
+                                            id: widget.itemModel!.id,
+                                            image: urlImage,
+                                            name: itemNameTc.text,
+                                            category: selectedCategory,
+                                            unit: selectedUnit,
+                                            pricePerUnit: double.parse(
+                                                pricePerUnitTc.text),
+                                            description: itemDescriptionTc.text,
+                                            quantity: 0,
+                                            timeLine: timeLine,
+                                            lastUsedFor:
+                                                widget.itemModel!.lastUsedFor),
                                       );
                                     }
                                   } else {
@@ -270,7 +297,14 @@ class _AddItemState extends State<AddItem> {
                                             double.parse(pricePerUnitTc.text),
                                         description: itemDescriptionTc.text,
                                         quantity: 0,
-                                        history: const [],
+                                        lastUsedFor: "",
+                                        timeLine: [
+                                          TimeLineModel(
+                                            date: DateTime.now().toString(),
+                                            price: double.parse(
+                                                pricePerUnitTc.text),
+                                          )
+                                        ],
                                       ),
                                     );
                                   }

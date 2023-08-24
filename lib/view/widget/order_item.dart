@@ -75,7 +75,7 @@ class _OrderItemState extends State<OrderItem> {
                     future: displayImage(
                         widget.orderModel.imgUrl,
                         '${widget.orderModel.productSku}0',
-                        FirebaseConstants.products),
+                        "${FirebaseConstants.products}/${widget.orderModel.productSku}"),
                     builder: (context, snapshot) {
                       return widget.orderModel.imgUrl == ""
                           ? const Icon(

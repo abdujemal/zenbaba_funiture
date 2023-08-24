@@ -111,6 +111,7 @@ class _AccountPageState extends State<AccountPage> {
                   } else if (!v.isEmail) {
                     return "Email is not vaild.";
                   }
+                  return null;
                 },
                 inputColor: whiteColor,
                 title: "Email",
@@ -141,7 +142,6 @@ class _AccountPageState extends State<AccountPage> {
                   : SLBtn(
                       text: "Update",
                       onTap: () {
-                        
                         lsController.updateUser(usermodel.copyWith(
                             email: emailTc.text, name: nameTc.text));
                       });

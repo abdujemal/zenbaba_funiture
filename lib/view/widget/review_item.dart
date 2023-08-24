@@ -30,7 +30,7 @@ class ReviewItem extends StatelessWidget {
           if (showName)
             Text(
               reviewModel.customerName,
-              style: const TextStyle(fontSize: 17),
+              style: const TextStyle(fontSize: 15),
             ),
           if (showName)
             const SizedBox(
@@ -43,7 +43,7 @@ class ReviewItem extends StatelessWidget {
               color: Colors.amber,
             ),
             itemCount: 5,
-            itemSize: 20.0,
+            itemSize: 17,
             direction: Axis.horizontal,
           ),
           const SizedBox(
@@ -51,7 +51,7 @@ class ReviewItem extends StatelessWidget {
           ),
           Text(
             reviewModel.messege,
-            style: const TextStyle(fontSize: 17),
+            style: const TextStyle(fontSize: 15),
           ),
           const SizedBox(
             height: 3,

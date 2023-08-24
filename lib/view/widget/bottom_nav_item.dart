@@ -6,14 +6,15 @@ import '../../injection.dart';
 import '../controller/l_s_controller.dart';
 import '../controller/main_controller.dart';
 
+// ignore: must_be_immutable
 class BottomNavItem extends StatelessWidget {
-  String label;
-  IconData iconData;
-  IconData activeIcon;
-  int index;
-  void Function() onTap;
+  final String label;
+  final IconData iconData;
+  final IconData activeIcon;
+  final int index;
+  final void Function() onTap;
 
-  BottomNavItem(
+BottomNavItem(
       {Key? key,
       required this.activeIcon,
       required this.label,

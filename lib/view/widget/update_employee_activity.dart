@@ -7,10 +7,7 @@ import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 import 'package:zenbaba_funiture/data/model/order_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/custom_btn.dart';
-import 'package:zenbaba_funiture/view/widget/my_dropdown.dart';
-import 'package:zenbaba_funiture/view/widget/sl_btn.dart';
 import 'package:zenbaba_funiture/view/widget/sl_input.dart';
-import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 class UpdateEmployeeActivity extends StatefulWidget {
   final EmployeeActivityModel employeeActivityModel;
@@ -31,26 +28,6 @@ class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
   bool isRemove = false;
 
   MainConntroller mainConntroller = Get.find<MainConntroller>();
-
-  List<String> keys = [
-    "color",
-    "size",
-    'customerName',
-    'phoneNumber',
-    'productName',
-    'productSku',
-    'productDescription',
-    'quantity',
-    'orderedDate',
-    'finishedDate',
-    'status',
-    'sefer',
-    'customerSource',
-    'kk',
-    'paymentMethod',
-  ];
-
-  String selectedKey = "productName";
 
   OrderModel? selectedOrder;
 
@@ -81,8 +58,14 @@ class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
           return const Iterable<OrderModel>.empty();
         } else {
           if (mainConntroller.getOrdersStatus.value != RequestState.loading) {
-            final lst = await mainConntroller.search(FirebaseConstants.orders,
-                selectedKey, textEditingValue.text, SearchType.normalOrder);
+            final lst = await mainConntroller.search(
+              FirebaseConstants.orders,
+              "productName",
+              textEditingValue.text,
+              SearchType.normalOrder,
+              key2: 'status',
+              val2: OrderStatus.proccessing,
+            );
 
             return lst.map((e) => e as OrderModel);
           } else {
@@ -160,7 +143,7 @@ class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
-        height: 400,
+        height: 300,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(20),
@@ -188,26 +171,7 @@ class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Expanded(
-                  child: Column(
-                    children: [
-                      SpecialDropdown(
-                          title: "Key",
-                          titleColor: whiteColor,
-                          bgColor: backgroundColor,
-                          value: selectedKey,
-                          width: double.infinity,
-                          list: keys,
-                          onChange: (val) {
-                            setState(() {
-                              selectedKey = val;
-                            });
-                          }),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      orderSearch(),
-                    ],
-                  ),
+                  child: orderSearch(),
                 ),
                 const SizedBox(
                   width: 10,

@@ -47,33 +47,33 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     return Scaffold(
       backgroundColor: backgroundColor,
       bottomNavigationBar: BottomNav(controller: tabController!),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: GestureDetector(
-        onTap: () {
-          if (lsController.currentUser.value.priority !=
-              UserPriority.Delivery) {
-            mainConntroller.toggleAddDialogue();
-          } else {
-            toast("You can't add any thing.", ToastType.error);
-          }
-        },
-        child: Card(
-          color: whiteColor,
-          shape: const CircleBorder(),
-          child: Padding(
-            padding: const EdgeInsets.all(17.0),
-            child: Obx(() {
-              return Icon(
-                mainConntroller.isAddDialogueOpen.value
-                    ? FontAwesomeIcons.times
-                    : FontAwesomeIcons.plus,
-                size: 30,
-                color: primaryColor,
-              );
-            }),
-          ),
-        ),
-      ),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // floatingActionButton: GestureDetector(
+      //   onTap: () {
+      //     if (lsController.currentUser.value.priority !=
+      //         UserPriority.Delivery) {
+      //       mainConntroller.toggleAddDialogue();
+      //     } else {
+      //       toast("You can't add any thing.", ToastType.error);
+      //     }
+      //   },
+      // child: Card(
+      //   color: whiteColor,
+      //   shape: const CircleBorder(),
+      //   child: Padding(
+      //     padding: const EdgeInsets.all(17.0),
+      //     child: Obx(() {
+      //       return Icon(
+      //         mainConntroller.isAddDialogueOpen.value
+      //             ? FontAwesomeIcons.times
+      //             : FontAwesomeIcons.plus,
+      //         size: 30,
+      //         color: primaryColor,
+      //       );
+      //     }),
+      //   ),
+      // ),
+      // ),
       body: Obx(
         () => Stack(
           children: [

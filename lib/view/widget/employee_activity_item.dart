@@ -25,9 +25,8 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
   @override
   void initState() {
     super.initState();
-
-    
   }
+
   @override
   Widget build(BuildContext context) {
     String morning =
@@ -92,14 +91,23 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
                       ),
                     ),
                   if (widget.employeeActivityModel.itemsUsed.isNotEmpty)
-                    const Text("Item used"),
-                  if (widget.employeeActivityModel.itemsUsed.isNotEmpty)
-                    ...List.generate(
-                      widget.employeeActivityModel.itemsUsed.length,
-                      (index) => Text(
-                        widget.employeeActivityModel.itemsUsed[index],
-                      ),
-                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Item used"),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 10),
+                          child: Column(
+                            children: List.generate(
+                              widget.employeeActivityModel.itemsUsed.length,
+                              (index) => Text(
+                                widget.employeeActivityModel.itemsUsed[index],
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
                 ],
               ),
               const Spacer(),

@@ -8,6 +8,7 @@ class LeftLined extends StatelessWidget {
   final bool isLast;
   final Widget child;
   final double pt;
+  final bool showBottomBorder;
   const LeftLined({
     super.key,
     required this.circleColor,
@@ -16,6 +17,7 @@ class LeftLined extends StatelessWidget {
     required this.isLast,
     required this.child,
     this.pt = 10,
+    this.showBottomBorder = true,
   });
 
   @override
@@ -41,10 +43,12 @@ class LeftLined extends StatelessWidget {
               padding: EdgeInsets.only(top: pt, bottom: pt),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: whiteColor,
-                    width: .5,
-                  ),
+                  bottom: showBottomBorder
+                      ? BorderSide(
+                          color: whiteColor,
+                          width: .5,
+                        )
+                      : BorderSide.none,
                 ),
               ),
               child: child,

@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/Pages/add_order.dart';
 import 'package:zenbaba_funiture/view/Pages/qr_scanner_page.dart';
 
 import '../../constants.dart';
@@ -56,6 +55,18 @@ class _OrderTabState extends State<OrderTab>
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.transparent,
+        floatingActionButton: FloatingActionButton(
+          backgroundColor: primaryColor,
+          child: SvgPicture.asset(
+            "assets/plus.svg",
+            color: backgroundColor,
+            width: 20,
+            height: 20,
+          ),
+          onPressed: () {
+            Get.to(() => const AddOrder());
+          },
+        ),
         appBar: AppBar(
           centerTitle: true,
           elevation: 0,

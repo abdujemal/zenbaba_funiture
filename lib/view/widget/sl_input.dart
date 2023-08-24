@@ -14,7 +14,7 @@ class SLInput extends StatelessWidget {
   String? Function(String? val)? validation;
   final bool isOutlined;
   final bool jumpIt;
-  final IconData? sufixIcon;
+  final Widget? sufixIcon;
   final void Function()? onTap;
   final bool? readOnly;
   final double? width;
@@ -116,7 +116,7 @@ class SLInput extends StatelessWidget {
                   : UnderlineInputBorder(
                       borderSide: BorderSide(color: whiteColor),
                     ),
-              suffixIcon: sufixIcon != null ? Icon(sufixIcon) : null,
+              suffixIcon: sufixIcon,
               hintText: hint,
               hintStyle: const TextStyle(color: Colors.grey),
               contentPadding: const EdgeInsets.all(18),

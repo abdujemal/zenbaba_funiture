@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants.dart';
 
+// ignore: must_be_immutable
 class SpecialDropdown<T> extends StatefulWidget {
   final String title;
   final double? margin;
@@ -9,7 +10,8 @@ class SpecialDropdown<T> extends StatefulWidget {
   final T value;
   final List<T> list;
   final Color? bgColor;
-  final Color? titleColor;
+  final Color? titleColor, textColor;
+  final bool noTitle, isDense;
   final void Function(dynamic value) onChange;
   List<DropdownMenuItem<T>>? items;
   SpecialDropdown({
@@ -23,6 +25,9 @@ class SpecialDropdown<T> extends StatefulWidget {
     this.items,
     this.bgColor,
     this.titleColor,
+    this.noTitle = false,
+    this.isDense = false,
+    this.textColor,
   });
 
   @override
@@ -37,7 +42,12 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown<T>> {
   Widget build(BuildContext context) {
     widget.items ??= list
         .map(
-          (e) => DropdownMenuItem<T>(value: e, child: Text(e.toString())),
+          (e) => DropdownMenuItem<T>(
+              value: e,
+              child: Text(
+                e.toString(),
+                style: TextStyle(color: widget.textColor),
+              )),
         )
         .toList();
 
@@ -46,16 +56,18 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown<T>> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-              widget.title,
-              style: TextStyle(color: widget.titleColor ?? textColor),
+          if (!widget.noTitle)
+            Padding(
+              padding: const EdgeInsets.only(left: 15),
+              child: Text(
+                widget.title,
+                style: TextStyle(color: widget.titleColor ?? textColor),
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
+          if (!widget.noTitle)
+            const SizedBox(
+              height: 10,
+            ),
           Container(
             width: widget.width,
             decoration: BoxDecoration(
@@ -67,6 +79,7 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown<T>> {
               child: DropdownButton<T>(
                 padding: const EdgeInsets.all(4),
                 value: widget.value,
+                isDense: widget.isDense,
                 icon: const Icon(Icons.keyboard_arrow_down),
                 dropdownColor: backgroundColor,
                 iconEnabledColor: textColor,

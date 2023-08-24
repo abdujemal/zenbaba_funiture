@@ -8,7 +8,6 @@ import 'package:zenbaba_funiture/view/Pages/add_emploee_page.dart';
 import 'package:zenbaba_funiture/view/Pages/employee_activities_page.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 
-import '../../data/model/order_model.dart';
 
 class EmployeeDetailsPage extends StatefulWidget {
   final EmployeeModel employeeModel;

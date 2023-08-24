@@ -361,10 +361,14 @@ class DatabaseRepoImpl extends DatabaseRepo {
     String key,
     String val,
     SearchType searchType,
+    {
+    required String? key2,
+    required String? val2,
+  }
   ) async {
     try {
       final res =
-          await databaseDataSrc.search(firebasePath, key, val, searchType);
+          await databaseDataSrc.search(firebasePath, key, val, searchType, key2: key2, val2: val2);
       return right(res);
     } on Exception catch (e) {
       return left(e);

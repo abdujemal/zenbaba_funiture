@@ -1,17 +1,16 @@
 import 'dart:io';
 
-import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
+import 'package:zenbaba_funiture/view/widget/add_item_history_dialog.dart';
+import 'package:zenbaba_funiture/view/widget/left_line.dart';
 
 import '../../constants.dart';
-import '../../data/model/expense_model.dart';
 import '../../data/model/item_history_model.dart';
 import '../controller/main_controller.dart';
-import '../widget/custom_btn.dart';
-import '../widget/date_item.dart';
-import '../widget/sl_input.dart';
-import '../widget/stock_card.dart';
 
 class StockDetailPage extends StatefulWidget {
   final int index;
@@ -36,217 +35,45 @@ class _StockDetailPageState extends State<StockDetailPage> {
 
   File? imageFile;
 
+  bool isExpanded = false;
+
+  List<ItemHistoryModel> itemHistories = [];
+
+  bool showIcons = false;
+
   @override
   void initState() {
     super.initState();
 
     startDate = DateTime.now().toString().split(" ")[0];
 
-    mainConntroller.getItemHistories(mainConntroller.items[widget.index]);
-
     setImageFile();
+
+    refresh();
+  }
+
+  refresh() async {
+    final lst = await mainConntroller.search(
+      FirebaseConstants.itemsHistories,
+      "itemId",
+      mainConntroller.items[widget.index].id!,
+      SearchType.normalItemHistories,
+    );
+
+    itemHistories = lst.map((e) => e as ItemHistoryModel).toList();
+
+    itemHistories.sort(
+        (a, b) => DateTime.parse(a.date).compareTo(DateTime.parse(b.date)));
+
+    setState(() {});
   }
 
   setImageFile() async {
-    imageFile = await displayImage(
-        mainConntroller.items[widget.index].image!,
-        mainConntroller.items[widget.index].name,
-        FirebaseConstants.items);
+    imageFile = await displayImage(mainConntroller.items[widget.index].image!,
+        mainConntroller.items[widget.index].name, FirebaseConstants.items);
     if (mounted) {
       setState(() {});
     }
-  }
-
-  inputDate() {
-    return Container(
-      margin: const EdgeInsets.only(right: 23),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 15),
-            child: Text(
-              "Date",
-              style: TextStyle(color: textColor),
-            ),
-          ),
-          const SizedBox(
-            height: 10,
-          ),
-          DateTimePicker(
-            initialValue: startDate,
-            decoration: InputDecoration(
-              suffix: const Icon(Icons.event),
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: textColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: whiteColor),
-              ),
-            ),
-            type: DateTimePickerType.date,
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-            dateLabelText: 'Date',
-            dateMask: 'd MMM, yyyy',
-            onChanged: (val) {
-              setState(() {
-                startDate = val;
-              });
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  quantity() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 15),
-          child: Text(
-            "pcs",
-            style: TextStyle(color: textColor),
-          ),
-        ),
-        const SizedBox(
-          height: 10,
-        ),
-        Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: Border.all(color: textColor, width: 1),
-          ),
-          child: Row(
-            children: [
-              const SizedBox(
-                width: 20,
-              ),
-              Text(
-                '$numOfItems',
-              ),
-              const SizedBox(
-                width: 10,
-              ),
-              Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        numOfItems++;
-                      });
-                    },
-                    child: Icon(
-                      Icons.keyboard_arrow_up,
-                      color: textColor,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 18,
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      setState(
-                        () {
-                          if (numOfItems > 1) {
-                            numOfItems--;
-                          }
-                        },
-                      );
-                    },
-                    child: Icon(
-                      Icons.keyboard_arrow_down,
-                      color: textColor,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  sellerFeild() {
-    return RawAutocomplete<ExpenseModel>(
-      initialValue: TextEditingValue(text: sellerTc.text),
-      displayStringForOption: (option) {
-        return option.seller;
-      },
-      optionsBuilder: (TextEditingValue textEditingValue) async {
-        if (textEditingValue.text == '') {
-          return const Iterable<ExpenseModel>.empty();
-        } else {
-          if (mainConntroller.getExpensesStatus.value != RequestState.loading) {
-           
-            await mainConntroller.searchExpense(textEditingValue.text);
-
-            return mainConntroller.searchExpenses;
-          } else {
-            return const Iterable<ExpenseModel>.empty();
-          }
-        }
-      },
-      fieldViewBuilder: (BuildContext context,
-          TextEditingController textEditingController,
-          FocusNode focusNode,
-          VoidCallback onFieldSubmitted) {
-        return SLInput(
-          title:"Seller",
-          hint: "Tofiq",
-          keyboardType: TextInputType.text,
-          inputColor: whiteColor,
-          otherColor: textColor,
-          controller: textEditingController,
-          isOutlined: true,
-          focusNode: focusNode,
-          onChanged: (val) {
-            sellerTc.text = val;
-          },
-        );
-      },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Material(
-          color: backgroundColor,
-          child: Obx(() {
-            print(options.length);
-            return mainConntroller.getExpensesStatus.value ==
-                    RequestState.loading
-                ? Center(
-                    child: CircularProgressIndicator(color: primaryColor),
-                  )
-                : SizedBox(
-                    height: 200,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: options.map((opt) {
-                          return InkWell(
-                            onTap: () {
-                              onSelected(opt);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 23),
-                              child: Card(
-                                child: Container(
-                                  color: mainBgColor,
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(10),
-                                  child: Text(opt.seller),
-                                ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  );
-          }),
-        );
-      },
-    );
   }
 
   @override
@@ -257,49 +84,143 @@ class _StockDetailPageState extends State<StockDetailPage> {
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: title("Stocks"),
+        title: title(mainConntroller.items[widget.index].name),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Get.back();
           },
         ),
-        actions: [
-          IconButton(
-              onPressed: () async {
-                await mainConntroller.getItems();
-                mainConntroller
-                    .getItemHistories(mainConntroller.items[widget.index]);
+      ),
+      floatingActionButton: AnimatedContainer(
+        onEnd: () {
+          setState(() {
+            showIcons = !showIcons;
+          });
+        },
+        height: isExpanded ? 180 : 60,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(50),
+          color: primaryColor,
+        ),
+        duration: const Duration(
+          milliseconds: 500,
+        ),
+        child: Column(
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Spacer(),
+            if (isExpanded && showIcons)
+              IconButton(
+                onPressed: () {
+                  Get.dialog(
+                    AddItemHistoryDialog(
+                      itemStatus: ItemHistoryType.buyed,
+                      itemModel: mainConntroller.items[widget.index],
+                    ),
+                    barrierDismissible: false,
+                    transitionDuration: const Duration(
+                      milliseconds: 500,
+                    ),
+                  );
+                },
+                icon: SvgPicture.asset(
+                  'assets/buy.svg',
+                  color: backgroundColor,
+                  height: 40,
+                  width: 40,
+                ),
+              ),
+            const Spacer(),
+            if (isExpanded && showIcons)
+              IconButton(
+                onPressed: () {
+                  Get.dialog(
+                    AddItemHistoryDialog(
+                      itemStatus: ItemHistoryType.used,
+                      itemModel: mainConntroller.items[widget.index],
+                    ),
+                  );
+                },
+                icon: SvgPicture.asset(
+                  'assets/used.svg',
+                  color: backgroundColor,
+                  height: 40,
+                  width: 40,
+                ),
+              ),
+            const Spacer(),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  isExpanded = !isExpanded;
+                  if (showIcons) {
+                    showIcons = false;
+                  }
+                });
               },
-              icon: const Icon(
-                Icons.refresh_rounded,
-                size: 30,
-              ))
-        ],
+              borderRadius: BorderRadius.circular(50),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: primaryColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(100),
+                      blurRadius: 10,
+                      spreadRadius: 5,
+                      offset: const Offset(0, 0),
+                    )
+                  ],
+                ),
+                child: isExpanded
+                    ? Icon(
+                        Icons.close,
+                        size: 20,
+                        color: backgroundColor,
+                      )
+                    : SvgPicture.asset(
+                        "assets/plus.svg",
+                        color: backgroundColor,
+                        height: 20,
+                        width: 20,
+                      ),
+              ),
+            )
+          ],
+        ),
       ),
       body: Obx(
         () {
-          return mainConntroller.getItemsStatus.value == RequestState.loading
-              ? Center(
-                  child: CircularProgressIndicator(color: primaryColor),
-                )
-              : SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
+          return RefreshIndicator(
+            onRefresh: () async {
+              await refresh();
+            },
+            color: primaryColor,
+            backgroundColor: backgroundColor,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  Stack(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(20),
+                        padding: const EdgeInsets.all(15),
                         margin: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                            boxShadow: [
-                              BoxShadow(
-                                  color: Colors.black.withAlpha(150),
-                                  blurRadius: 5,
-                                  offset: const Offset(-5, 5))
-                            ],
-                            color: mainBgColor,
-                            borderRadius: BorderRadius.circular(25)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(50),
+                              blurRadius: 10,
+                              offset: const Offset(-5, 5),
+                            )
+                          ],
+                          color: mainBgColor,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             ClipRRect(
                               borderRadius: BorderRadius.circular(12),
@@ -308,7 +229,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                       ? Container(
                                           color: backgroundColor,
                                           width: 150,
-                                          height: 170,
+                                          height: 150,
                                           child: const Center(
                                             child: Text("No Network"),
                                           ),
@@ -316,13 +237,13 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                       : Image.file(
                                           imageFile!,
                                           width: 150,
-                                          height: 170,
+                                          height: 150,
                                           fit: BoxFit.cover,
                                         )
                                   : Container(
                                       color: backgroundColor,
                                       width: 150,
-                                      height: 170,
+                                      height: 150,
                                       child: Center(
                                         child: CircularProgressIndicator(
                                           color: primaryColor,
@@ -333,269 +254,183 @@ class _StockDetailPageState extends State<StockDetailPage> {
                             const SizedBox(
                               width: 30,
                             ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: 100,
-                                  child: Text(
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
                                     mainConntroller.items[widget.index].name,
-                                    style: const TextStyle(fontSize: 24,),
+                                    style: const TextStyle(
+                                      fontSize: 24,
+                                    ),
                                     overflow: TextOverflow.clip,
-                                    
                                   ),
-                                ),
-                                Text(
-                                  mainConntroller.items[widget.index].category,
-                                  style:
-                                      TextStyle(color: textColor, fontSize: 18),
-                                ),
-                                const SizedBox(
-                                  height: 60,
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 40),
-                                  child: Column(
-                                    children: [
-                                      Text(
-                                        "In Stock",
-                                        style: TextStyle(
-                                            color: textColor, fontSize: 16),
+                                  Padding(
+                                    padding: const EdgeInsets.only(
+                                      top: 10,
+                                    ),
+                                    child: Text(
+                                      mainConntroller
+                                          .items[widget.index].category,
+                                      style: TextStyle(
+                                        color: textColor,
+                                        fontSize: 18,
                                       ),
-                                      const SizedBox(
-                                        height: 2,
-                                      ),
-                                      Obx(() {
-                                        return Text(
-                                          "${mainConntroller.items[widget.index].quantity}",
-                                          style: TextStyle(
-                                              color: primaryColor,
-                                              fontSize: 17),
-                                        );
-                                      })
-                                    ],
+                                    ),
                                   ),
-                                )
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      selectedItemHistoryType == ItemHistoryType.buyed
-                          ? sellerFeild()
-                          : const SizedBox(),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 23),
-                        child: Row(
-                          children: [Expanded(child: inputDate()), quantity()],
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(
-                          ItemHistoryType.list.length,
-                          (index) {
-                            return SizedBox(
-                              width: 160,
-                              child: RadioListTile(
-                                activeColor: whiteColor,
-                                title: Text(ItemHistoryType.list[index]),
-                                value: ItemHistoryType.list[index],
-                                groupValue: selectedItemHistoryType,
-                                onChanged: (val) {
-                                  setState(() {
-                                    selectedItemHistoryType = val.toString();
-                                  });
-                                },
+                      Positioned(
+                        top: 20,
+                        right: 23,
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                              color: primaryColor, shape: BoxShape.circle),
+                          child: Center(
+                            child: Text(
+                              '${mainConntroller.items[widget.index].quantity}',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: backgroundColor,
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      selectedItemHistoryType == ItemHistoryType.buyed
-                          ? Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: List.generate(
-                                ExpenseState.list.length,
-                                (index) {
-                                  return SizedBox(
-                                    width: 160,
-                                    child: RadioListTile(
-                                      activeColor: whiteColor,
-                                      title: Text(ExpenseState.list[index]),
-                                      value: ExpenseState.list[index],
-                                      groupValue: expenseState,
-                                      onChanged: (val) {
-                                        setState(() {
-                                          expenseState = val.toString();
-                                        });
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            )
-                          : const SizedBox(),
-                      const SizedBox(
-                        height: 15,
-                      ),
-                      Obx(() {
-                        if (mainConntroller.stockStatus.value ==
-                            RequestState.loading) {
-                          return Center(
-                            child:
-                                CircularProgressIndicator(color: primaryColor),
-                          );
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 50),
-                          child: CustomBtn(
-                            width: double.infinity,
-                            btnState: Btn.filled,
-                            color: primaryColor,
-                            text: "Save",
-                            onTap: () async {
-                              if (selectedItemHistoryType ==
-                                  ItemHistoryType.buyed) {
-                                if (sellerTc.text.isNotEmpty) {
-                                  // await mainConntroller.increaseStock(
-                                  //   numOfItems,
-                                  //   mainConntroller.items[widget.index],
-                                  //   ItemHistoryModel(
-                                  //     date: startDate!,
-                                  //     quantity: numOfItems,
-                                  //     type: selectedItemHistoryType,
-                                  //     id: DateTime.now()
-                                  //         .microsecondsSinceEpoch
-                                  //         .toString(),
-                                  //   ),
-                                  // );
-                                  await mainConntroller.addExpense(
-                                    ExpenseModel(
-                                        id: null,
-                                        category: ExpenseCategory.rawMaterial,
-                                        description:
-                                            "name: ${mainConntroller.items[widget.index].name}, quantity: ${mainConntroller.items[widget.index].quantity}, pricePerUnit: ${mainConntroller.items[widget.index].pricePerUnit}",
-                                        price: mainConntroller
-                                                .items[widget.index]
-                                                .pricePerUnit *
-                                            numOfItems,
-                                        expenseStatus: expenseState,
-                                        date: startDate!,
-                                        employeeId: ""!,
-                                        seller: sellerTc.text),
-                                    goBack: false,
-                                  );
-                                } else {
-                                  toast(
-                                      "Seller Feild is Empty", ToastType.error);
-                                }
-                              } else {
-                                // if you are using what you dont have
-                                if (mainConntroller
-                                            .items[widget.index].quantity -
-                                        numOfItems >=
-                                    0) {
-                                  // await mainConntroller.decreaseStock(
-                                  //   numOfItems,
-                                  //   mainConntroller.items[widget.index],
-                                  //   ItemHistoryModel(
-                                  //     date: startDate!,
-                                  //     quantity: numOfItems,
-                                  //     type: selectedItemHistoryType,
-                                  //     id: DateTime.now()
-                                  //         .microsecondsSinceEpoch
-                                  //         .toString(),
-                                  //   ),
-                                  // );
-                                } else {
-                                  toast("you don't have that much.",
-                                      ToastType.error);
-                                }
-                              }
-                            },
+                            ),
                           ),
-                        );
-                      }),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        margin: const EdgeInsets.all(20),
-                        width: double.infinity,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withAlpha(150),
-                              blurRadius: 5,
-                              offset: const Offset(-5, 5),
-                            )
-                          ],
-                          color: mainBgColor,
-                          borderRadius: BorderRadius.circular(25),
                         ),
-                        child: Obx(() {
-                          List<dynamic> histories = [];
-                          DateTime now = DateTime.now();
-                          String today = "";
-                          String day = "${now.day}";
-                          String month = "${now.month}";
-                          if (now.month < 10) {
-                            month = '0${now.month}';
-                          }
-                          if (now.day < 10) {
-                            day = '0${now.day}';
-                          }
-                          today = "${now.year}-$month-$day";
-                          String currentDate = "";
-                          print(today);
-                          for (ItemHistoryModel itemHistoryModel
-                              in mainConntroller.itemHistories) {
-                            if (currentDate != itemHistoryModel.date) {
-                              if (today == itemHistoryModel.date) {
-                                histories.add("Today");
-                                currentDate = itemHistoryModel.date;
-                              } else {
-                                histories.add(
-                                    itemHistoryModel.date.replaceAll("-", "/"));
-                                currentDate = itemHistoryModel.date;
-                              }
-                            }
-                            histories.add(itemHistoryModel);
-                          }
-                          return ListView.builder(
-                            itemCount: histories.length,
-                            itemBuilder: (context, index) {
-                              if (histories[index].runtimeType.toString() ==
-                                  "String") {
-                                return DateItem(date: histories[index]);
-                              }
-                              return StockCard(
-                                name: mainConntroller.items[widget.index].name,
-                                image: imageFile,
-                                itemHistoryModel: histories[index],
-                              );
-                            },
-                          );
-                        }),
                       )
                     ],
                   ),
-                );
+                  section(
+                    b: 15,
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.only(
+                          left: 15,
+                        ),
+                        child: Text(
+                          "History",
+                          style: TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+                      ),
+                      if (itemHistories.isEmpty)
+                        const SizedBox(
+                          height: 200,
+                          child: Center(
+                            child: Text("No History"),
+                          ),
+                        ),
+                      ...List.generate(
+                        itemHistories.length,
+                        (index) {
+                          DateTime currentDay =
+                              DateTime.parse(itemHistories[index].date);
+
+                          DateTime lastDay = index > 0
+                              ? DateTime.parse(itemHistories[index - 1].date)
+                              : DateTime.parse(itemHistories[index].date);
+
+                          DateTime nextDay = index < itemHistories.length - 1
+                              ? DateTime.parse(itemHistories[index + 1].date)
+                              : DateTime.parse(itemHistories[index].date);
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (currentDay.compareTo(lastDay) != 0 ||
+                                  index == 0)
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(left: 10, top: 5),
+                                  child: Text(
+                                    DateFormat("EEE / dd - MMMM").format(
+                                      DateTime.parse(itemHistories[index].date),
+                                    ),
+                                    style: TextStyle(
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ),
+                              LeftLined(
+                                circleColor: primaryColor,
+                                isLast: index == itemHistories.length - 1 ||
+                                    nextDay.compareTo(currentDay) > 0,
+                                onTap: () {},
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "${itemHistories[index].quantity} pcs ${itemHistories[index].type}",
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        height: 3,
+                                      ),
+                                      if (itemHistories[index].type ==
+                                          ItemHistoryType.used)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 15),
+                                          child: Row(
+                                            children: [
+                                              Text(
+                                                "For order",
+                                                style: TextStyle(
+                                                  color: primaryColor,
+                                                  fontSize: 14,
+                                                ),
+                                              ),
+                                              Text(
+                                                " #${itemHistories[index].orderId}",
+                                                style: TextStyle(
+                                                  color: primaryColor,
+                                                  fontSize: 14,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      if (itemHistories[index].type ==
+                                          ItemHistoryType.buyed)
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 15),
+                                          child: Text(
+                                            "${itemHistories[index].price} br",
+                                            style: TextStyle(
+                                              color: primaryColor,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      )
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
         },
       ),
     );

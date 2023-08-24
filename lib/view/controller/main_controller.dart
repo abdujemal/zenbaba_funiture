@@ -185,23 +185,26 @@ class MainConntroller extends GetxController {
     String firebasePath,
     String key,
     String val,
-    SearchType searchType,
-  ) async {
+    SearchType searchType, {
+    String? key2,
+    String? val2,
+  }) async {
     // getOrdersStatus.value = RequestState.loading;
 
-    final res = await searchUsecase.call(
-      Search1Params(
-        firebasePath: firebasePath,
-        key: key,
-        val: val,
-        searchType: searchType,
-      ),
-    );
+    final res = await searchUsecase.call(Search1Params(
+      firebasePath: firebasePath,
+      key: key,
+      val: val,
+      key2: key2,
+      val2: val2,
+      searchType: searchType,
+    ));
 
     List searchLst = [];
 
     res.fold((l) {
       // getOrdersStatus.value = RequestState.error;
+      print(l.toString());
       toast(l.toString(), ToastType.error);
     }, (r) {
       // getOrdersStatus.value = RequestState.loaded;
@@ -443,7 +446,7 @@ class MainConntroller extends GetxController {
   }
 
   // stock
-  increaseStock(int quantity, ItemModel itemModel,
+  Future<void> increaseStock(int quantity, ItemModel itemModel,
       ItemHistoryModel itemHistoryModel) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
@@ -462,22 +465,21 @@ class MainConntroller extends GetxController {
         stockStatus.value = RequestState.error;
         toast(l.toString(), ToastType.error);
       },
-      (r) async {
-        await updateItem(
+      (r) {
+        updateItem(
           null,
           itemModel,
           quantity: itemModel.quantity + quantity,
           stayin: true,
-        );
-        await getItemHistories(
-            items.where((p0) => p0.id == itemModel.id).toList()[0]);
-        stockStatus.value = RequestState.loaded;
+        ).then((value) {
+          stockStatus.value = RequestState.loaded;
+        });
       },
     );
   }
 
-  decreaseStock(int quantity, ItemModel itemModel,
-      ItemHistoryModel itemHistoryModel) async {
+  Future<void> decreaseStock(int quantity, ItemModel itemModel,
+      ItemHistoryModel itemHistoryModel, String orderName) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -496,21 +498,21 @@ class MainConntroller extends GetxController {
         toast(l.toString(), ToastType.error);
       },
       (r) async {
-        await updateItem(
+        updateItem(
           null,
-          itemModel,
+          itemModel.copyWith(lastUsedFor: orderName),
           quantity: itemModel.quantity - quantity,
           stayin: true,
-        );
-
-        stockStatus.value = RequestState.loaded;
+        ).then((value) {
+          stockStatus.value = RequestState.loaded;
+        });
       },
     );
   }
 
   // expense
 
-  getExpenses(
+  Future<void> getExpenses(
       {int? quantity, String? status, String? date, bool isNew = true}) async {
     getExpensesStatus.value = RequestState.loading;
     final res = await getExpenseUsecase.call(GetExpenseParam(
@@ -573,7 +575,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  addExpense(ExpenseModel expenseModel, {goBack = true}) async {
+  Future<void> addExpense(ExpenseModel expenseModel, {goBack = true}) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -710,7 +712,7 @@ class MainConntroller extends GetxController {
 
   // Orders
 
-  getOrders(
+  Future<void> getOrders(
       {int? quantity, String? status, String? date, bool isNew = true}) async {
     SharedPreferences pref = await sharedPreferences;
 
@@ -869,19 +871,6 @@ class MainConntroller extends GetxController {
     });
   }
 
-  getItemHistories(ItemModel itemModel) async {
-    // itemHistories.value = [];
-    // for (var item in itemModel.history) {
-    //   itemHistories.add(ItemHistoryModel(
-    //       date: item['date'],
-    //       quantity: item['quantity'],
-    //       type: item['type'],
-    //       id: item['id']));
-    // }
-    // itemHistories.sort(
-    //     (a, b) => DateTime.parse(b.date).compareTo(DateTime.parse(a.date)));
-  }
-
   addItem(File file, ItemModel itemModel) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
@@ -903,7 +892,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  updateItem(File? file, ItemModel itemModel,
+  Future<void> updateItem(File? file, ItemModel itemModel,
       {bool stayin = false, int? quantity}) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
@@ -932,7 +921,7 @@ class MainConntroller extends GetxController {
       }
       itemStatus.value = RequestState.loaded;
       await getItems();
-      getItemHistories(items.where((p0) => p0.id == itemModel.id).toList()[0]);
+
       if (!stayin) {
         Get.back();
       }

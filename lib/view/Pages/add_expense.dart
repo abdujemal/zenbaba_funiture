@@ -53,6 +53,24 @@ class _AddExpenseState extends State<AddExpense> {
     super.initState();
     mainConntroller.getEmployees().then((value) {
       employees = mainConntroller.employees;
+      if (widget.expenseModel != null) {
+        if (widget.expenseModel!.category == ExpenseCategory.employee) {
+          selectedEmployee = employees
+                  .where(
+                    (element) => element.id == widget.expenseModel!.employeeId,
+                  )
+                  .toList()
+                  .isNotEmpty
+              ? employees
+                  .where(
+                    (element) => element.id == widget.expenseModel!.employeeId,
+                  )
+                  .toList()[0]
+              : null;
+          setState(() {});
+        }
+      }
+      setState(() {});
     });
 
     currentDate = DateTime.now().toString().split(' ')[0];
@@ -110,39 +128,45 @@ class _AddExpenseState extends State<AddExpense> {
       optionsViewBuilder: (context, onSelected, options) {
         return Material(
           color: backgroundColor,
-          child: Obx(() {
-            print(options.length);
-            return mainConntroller.getExpensesStatus.value ==
-                    RequestState.loading
-                ? Center(
-                    child: CircularProgressIndicator(color: primaryColor),
-                  )
-                : SizedBox(
-                    height: 200,
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: options.map((opt) {
-                          return InkWell(
-                            onTap: () {
-                              onSelected(opt);
-                            },
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 23),
-                              child: Card(
+          child: Obx(
+            () {
+              print(options.length);
+              return mainConntroller.getExpensesStatus.value ==
+                      RequestState.loading
+                  ? Center(
+                      child: CircularProgressIndicator(color: primaryColor),
+                    )
+                  : SizedBox(
+                      height: 200,
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: options.map(
+                            (opt) {
+                              return InkWell(
+                                onTap: () {
+                                  onSelected(opt);
+                                },
                                 child: Container(
-                                  color: mainBgColor,
-                                  width: double.infinity,
-                                  padding: EdgeInsets.all(10),
-                                  child: Text(opt.seller),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 23,
+                                  ),
+                                  child: Card(
+                                    child: Container(
+                                      color: mainBgColor,
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.all(10),
+                                      child: Text(opt.seller),
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ),
-                          );
-                        }).toList(),
+                              );
+                            },
+                          ).toList(),
+                        ),
                       ),
-                    ),
-                  );
-          }),
+                    );
+            },
+          ),
         );
       },
     );
@@ -219,26 +243,28 @@ class _AddExpenseState extends State<AddExpense> {
                 ),
                 expenseCategory != ExpenseCategory.employee
                     ? sellerFeild()
-                    : SpecialDropdown<EmployeeModel>(
-                        title: "Employee",
-                        value: selectedEmployee!,
-                        width: double.infinity,
-                        list: employees,
-                        onChange: (v) {
-                          setState(() {
-                            selectedEmployee = v;
-                            sellerTc.text = selectedEmployee!.name;
-                          });
-                        },
-                        items: employees
-                            .map(
-                              (e) => DropdownMenuItem<EmployeeModel>(
-                                value: e,
-                                child: Text(e.name),
-                              ),
-                            )
-                            .toList(),
-                      ),
+                    : selectedEmployee != null
+                        ? SpecialDropdown<EmployeeModel>(
+                            title: "Employee",
+                            value: selectedEmployee!,
+                            width: double.infinity,
+                            list: employees,
+                            onChange: (v) {
+                              setState(() {
+                                selectedEmployee = v;
+                                sellerTc.text = selectedEmployee!.name;
+                              });
+                            },
+                            items: employees
+                                .map(
+                                  (e) => DropdownMenuItem<EmployeeModel>(
+                                    value: e,
+                                    child: Text(e.name),
+                                  ),
+                                )
+                                .toList(),
+                          )
+                        : const Text("Loading Employee"),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(

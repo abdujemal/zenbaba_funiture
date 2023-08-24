@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/data/model/item_model.dart';
 
 import '../../constants.dart';
 import '../controller/main_controller.dart';
@@ -17,6 +18,8 @@ class ItemsPage extends StatefulWidget {
 class _ItemsPageState extends State<ItemsPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 
+  int selectCategoryIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,60 +30,109 @@ class _ItemsPageState extends State<ItemsPage> {
         backgroundColor: Colors.transparent,
         title: title("Items"),
         leading: IconButton(
-            icon: SvgPicture.asset(
-              'assets/menu icon.svg',
-              color: whiteColor,
-              height: 21,
+          icon: SvgPicture.asset(
+            'assets/menu icon.svg',
+            color: whiteColor,
+            height: 21,
+          ),
+          onPressed: () {
+            mainConntroller.z.value.open!();
+          },
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryColor,
+        onPressed: () {
+          Get.to(() => const AddItem());
+        },
+        child: SvgPicture.asset(
+          'assets/plus.svg',
+          width: 15,
+          height: 15,
+        ),
+      ),
+      body: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.symmetric(
+              horizontal: 20,
             ),
-            onPressed: () {
-              mainConntroller.z.value.open!();
-            }),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(() => const AddItem());
-            },
-            icon: const Icon(
-              Icons.add,
-              size: 30,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 3,
+            ),
+            decoration: BoxDecoration(
+              color: mainBgColor,
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: List.generate(
+                ItemCategory.list.length,
+                (index) => GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      selectCategoryIndex = index;
+                    });
+                  },
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: selectCategoryIndex == index
+                          ? backgroundColor
+                          : mainBgColor,
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: Text(ItemCategory.list[index]),
+                  ),
+                ),
+              ),
             ),
           ),
-          IconButton(
-            onPressed: () {
-              mainConntroller.getItems();
-            },
-            icon: const Icon(
-              Icons.refresh_rounded,
-              size: 30,
+          Expanded(
+            child: Obx(
+              () {
+                if (mainConntroller.getItemsStatus.value ==
+                    RequestState.loading) {
+                  return Center(
+                    child: CircularProgressIndicator(color: primaryColor),
+                  );
+                }
+                if (mainConntroller.items.isEmpty) {
+                  return const Center(
+                    child: Text("No Items"),
+                  );
+                }
+
+                List<ItemModel> sortedItems = mainConntroller.items
+                    .where(
+                      (p0) =>
+                          p0.category == ItemCategory.list[selectCategoryIndex],
+                    )
+                    .toList();
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    await mainConntroller.getItems();
+                  },
+                  backgroundColor: backgroundColor,
+                  color: primaryColor,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(20),
+                    itemCount: sortedItems.length,
+                    itemBuilder: (context, index) {
+                      return ItemCard(
+                        itemModel: sortedItems[index],
+                        isStock: false,
+                      );
+                    },
+                  ),
+                );
+              },
             ),
-          )
+          ),
         ],
-      ),
-      body: Obx(
-        () {
-          if (mainConntroller.getItemsStatus.value == RequestState.loading) {
-            return Center(
-              child: CircularProgressIndicator(color: primaryColor),
-            );
-          }
-          if (mainConntroller.items.isEmpty) {
-            return const Center(
-              child: Text("No Items"),
-            );
-          }
-          return GridView.builder(
-            padding: const EdgeInsets.all(20),
-            itemCount: mainConntroller.items.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 25,
-                mainAxisSpacing: 25,
-                childAspectRatio: 1 / 1.25),
-            itemBuilder: (context, index) {
-              return ItemCard(itemModel: mainConntroller.items[index]);
-            },
-          );
-        },
       ),
     );
   }

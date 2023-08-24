@@ -62,17 +62,28 @@ class _EmployeePageState extends State<EmployeePage> {
           width: 20,
         ),
       ),
-      body: Obx(() {
-        return mainConntroller.getEmployeeStatus.value == RequestState.loading
-            ? Center(
-                child: CircularProgressIndicator(color: primaryColor),
-              )
-            : ListView.builder(
-                itemCount: mainConntroller.employees.length,
-                itemBuilder: (context, index) => EmployeeItem(
-                    employeeModel: mainConntroller.employees[index]),
-              );
-      }),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await mainConntroller.getEmployees();
+        },
+        backgroundColor: mainBgColor,
+        color: primaryColor,
+        child: Obx(() {
+          return mainConntroller.getEmployeeStatus.value == RequestState.loading
+              ? Center(
+                  child: CircularProgressIndicator(color: primaryColor),
+                )
+              : mainConntroller.employees.isEmpty
+                  ? const Center(
+                      child: Text("No Employee"),
+                    )
+                  : ListView.builder(
+                      itemCount: mainConntroller.employees.length,
+                      itemBuilder: (context, index) => EmployeeItem(
+                          employeeModel: mainConntroller.employees[index]),
+                    );
+        }),
+      ),
     );
   }
 }

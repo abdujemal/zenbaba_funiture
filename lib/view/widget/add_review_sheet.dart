@@ -86,6 +86,10 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
               text: "Save",
               tColor: backgroundColor,
               onTap: () {
+                if (commentTc.text.isEmpty) {
+                  toast("Comment is required.", ToastType.error);
+                  return;
+                }
                 FirebaseFirestore.instance
                     .collection(FirebaseConstants.reviews)
                     .add(

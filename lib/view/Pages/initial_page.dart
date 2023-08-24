@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
-import 'package:zenbaba_funiture/main.dart';
 import 'package:zenbaba_funiture/view/Pages/employee_page.dart';
 import 'package:zenbaba_funiture/view/Pages/stock_page.dart';
 import 'package:zenbaba_funiture/view/Pages/users_page.dart';

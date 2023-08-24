@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -27,7 +26,7 @@ class _ExpenseCardState extends State<ExpenseCard> {
         Container(
           margin: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-              color: primaryColor,
+              color: mainBgColor,
               borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
@@ -54,11 +53,11 @@ class _ExpenseCardState extends State<ExpenseCard> {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
             ),
             subtitle: Text(
-              widget.expenseModel.category == ExpenseCategory.employee?
-              "Name: ${widget.expenseModel.seller}":
-              "Seller: ${widget.expenseModel.seller}",
-              style: const TextStyle(
-                color: Colors.black,
+              widget.expenseModel.category == ExpenseCategory.employee
+                  ? "Name: ${widget.expenseModel.seller}"
+                  : "Seller: ${widget.expenseModel.seller}",
+              style: TextStyle(
+                color: textColor,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -71,7 +70,7 @@ class _ExpenseCardState extends State<ExpenseCard> {
             padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
                 color: widget.isPayed
-                    ? mainColor
+                    ? primaryColor
                     : const Color.fromARGB(255, 146, 111, 99),
                 shape: BoxShape.circle),
             child: Icon(

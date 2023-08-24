@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -49,6 +48,18 @@ class _ExpensesPageState extends State<ExpensesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: primaryColor,
+        child: SvgPicture.asset(
+          "assets/plus.svg",
+          color: backgroundColor,
+          width: 20,
+          height: 20,
+        ),
+        onPressed: () {
+          Get.to(() => const AddExpense());
+        },
+      ),
       appBar: AppBar(
         centerTitle: true,
         elevation: 0,
@@ -66,21 +77,12 @@ class _ExpensesPageState extends State<ExpensesPage> {
         ),
         actions: [
           IconButton(
-            onPressed: () {
-              Get.to(() => const AddExpense());
-            },
-            icon: const Icon(
-              Icons.add,
-              size: 30,
-            ),
-          ),
-          IconButton(
-            onPressed: () {
-              mainConntroller.getExpenses(
+            onPressed: () async {
+              await mainConntroller.getExpenses(
                 quantity: numOfDocToGet,
                 status: ExpenseState.unpayed,
               );
-              mainConntroller.getExpenses(
+              await mainConntroller.getExpenses(
                 quantity: numOfDocToGet,
                 status: ExpenseState.payed,
               );
@@ -162,7 +164,6 @@ class _ExpensesPageState extends State<ExpensesPage> {
                 expenses.add(expeseModel);
               }
 
-            
               if (selectedTabIndex == 0 &&
                   mainConntroller.payedExpenses.isEmpty) {
                 return const Center(
@@ -178,32 +179,54 @@ class _ExpensesPageState extends State<ExpensesPage> {
               return Column(
                 children: [
                   Expanded(
-                    child: ListView.builder(
-                      controller: controller,
-                      itemCount: expenses.length,
-                      itemBuilder: (context, index) {
-                        if (expenses[index].runtimeType.toString() == "String") {
-                          return DateItem(
-                            date: expenses[index],
-                            style: expenses[index] == "Unpayed Expenses"
-                                ? TextStyle(color: primaryColor, fontSize: 18)
-                                : null,
-                          );
-                        } else {
-                          return ExpenseCard(
-                            isPayed:
-                                expenses[index].expenseStatus == ExpenseState.payed,
-                            expenseModel: expenses[index],
-                          );
-                        }
+                    child: RefreshIndicator(
+                      onRefresh: () async {
+                        await mainConntroller.getExpenses(
+                          quantity: numOfDocToGet,
+                          status: ExpenseState.unpayed,
+                        );
+                        await mainConntroller.getExpenses(
+                          quantity: numOfDocToGet,
+                          status: ExpenseState.payed,
+                        );
                       },
+                      backgroundColor: backgroundColor,
+                      color: primaryColor,
+                      child: ListView.builder(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.only(
+                          bottom: 70,
+                        ),
+                        controller: controller,
+                        itemCount: expenses.length,
+                        itemBuilder: (context, index) {
+                          if (expenses[index].runtimeType.toString() ==
+                              "String") {
+                            return DateItem(
+                              date: expenses[index],
+                              style: expenses[index] == "Unpayed Expenses"
+                                  ? TextStyle(color: primaryColor, fontSize: 18)
+                                  : null,
+                            );
+                          } else {
+                            return ExpenseCard(
+                              isPayed: expenses[index].expenseStatus ==
+                                  ExpenseState.payed,
+                              expenseModel: expenses[index],
+                            );
+                          }
+                        },
+                      ),
                     ),
                   ),
-                  mainConntroller.getExpensesStatus.value == RequestState.loading ? Center(
-                  child: CircularProgressIndicator(
-                    color: primaryColor,
-                  ),
-                ):SizedBox()
+                  mainConntroller.getExpensesStatus.value ==
+                          RequestState.loading
+                      ? Center(
+                          child: CircularProgressIndicator(
+                            color: primaryColor,
+                          ),
+                        )
+                      : const SizedBox()
                 ],
               );
             }),

@@ -26,15 +26,16 @@ class _AddDialogueState extends State<AddDialogue> {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-          color: primaryColor,
-          borderRadius: BorderRadius.circular(40),
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromARGB(192, 0, 0, 0),
-              spreadRadius: 2,
-              blurRadius: 15,
-            )
-          ]),
+        color: primaryColor,
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: const [
+          BoxShadow(
+            color: Color.fromARGB(192, 0, 0, 0),
+            spreadRadius: 2,
+            blurRadius: 15,
+          )
+        ],
+      ),
       width: 230,
       height: 260,
       padding: const EdgeInsets.all(10),

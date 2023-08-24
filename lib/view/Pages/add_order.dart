@@ -2,8 +2,6 @@ import 'dart:io';
 
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -139,11 +137,14 @@ class _AddOrderState extends State<AddOrder> {
 
     if (widget.orderModel != null) {
       orderState = widget.orderModel!.status;
+      _colorTc.text = widget.orderModel!.color;
+      _sizeTc.text = widget.orderModel!.size;
       _custumerNameTc.text = widget.orderModel!.customerName;
       selectedGender = widget.orderModel!.customerGender;
       _phoneNumberTc.text = widget.orderModel!.phoneNumber;
       numOfProduct = widget.orderModel!.quantity;
       _productNameTc.text = widget.orderModel!.productName;
+      _deliveryPriceTc.text = widget.orderModel!.deliveryPrice.toString();
       _productPriceTc.text = widget.orderModel!.productPrice.toString();
       _payedPriceTc.text = widget.orderModel!.payedPrice.toString();
       _productSkuTc.text = widget.orderModel!.productSku;
@@ -166,8 +167,10 @@ class _AddOrderState extends State<AddOrder> {
 
   setImageFile() async {
     if (widget.orderModel!.imgUrl != "") {
-      file = await displayImage(widget.orderModel!.imgUrl,
-          '${widget.orderModel!.productSku}0', FirebaseConstants.products);
+      file = await displayImage(
+          widget.orderModel!.imgUrl,
+          '${widget.orderModel!.productSku}0',
+          "${FirebaseConstants.products}/${widget.orderModel!.productSku}");
       if (mounted) {
         setState(() {});
       }
@@ -405,8 +408,10 @@ class _AddOrderState extends State<AddOrder> {
                                         _productSkuTc.text = element.sku;
                                         selectedProductImage =
                                             element.images[0];
-                                        _payedPriceTc.text = '0';
+
                                         _sizeTc.text = element.size;
+                                        _productDescriptionTc.text =
+                                            element.description;
                                         setState(() {});
                                       },
                                       child: OrderProductCard(
@@ -777,10 +782,11 @@ class _AddOrderState extends State<AddOrder> {
             IconButton(
               onPressed: () {
                 Get.dialog(
-                    OrderDialog(
-                      orderModel: widget.orderModel!,
-                    ),
-                    barrierColor: const Color.fromARGB(200, 0, 0, 0));
+                  OrderDialog(
+                    orderModel: widget.orderModel!,
+                  ),
+                  barrierColor: const Color.fromARGB(200, 0, 0, 0),
+                );
               },
               icon: const Icon(Icons.qr_code),
             ),
