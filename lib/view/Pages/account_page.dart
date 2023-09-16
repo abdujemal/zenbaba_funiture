@@ -21,6 +21,7 @@ class _AccountPageState extends State<AccountPage> {
 
   var nameTc = TextEditingController();
   var emailTc = TextEditingController();
+  var phoneTc = TextEditingController();
 
   File? imageFile;
 
@@ -29,6 +30,7 @@ class _AccountPageState extends State<AccountPage> {
     super.initState();
     nameTc.text = lsController.currentUser.value.name;
     emailTc.text = lsController.currentUser.value.email;
+    phoneTc.text = lsController.currentUser.value.phoneNumber;
     setImageFile();
   }
 
@@ -66,7 +68,7 @@ class _AccountPageState extends State<AccountPage> {
               Get.back();
             }),
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -96,6 +98,7 @@ class _AccountPageState extends State<AccountPage> {
               height: 15,
             ),
             SLInput(
+                isOutlined: true,
                 inputColor: whiteColor,
                 title: "Name",
                 hint: "Osman Habib",
@@ -113,11 +116,23 @@ class _AccountPageState extends State<AccountPage> {
                   }
                   return null;
                 },
+                isOutlined: true,
                 inputColor: whiteColor,
                 title: "Email",
                 hint: "abc@website.com",
                 keyboardType: TextInputType.emailAddress,
                 controller: emailTc),
+            const SizedBox(
+              height: 15,
+            ),
+            SLInput(
+              isOutlined: true,
+              inputColor: whiteColor,
+              title: "Phone",
+              hint: "0923458796",
+              keyboardType: TextInputType.phone,
+              controller: phoneTc,
+            ),
             const SizedBox(
               height: 30,
             ),
@@ -142,10 +157,19 @@ class _AccountPageState extends State<AccountPage> {
                   : SLBtn(
                       text: "Update",
                       onTap: () {
-                        lsController.updateUser(usermodel.copyWith(
-                            email: emailTc.text, name: nameTc.text));
-                      });
-            })
+                        lsController.updateUser(
+                          usermodel.copyWith(
+                            email: emailTc.text,
+                            name: nameTc.text,
+                            phoneNumber: phoneTc.text,
+                          ),
+                        );
+                      },
+                    );
+            }),
+            const SizedBox(
+              height: 20,
+            )
           ],
         ),
       ),

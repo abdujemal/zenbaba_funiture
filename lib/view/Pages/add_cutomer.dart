@@ -208,15 +208,15 @@ class _AddCutomerState extends State<AddCutomer> {
                           if (widget.customerModel != null) {
                             mainConntroller.updateCustomer(
                               CustomerModel(
-                                gender: selectedGender,
-                                name: nameTc.text,
-                                id: widget.customerModel!.id,
-                                phone: phoneTc.text,
-                                sefer: seferTc.text,
-                                kk: selectedKK,
-                                location: locationTc.text,
-                                source: selectedSource,
-                              ),
+                                  gender: selectedGender,
+                                  name: nameTc.text,
+                                  id: widget.customerModel!.id,
+                                  phone: phoneTc.text,
+                                  sefer: seferTc.text,
+                                  kk: selectedKK,
+                                  location: locationTc.text,
+                                  source: selectedSource,
+                                  date: widget.customerModel!.date),
                             );
                           } else {
                             mainConntroller.addCustomer(
@@ -229,6 +229,9 @@ class _AddCutomerState extends State<AddCutomer> {
                                 kk: selectedKK,
                                 location: locationTc.text,
                                 source: selectedSource,
+                                date: DateTime.now()
+                                    .toString()
+                                    .splitMapJoin(" ")[0],
                               ),
                             );
                           }

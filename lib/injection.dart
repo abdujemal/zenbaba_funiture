@@ -5,8 +5,10 @@ import 'package:get_it/get_it.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:zenbaba_funiture/domain/usecase/add_update_employee_activity_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/add_update_employee_usecase.dart';
+import 'package:zenbaba_funiture/domain/usecase/count_doc_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_activities.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
+import 'package:zenbaba_funiture/domain/usecase/search_employee_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/search_usecase.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
@@ -89,6 +91,8 @@ void setup() {
       di(),
       di(),
       di(),
+      di(),
+      di(),
     ),
   );
 
@@ -111,6 +115,8 @@ void setup() {
   di.registerLazySingleton<DatabaseRepo>(() => DatabaseRepoImpl(di()));
 
   // usecase
+  di.registerLazySingleton(() => SearchEmployeeUsecase(di()));
+  di.registerLazySingleton(() => CountDocUsecase(databaseRepo: di()));
   di.registerLazySingleton(() => SearchUsecase(databaseRepo: di()));
   di.registerLazySingleton(() => GetEmployeeActivitiesUsecase(di()));
   di.registerLazySingleton(() => AddUpdateEmployeeActivityUsecase(di()));

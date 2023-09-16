@@ -168,6 +168,7 @@ class AuthDataSourceImpl extends AuthDataSource {
             image: cred.user?.photoURL ?? "",
             name: cred.user?.displayName ?? "",
             priority: priority,
+            phoneNumber: cred.user?.phoneNumber ?? "",
             email: cred.user?.email ?? "");
 
         await firebaseFirestore

@@ -9,14 +9,26 @@ import 'package:zenbaba_funiture/view/widget/sl_input.dart';
 import '../../constants.dart';
 import '../controller/l_s_controller.dart';
 
-class SignUp extends StatelessWidget {
-  // const Login({ Key? key }) : super(key: key);
+class SignUp extends StatefulWidget {
+  const SignUp({Key? key}) : super(key: key);
 
+  @override
+  State<SignUp> createState() => _SignUpState();
+}
+
+class _SignUpState extends State<SignUp> {
   TextEditingController emailTC = TextEditingController();
+
   TextEditingController passwordTC = TextEditingController();
+
   TextEditingController nameTc = TextEditingController();
+
+  TextEditingController phoneNumberTc = TextEditingController();
+
   TextEditingController confirmPasswordTC = TextEditingController();
-  GlobalKey<FormState> _key = GlobalKey();
+
+  final GlobalKey<FormState> _key = GlobalKey();
+
   LSController lsController = Get.find<LSController>();
 
   @override
@@ -43,6 +55,7 @@ class SignUp extends StatelessWidget {
                     backgroundImage: lsController.image.value.path == ""
                         ? null
                         : FileImage(lsController.image.value),
+                    backgroundColor: Colors.grey,
                     child: lsController.image.value.path == ""
                         ? const Icon(
                             Icons.person,
@@ -50,7 +63,6 @@ class SignUp extends StatelessWidget {
                             color: Colors.white,
                           )
                         : null,
-                    backgroundColor: Colors.grey,
                   );
                 }),
               ),
@@ -62,27 +74,49 @@ class SignUp extends StatelessWidget {
                 keyboardType: TextInputType.text,
                 title: 'Name',
                 hint: 'Osman Habib',
+                otherColor: backgroundColor,
+                isOutlined: true,
+                inputColor: whiteColor,
               ),
               const SizedBox(
-                height: 40,
+                height: 15,
+              ),
+              SLInput(
+                controller: phoneNumberTc,
+                keyboardType: TextInputType.phone,
+                title: 'PhoneNumber',
+                hint: '0923954987',
+                otherColor: backgroundColor,
+                isOutlined: true,
+                inputColor: whiteColor,
+              ),
+              const SizedBox(
+                height: 15,
               ),
               SLInput(
                 controller: emailTC,
                 keyboardType: TextInputType.emailAddress,
                 title: 'Email',
                 hint: 'abc@website.com',
+                otherColor: backgroundColor,
+                isOutlined: true,
+                inputColor: whiteColor,
                 validation: (val) {
                   if (val!.isEmpty) {
                     return "This feild is required.";
                   } else if (!val.isEmail) {
                     return 'Email is not vaild';
                   }
+                  return null;
                 },
               ),
               const SizedBox(
-                height: 40,
+                height: 15,
               ),
               SLInput(
+                  otherColor: backgroundColor,
+                  isOutlined: true,
+                  inputColor: whiteColor,
                   isObscure: true,
                   title: "Password",
                   hint: "*******",
@@ -92,6 +126,9 @@ class SignUp extends StatelessWidget {
                 height: 15,
               ),
               SLInput(
+                  otherColor: backgroundColor,
+                  isOutlined: true,
+                  inputColor: whiteColor,
                   isObscure: true,
                   title: "Confirm Password",
                   hint: "*******",
@@ -104,7 +141,7 @@ class SignUp extends StatelessWidget {
           ),
         ),
         const SizedBox(
-          height: 50,
+          height: 20,
         ),
         Obx(() {
           return lsController.emailState.value == RequestState.loading
@@ -117,7 +154,7 @@ class SignUp extends StatelessWidget {
                     } else if (_key.currentState!.validate()) {
                       if (passwordTC.text == confirmPasswordTC.text) {
                         lsController.signUpWithEmailnPassword(
-                            emailTC.text, nameTc.text, passwordTC.text);
+                            emailTC.text, nameTc.text, phoneNumberTc.text, passwordTC.text);
                       } else {
                         toast(
                             "The passwords are not the same.", ToastType.error);

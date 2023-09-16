@@ -6,8 +6,8 @@ import 'package:zenbaba_funiture/constants.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 import 'package:zenbaba_funiture/view/Pages/add_emploee_page.dart';
 import 'package:zenbaba_funiture/view/Pages/employee_activities_page.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
-
 
 class EmployeeDetailsPage extends StatefulWidget {
   final EmployeeModel employeeModel;
@@ -22,6 +22,8 @@ class EmployeeDetailsPage extends StatefulWidget {
 
 class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  LSController lsController = Get.find<LSController>();
 
   double absent = 0;
   List<String> orders = [];
@@ -92,20 +94,22 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
           ),
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(
-                () => AddEmployeePage(
-                  employeeModel: widget.employeeModel,
-                ),
-              );
-            },
-            icon: SvgPicture.asset(
-              "assets/edit.svg",
-              color: Colors.white,
-              height: 21,
-            ),
-          ),
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? IconButton(
+                  onPressed: () {
+                    Get.to(
+                      () => AddEmployeePage(
+                        employeeModel: widget.employeeModel,
+                      ),
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    "assets/edit.svg",
+                    color: Colors.white,
+                    height: 21,
+                  ),
+                )
+              : const SizedBox(),
           IconButton(
             onPressed: () {
               launchUrl(Uri.parse("tel:${widget.employeeModel.phoneNo}"));
@@ -146,11 +150,14 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                         builder: (context, ds) {
                           return InkWell(
                             onTap: () {
-                              Get.to(
-                                () => EmployeeActivityPage(
-                                  employeeModel: widget.employeeModel,
-                                ),
-                              );
+                              if (lsController.currentUser.value.priority !=
+                                  UserPriority.AdminView) {
+                                Get.to(
+                                  () => EmployeeActivityPage(
+                                    employeeModel: widget.employeeModel,
+                                  ),
+                                );
+                              }
                             },
                             child: Ink(
                               child: CircleAvatar(
@@ -354,7 +361,9 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                                   ),
                                 myKeyVal(
                                   "Orders",
-                                  orders.join("/n"),
+                                  orders.isEmpty
+                                      ? "No Orders"
+                                      : orders.join("\n"),
                                 ),
                                 const Divider(
                                   color: Colors.white24,
@@ -363,7 +372,12 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                                 SizedBox(
                                   height: 15,
                                 ),
-                                myKeyVal("Items", itemsUsed.join("/n")),
+                                myKeyVal(
+                                  "Items",
+                                  itemsUsed.isEmpty
+                                      ? "No Items"
+                                      : itemsUsed.join("\n"),
+                                ),
                                 const Divider(
                                   color: Colors.white24,
                                   thickness: 1,

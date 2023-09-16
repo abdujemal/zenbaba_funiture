@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../../data/model/expense_model.dart';
@@ -19,6 +20,7 @@ class ExpenseCard extends StatefulWidget {
 }
 
 class _ExpenseCardState extends State<ExpenseCard> {
+  LSController lsController = Get.find<LSController>();
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -35,11 +37,16 @@ class _ExpenseCardState extends State<ExpenseCard> {
                     offset: const Offset(0, 8))
               ]),
           child: ListTile(
-            onTap: () => Get.to(
-              () => AddExpense(
-                expenseModel: widget.expenseModel,
-              ),
-            ),
+            onTap: () {
+              if (lsController.currentUser.value.priority !=
+                  UserPriority.AdminView) {
+                Get.to(
+                  () => AddExpense(
+                    expenseModel: widget.expenseModel,
+                  ),
+                );
+              }
+            },
             leading: const Icon(
               Icons.keyboard_arrow_up,
               size: 45,
@@ -49,7 +56,7 @@ class _ExpenseCardState extends State<ExpenseCard> {
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
             ),
             trailing: Text(
-              '${widget.expenseModel.price} Br',
+              '${formatNumber(widget.expenseModel.price.round())} Br',
               style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
             ),
             subtitle: Text(

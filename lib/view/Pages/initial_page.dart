@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/employee_page.dart';
-import 'package:zenbaba_funiture/view/Pages/stock_page.dart';
 import 'package:zenbaba_funiture/view/Pages/users_page.dart';
 import '../../constants.dart';
 import '../controller/l_s_controller.dart';
@@ -25,23 +24,83 @@ class _InitialPageState extends State<InitialPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
   LSController lsController = Get.find<LSController>();
 
-  List<Widget> tabs = [
+  List<Widget> adminTabs = [
     const MainPage(),
     const ExpensesPage(),
     const EmployeePage(),
     const ItemsPage(),
-    const StockPage(),
     const CalenderPage(),
     const CustomersPage(),
     const UsersPage(),
   ];
 
-  List<Widget> tabs2 = [
+  List<Widget> adminViewTabs = [
+    const MainPage(),
+    const ExpensesPage(),
+    const EmployeePage(),
+    const ItemsPage(),
+    const CalenderPage(),
+    const CustomersPage()
+  ];
+
+  List<Widget> sellsTabs = [
+    const MainPage(),
+    const CalenderPage(),
+    const CustomersPage()
+  ];
+
+  List<Widget> storeKeeperTabs = [
     const MainPage(),
     const ItemsPage(),
-    const StockPage(),
+  ];
+
+  List<Widget> workShopManagerTabs = [
+    const MainPage(),
+    const EmployeePage(),
     const CalenderPage(),
   ];
+
+  List<Widget> designerTabs = [
+    const MainPage(),
+    const ItemsPage(),
+    const CalenderPage(),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    loadData();
+  }
+
+  loadData() async {
+    await mainConntroller.getExpenses(
+      quantity: numOfDocToGet,
+      status: ExpenseState.unpayed,
+    );
+    await mainConntroller.getExpenses(
+      quantity: numOfDocToGet,
+      status: ExpenseState.payed,
+    );
+    await mainConntroller.getItems();
+    await mainConntroller.getOrders(
+      quantity: numOfDocToGet,
+      status: OrderStatus.Pending,
+    );
+    await mainConntroller.getOrders(
+      quantity: numOfDocToGet,
+      status: OrderStatus.proccessing,
+    );
+    await mainConntroller.getOrders(
+      quantity: numOfDocToGet,
+      status: OrderStatus.Delivered,
+    );
+    // mainConntroller.getProducts();
+    await mainConntroller.getUsers();
+    await mainConntroller.getExpenseChart();
+    await mainConntroller.getOrderChart();
+    await mainConntroller.getCustomers();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,31 +115,49 @@ class _InitialPageState extends State<InitialPage> {
         }
       },
       child: ZoomDrawer(
-          controller: mainConntroller.z.value,
-          borderRadius: 24,
-          style: DrawerStyle.defaultStyle,
-          showShadow: true,
-          shadowLayer1Color: backgroundColor,
-          shadowLayer2Color: backgroundColor,
-          menuScreenWidth: 200,
-          boxShadow: [
-            BoxShadow(
-                color: primaryColor.withAlpha(15),
-                blurRadius: 30,
-                spreadRadius: 30,
-                offset: const Offset(0, 4))
-          ],
-          openCurve: Curves.fastOutSlowIn,
-          slideWidth: MediaQuery.of(context).size.width * 0.6,
-          duration: const Duration(milliseconds: 500),
-          angle: 0.0,
-          menuBackgroundColor: mainBgColor,
-          mainScreen: GetBuilder<MainConntroller>(
-              builder: (controller) =>
-                  lsController.currentUser.value.priority == UserPriority.Admin
-                      ? tabs[controller.mainIndex.value]
-                      : tabs2[controller.mainIndex.value]),
-          menuScreen: const MyDrawer()),
+        controller: mainConntroller.z.value,
+        borderRadius: 24,
+        style: DrawerStyle.defaultStyle,
+        showShadow: true,
+        shadowLayer1Color: backgroundColor,
+        shadowLayer2Color: backgroundColor,
+        menuScreenWidth: 200,
+        boxShadow: [
+          BoxShadow(
+              color: primaryColor.withAlpha(15),
+              blurRadius: 30,
+              spreadRadius: 30,
+              offset: const Offset(0, 4))
+        ],
+        openCurve: Curves.fastOutSlowIn,
+        slideWidth: MediaQuery.of(context).size.width * 0.6,
+        duration: const Duration(milliseconds: 500),
+        angle: 0.0,
+        menuBackgroundColor: mainBgColor,
+        mainScreen: GetBuilder<MainConntroller>(
+            builder: (controller) =>
+                getTabs(lsController.currentUser.value.priority)[
+                    controller.mainIndex.value]),
+        menuScreen: const MyDrawer(),
+      ),
     );
+  }
+
+  List<Widget> getTabs(String priority) {
+    if (priority == UserPriority.Admin) {
+      return adminTabs;
+    } else if (priority == UserPriority.AdminView) {
+      return adminViewTabs;
+    } else if (priority == UserPriority.Sells) {
+      return sellsTabs;
+    } else if (priority == UserPriority.Storekeeper) {
+      return storeKeeperTabs;
+    } else if (priority == UserPriority.WorkShopManager) {
+      return workShopManagerTabs;
+    } else if (priority == UserPriority.HR) {
+      return adminViewTabs;
+    } else {
+      return designerTabs;
+    }
   }
 }

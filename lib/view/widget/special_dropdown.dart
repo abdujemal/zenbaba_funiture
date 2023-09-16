@@ -12,23 +12,24 @@ class SpecialDropdown<T> extends StatefulWidget {
   final Color? bgColor;
   final Color? titleColor, textColor;
   final bool noTitle, isDense;
+  final bool isOutLined;
   final void Function(dynamic value) onChange;
   List<DropdownMenuItem<T>>? items;
-  SpecialDropdown({
-    super.key,
-    required this.title,
-    this.margin,
-    required this.value,
-    required this.width,
-    required this.list,
-    required this.onChange,
-    this.items,
-    this.bgColor,
-    this.titleColor,
-    this.noTitle = false,
-    this.isDense = false,
-    this.textColor,
-  });
+  SpecialDropdown(
+      {super.key,
+      required this.title,
+      this.margin,
+      required this.value,
+      required this.width,
+      required this.list,
+      required this.onChange,
+      this.items,
+      this.bgColor,
+      this.titleColor,
+      this.noTitle = false,
+      this.isDense = false,
+      this.textColor,
+      this.isOutLined = false});
 
   @override
   // ignore: no_logic_in_create_state
@@ -72,8 +73,9 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown<T>> {
             width: widget.width,
             decoration: BoxDecoration(
                 color: widget.bgColor ?? mainBgColor,
-                // border: Border.all(color: textColor),
-                borderRadius: BorderRadius.circular(15)),
+                border: widget.isOutLined ? Border.all(color: textColor) : null,
+                borderRadius:
+                    BorderRadius.circular(widget.isOutLined ? 7 : 15)),
             padding: const EdgeInsets.symmetric(horizontal: 18),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<T>(

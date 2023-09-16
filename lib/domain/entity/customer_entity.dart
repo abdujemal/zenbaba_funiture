@@ -10,7 +10,9 @@ class CustomerEntity extends Equatable {
   final String location;
   final String gender;
   final String source;
-  const CustomerEntity({
+  final String date;
+  const CustomerEntity( {
+    required this.date,
     required this.gender,
     required this.name,
     required this.id,
@@ -23,5 +25,5 @@ class CustomerEntity extends Equatable {
 
   @override
   List<Object?> get props =>
-      [name, id, phone, sefer, kk, location, gender, source];
+      [name, id, phone, sefer, kk, location, gender, source, date];
 }

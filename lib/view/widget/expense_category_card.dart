@@ -82,7 +82,7 @@ class _ExpenseCategoryCardState extends State<ExpenseCategoryCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "${model.price.round()} br",
+                  "${formatNumber(model.price.round())} br",
                   style: TextStyle(fontSize: 16, color: primaryColor),
                 ),
                 const SizedBox(

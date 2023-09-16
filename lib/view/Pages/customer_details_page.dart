@@ -14,6 +14,7 @@ import 'package:zenbaba_funiture/view/widget/review_item.dart';
 import '../../data/model/cutomer_model.dart';
 import '../../data/model/order_model.dart';
 import '../../data/model/review_model.dart';
+import '../controller/l_s_controller.dart';
 import 'add_cutomer.dart';
 
 class CustomerDetailsPage extends StatefulWidget {
@@ -26,6 +27,8 @@ class CustomerDetailsPage extends StatefulWidget {
 
 class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  LSController lsController = Get.find<LSController>();
 
   List<ReviewModel> reviews = [];
   List<OrderModel> orders = [];
@@ -58,7 +61,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
       FirebaseConstants.orders,
       "customerId",
       widget.customerModel.id!,
-      SearchType.normalOrder,
+      SearchType.specificOrder,
     )
         .then((lst) {
       orders = lst.map((e) => e as OrderModel).toList();
@@ -85,20 +88,22 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
               Navigator.pop(context);
             }),
         actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(
-                () => AddCutomer(
-                  customerModel: widget.customerModel,
-                ),
-              );
-            },
-            icon: SvgPicture.asset(
-              'assets/edit.svg',
-              color: whiteColor,
-              height: 21,
-            ),
-          ),
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? IconButton(
+                  onPressed: () {
+                    Get.to(
+                      () => AddCutomer(
+                        customerModel: widget.customerModel,
+                      ),
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/edit.svg',
+                    color: whiteColor,
+                    height: 21,
+                  ),
+                )
+              : const SizedBox(),
         ],
       ),
       body: Padding(
@@ -248,7 +253,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                                   ? DateTime.parse(
                                       orders[index + 1].finishedDate)
                                   : DateTime.parse(orders[index].finishedDate);
-                                  
+
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -275,7 +280,8 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                                     pt: 0,
                                     topHeight: 55,
                                     circleColor: primaryColor,
-                                    isLast: index == orders.length - 1 || nextDay.compareTo(currentDay) > 0,
+                                    isLast: index == orders.length - 1 ||
+                                        nextDay.compareTo(currentDay) > 0,
                                     onTap: () {},
                                     child: Column(
                                       children: [

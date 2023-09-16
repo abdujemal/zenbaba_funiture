@@ -19,21 +19,45 @@ class _MyDrawerState extends State<MyDrawer> {
   LSController lsController = Get.find<LSController>();
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 
-  List<String> menu = [
+  List<String> adminMenu = [
     "Main",
     "Expenses",
     "Employees",
     "Items",
-    "Stock",
     "Calender",
     "Customers",
     "Users",
   ];
 
-  List<String> menu2 = [
+  List<String> adminViewMenu = [
+    "Main",
+    "Expenses",
+    "Employees",
+    "Items",
+    "Calender",
+    "Customers",
+  ];
+
+  List<String> sellsMenu = [
+    "Main",
+    "Calender",
+    "Customers",
+  ];
+
+  List<String> storeKeeperMenu = [
     "Main",
     "Items",
-    "Stock",
+  ];
+
+  List<String> workshopManagerMenu = [
+    "Main",
+    "Employees",
+    "Calender",
+  ];
+
+  List<String> designerMenu = [
+    "Main",
+    "Items",
     "Calender",
   ];
 
@@ -77,16 +101,17 @@ class _MyDrawerState extends State<MyDrawer> {
                         : null,
                     backgroundColor: backgroundColor,
                     child: Center(
-                        child: imageFile == null
-                            ? CircularProgressIndicator(
-                                color: primaryColor,
-                              )
-                            : imageFile!.path == ""
-                                ? const Icon(
-                                    Icons.signal_wifi_off_sharp,
-                                    size: 29,
-                                  )
-                                : const SizedBox()),
+                      child: imageFile == null
+                          ? CircularProgressIndicator(
+                              color: primaryColor,
+                            )
+                          : imageFile!.path == ""
+                              ? const Icon(
+                                  Icons.signal_wifi_off_sharp,
+                                  size: 29,
+                                )
+                              : const SizedBox(),
+                    ),
                   ),
                   const SizedBox(
                     width: 10,
@@ -94,17 +119,23 @@ class _MyDrawerState extends State<MyDrawer> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        lsController.currentUser.value.name,
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold),
+                      SizedBox(
+                        width: 101,
+                        child: Text(
+                          lsController.currentUser.value.name,
+                          style: const TextStyle(
+                              fontSize: 17, fontWeight: FontWeight.bold),
+                        ),
                       ),
                       const SizedBox(
                         height: 5,
                       ),
-                      Text(lsController.currentUser.value.priority,
-                          style: const TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.w400)),
+                      SizedBox(
+                        width: 100,
+                        child: Text(lsController.currentUser.value.priority,
+                            style: const TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.w400)),
+                      ),
                     ],
                   )
                 ],
@@ -114,9 +145,7 @@ class _MyDrawerState extends State<MyDrawer> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(
-                  lsController.currentUser.value.priority == UserPriority.Admin
-                      ? menu.length
-                      : menu2.length,
+                  getMenu(lsController.currentUser.value.priority).length,
                   (index) => Padding(
                         padding: const EdgeInsets.all(10.0),
                         child: GestureDetector(onTap: () {
@@ -124,10 +153,8 @@ class _MyDrawerState extends State<MyDrawer> {
                           mainConntroller.z.value.close!();
                         }, child: Obx(() {
                           return Text(
-                            lsController.currentUser.value.priority ==
-                                    UserPriority.Admin
-                                ? menu[index]
-                                : menu2[index],
+                            getMenu(
+                                lsController.currentUser.value.priority)[index],
                             style: TextStyle(
                                 fontSize: 18,
                                 color: whiteColor,
@@ -146,7 +173,10 @@ class _MyDrawerState extends State<MyDrawer> {
                       color: primaryColor,
                     )
                   : ListTile(
-                      leading: const Icon(Icons.logout),
+                      leading: Icon(
+                        Icons.logout,
+                        color: whiteColor,
+                      ),
                       title: const Text("Logout"),
                       onTap: () {
                         lsController.logout();
@@ -158,5 +188,23 @@ class _MyDrawerState extends State<MyDrawer> {
         ),
       ),
     );
+  }
+
+  getMenu(String priority) {
+    if (priority == UserPriority.Admin) {
+      return adminMenu;
+    } else if (priority == UserPriority.AdminView) {
+      return adminViewMenu;
+    } else if (priority == UserPriority.Sells) {
+      return sellsMenu;
+    } else if (priority == UserPriority.Storekeeper) {
+      return storeKeeperMenu;
+    } else if (priority == UserPriority.WorkShopManager) {
+      return workshopManagerMenu;
+    } else if (priority == UserPriority.HR) {
+      return adminViewMenu;
+    } else {
+      return designerMenu;
+    }
   }
 }

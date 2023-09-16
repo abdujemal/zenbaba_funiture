@@ -360,15 +360,40 @@ class DatabaseRepoImpl extends DatabaseRepo {
     String firebasePath,
     String key,
     String val,
-    SearchType searchType,
-    {
+    SearchType searchType, {
     required String? key2,
     required String? val2,
+  }) async {
+    try {
+      final res = await databaseDataSrc
+          .search(firebasePath, key, val, searchType, key2: key2, val2: val2);
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
   }
+
+  @override
+  Future<Either<Exception, int>> countDoc(
+    String path,
+    String keyForDate,
+    String startDate,
+    String endDate,
   ) async {
     try {
       final res =
-          await databaseDataSrc.search(firebasePath, key, val, searchType, key2: key2, val2: val2);
+          await databaseDataSrc.countDoc(path, keyForDate, startDate, endDate);
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
+  
+  @override
+  Future<Either<Exception, List<EmployeeActivityModel>>> searchEmployee(String month, String year, String employeeId) async {
+    try {
+      final res =
+          await databaseDataSrc.searchEmployee(month, year, employeeId);
       return right(res);
     } on Exception catch (e) {
       return left(e);

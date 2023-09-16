@@ -1,11 +1,10 @@
 import 'dart:io';
 
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:zenbaba_funiture/data/model/product_category_model.dart';
 
@@ -252,12 +251,40 @@ class ExpenseCategory {
 }
 
 class UserPriority {
+  static String Unsigned = "Unsigned";
   static String Admin = 'Admin';
-  static String Shopkeeper = 'Shopkeeper';
-  static String Delivery = 'Delivery';
-  static String Editor = 'Editor';
+  static String AdminView = "Admin View";
+  static String Sells = "Sells";
+  static String Storekeeper = 'Storekeeper';
+  static String WorkShopManager = "Work Shop Manager";
+  static String HR = 'HR';
+  static String Designer = 'Designer';
 
-  static List<String> list = [Admin, Shopkeeper, Delivery, Editor];
+  static isAdmin(priority) => priority == Admin || priority == AdminView;
+
+  static canAccessStock(priority) =>
+      isAdmin(priority) ||
+      priority == Storekeeper ||
+      priority == WorkShopManager ||
+      priority == Designer;
+
+  
+  static canAccessOrder(priority) =>
+      isAdmin(priority) ||
+      priority == Sells ||
+      priority == WorkShopManager ||
+      priority == Designer;
+
+  static List<String> list = [
+    Unsigned,
+    Admin,
+    AdminView,
+    Sells,
+    Storekeeper,
+    WorkShopManager,
+    HR,
+    Designer,
+  ];
 }
 
 class EmployeePosition {
@@ -404,4 +431,14 @@ Widget keyVal(String key, String val, {double pl = 15, double pr = 0}) {
       ),
     ],
   );
+}
+
+String formatNumber(int number) {
+  final formatter = NumberFormat('#,##0');
+  return formatter.format(number);
+}
+
+String shortenNum(int number) {
+  final formatter = NumberFormat.compact();
+  return formatter.format(number);
 }

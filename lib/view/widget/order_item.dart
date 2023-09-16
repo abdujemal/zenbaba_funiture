@@ -53,11 +53,20 @@ class _OrderItemState extends State<OrderItem> {
                   );
                 },
           borderRadius: BorderRadius.circular(15),
-          child: Ink(
+          child: Container(
             padding: const EdgeInsets.all(5),
             decoration: BoxDecoration(
               color: mainBgColor,
               borderRadius: BorderRadius.circular(15),
+              border: widget.orderModel.status == OrderStatus.Delivered
+                  ? Border.all(
+                      color: primaryColor,
+                    )
+                  : isOverDue
+                      ? Border.all(
+                          color: Colors.red,
+                        )
+                      : null,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(50),
@@ -127,7 +136,7 @@ class _OrderItemState extends State<OrderItem> {
                         ),
                       ),
                       Text(
-                        "${widget.orderModel.productPrice} br",
+                        "${formatNumber(widget.orderModel.productPrice.round())} br",
                         style: TextStyle(
                           color: primaryColor,
                         ),
@@ -153,7 +162,29 @@ class _OrderItemState extends State<OrderItem> {
                             style: TextStyle(
                               color: textColor,
                             ),
-                          )
+                          ),
+                          const Spacer(),
+                          if (widget.orderModel.status ==
+                                  OrderStatus.completed &&
+                              remainingDay != 0)
+                            Text(
+                              isOverDue
+                                  ? "${remainingDay.abs()} days late"
+                                  : "$remainingDay days left",
+                              style: TextStyle(
+                                color: primaryColor,
+                                
+                              ),
+                            ),
+                          if (widget.orderModel.status ==
+                                  OrderStatus.completed &&
+                              remainingDay == 0)
+                            Text(
+                              "Today",
+                              style: TextStyle(
+                                color: primaryColor,
+                              ),
+                            )
                         ],
                       ),
                     ],

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../constants.dart';
 
 class SLBtn extends StatelessWidget {
-  String text;
-  void Function() onTap;
-  SLBtn({Key? key, required this.text,required this.onTap}) : super(key: key);
+  final String text;
+  final void Function() onTap;
+  const SLBtn({Key? key, required this.text,required this.onTap}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

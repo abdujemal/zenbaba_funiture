@@ -8,13 +8,22 @@ class UserModel extends UserEntity {
   final String? image;
   final String name;
   final String priority;
+  final String phoneNumber;
   const UserModel({
     required this.id,
     required this.image,
     required this.name,
     required this.priority,
-    required this.email
-  }) : super(id: id, image: image, name: name, priority: priority, email: email);
+    required this.email,
+    required this.phoneNumber,
+  }) : super(
+          id: id,
+          image: image,
+          name: name,
+          priority: priority,
+          email: email,
+          phoneNumber: phoneNumber,
+        );
 
   factory UserModel.fromFirebase(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
@@ -23,11 +32,18 @@ class UserModel extends UserEntity {
         image: data['image'],
         email: data['email'],
         name: data['name'],
-        priority: data['priority']);
+        priority: data['priority'],
+        phoneNumber: data['phoneNumber']??"");
   }
 
   Map<String, dynamic> toMap() {
-    return {'image': image, 'name': name, 'priority': priority, 'email': email};
+    return {
+      'image': image,
+      'name': name,
+      'priority': priority,
+      'email': email,
+      'phoneNumber': phoneNumber,
+    };
   }
 
   UserModel copyWith({
@@ -36,6 +52,7 @@ class UserModel extends UserEntity {
     String? image,
     String? name,
     String? priority,
+    String? phoneNumber
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -43,6 +60,7 @@ class UserModel extends UserEntity {
       image: image ?? this.image,
       name: name ?? this.name,
       priority: priority ?? this.priority,
+      phoneNumber: phoneNumber  ?? this.phoneNumber,
     );
   }
 }

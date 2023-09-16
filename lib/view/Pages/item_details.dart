@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:zenbaba_funiture/constants.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/Pages/add_item.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/widget/left_line.dart';
 
 class ItemDetail extends StatefulWidget {
@@ -16,6 +17,7 @@ class ItemDetail extends StatefulWidget {
 }
 
 class _ItemDetailState extends State<ItemDetail> {
+  LSController lsController = Get.find<LSController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,21 +33,23 @@ class _ItemDetailState extends State<ItemDetail> {
           },
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(
-                () => AddItem(
-                  itemModel: widget.itemModel,
-                ),
-              );
-            },
-            icon: SvgPicture.asset(
-              'assets/edit.svg',
-              color: whiteColor,
-              height: 20,
-              width: 20,
-            ),
-          )
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? IconButton(
+                  onPressed: () {
+                    Get.to(
+                      () => AddItem(
+                        itemModel: widget.itemModel,
+                      ),
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/edit.svg',
+                    color: whiteColor,
+                    height: 20,
+                    width: 20,
+                  ),
+                )
+              : const SizedBox()
         ],
       ),
       body: SingleChildScrollView(
@@ -123,7 +127,7 @@ class _ItemDetailState extends State<ItemDetail> {
                 ),
                 keyVal(
                   "Price Per Unit",
-                  "${widget.itemModel.pricePerUnit} br",
+                  "${formatNumber(widget.itemModel.pricePerUnit.round())} br",
                 ),
                 Divider(
                   indent: 10,

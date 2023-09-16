@@ -23,7 +23,9 @@ void main() async {
   tz.initializeTimeZones();
   await NotificationService().initNotification();
   setup();
-  runApp(const MyApp());
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -38,14 +40,26 @@ class MyApp extends StatelessWidget {
       title: 'Zenbaba Furniture',
       theme: ThemeData(
         primarySwatch: Colors.orange, // Set your desired primary color
-      ),
-      
-      darkTheme: ThemeData.dark().copyWith(
+      ).copyWith(
         primaryColor: mainColor,
         textTheme: TextTheme(
           bodyText2: GoogleFonts.montserrat(),
         ),
+        appBarTheme: AppBarTheme(
+          titleTextStyle: TextStyle(
+            color: whiteColor,
+          ),
+          actionsIconTheme: IconThemeData(
+            color: whiteColor,
+          ),
+          iconTheme: IconThemeData(
+            color: whiteColor,
+          ),
+        ),
+        iconTheme: IconThemeData(color: whiteColor),
+      
       ),
+      
       themeMode: ThemeMode.dark,
       home: const SplashScreen(),
     );

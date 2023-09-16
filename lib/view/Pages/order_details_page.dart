@@ -7,6 +7,7 @@ import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
 import 'package:zenbaba_funiture/data/model/order_model.dart';
 import 'package:zenbaba_funiture/data/model/review_model.dart';
 import 'package:zenbaba_funiture/view/Pages/add_order.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/order_dialog.dart';
 import 'package:zenbaba_funiture/view/widget/review_item.dart';
@@ -24,6 +25,7 @@ class OrderDetailsPage extends StatefulWidget {
 class _OrderDetailsPageState extends State<OrderDetailsPage> {
   double dividerThickness = 0.6;
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+  LSController lsController = Get.find<LSController>();
 
   List<ReviewModel> reviews = [];
 
@@ -71,21 +73,23 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             },
             icon: const Icon(Icons.qr_code),
           ),
-          IconButton(
-            onPressed: () {
-              Get.to(
-                () => AddOrder(
-                  orderModel: widget.orderModel,
-                ),
-              );
-            },
-            icon: SvgPicture.asset(
-              'assets/edit.svg',
-              color: whiteColor,
-              height: 20,
-              width: 20,
-            ),
-          ),
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? IconButton(
+                  onPressed: () {
+                    Get.to(
+                      () => AddOrder(
+                        orderModel: widget.orderModel,
+                      ),
+                    );
+                  },
+                  icon: SvgPicture.asset(
+                    'assets/edit.svg',
+                    color: whiteColor,
+                    height: 20,
+                    width: 20,
+                  ),
+                )
+              : SizedBox(),
         ],
       ),
       body: SingleChildScrollView(
@@ -218,7 +222,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   "Workers",
                   widget.orderModel.employees.isEmpty
                       ? "No Workers"
-                      : widget.orderModel.employees.join("/n"),
+                      : widget.orderModel.employees.join("\n"),
                   pl: 0,
                 ),
                 Divider(
@@ -229,7 +233,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   "Item used",
                   widget.orderModel.itemsUsed.isEmpty
                       ? "No Items used"
-                      : widget.orderModel.itemsUsed.join("/n"),
+                      : widget.orderModel.itemsUsed.join("\n"),
                   pl: 0,
                 ),
                 Divider(

@@ -1,9 +1,8 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/search_page.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../controller/main_controller.dart';
@@ -19,6 +18,8 @@ class CustomersPage extends StatefulWidget {
 
 class _CustomersPageState extends State<CustomersPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  LSController lsController = Get.find<LSController>();
 
   @override
   Widget build(BuildContext context) {
@@ -39,15 +40,17 @@ class _CustomersPageState extends State<CustomersPage> {
               mainConntroller.z.value.open!();
             }),
         actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(() => const AddCutomer());
-            },
-            icon: const Icon(
-              Icons.add,
-              size: 30,
-            ),
-          ),
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? IconButton(
+                  onPressed: () {
+                    Get.to(() => const AddCutomer());
+                  },
+                  icon: const Icon(
+                    Icons.add,
+                    size: 30,
+                  ),
+                )
+              : const SizedBox(),
           IconButton(
             onPressed: () {
               mainConntroller.getCustomers();
@@ -75,7 +78,6 @@ class _CustomersPageState extends State<CustomersPage> {
         ),
       ),
       body: Obx(() {
-        
         if (mainConntroller.getCustomersStatus.value == RequestState.loading) {
           return Center(
             child: CircularProgressIndicator(color: primaryColor),
@@ -88,7 +90,7 @@ class _CustomersPageState extends State<CustomersPage> {
         }
         return ListView.builder(
             physics: const BouncingScrollPhysics(),
-            itemCount: mainConntroller.customers.length+1,
+            itemCount: mainConntroller.customers.length + 1,
             itemBuilder: (context, index) {
               try {
                 return CustomerCard(

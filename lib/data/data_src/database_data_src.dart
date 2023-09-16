@@ -66,6 +66,11 @@ abstract class DatabaseDataSrc {
     int? quantity, {
     bool isNew = true,
   });
+  Future<List<EmployeeActivityModel>> searchEmployee(
+    String month,
+    String year,
+    String employeeId,
+  );
   Future<List> search(
     String firebasePath,
     String key,
@@ -74,6 +79,12 @@ abstract class DatabaseDataSrc {
     required String? key2,
     required String? val2,
   });
+  Future<int> countDoc(
+    String path,
+    String keyForDate,
+    String startDate,
+    String endDate,
+  );
 }
 
 class DatabaseDataSrcImpl extends DatabaseDataSrc {
@@ -357,21 +368,43 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       lastDoc = null;
     }
     if (quantity != null && status != null) {
+      bool isCompleted = status == OrderStatus.completed;
       if (date == null) {
-        orderqs = lastDoc == null
-            ? await firebaseFirestore
-                .collection(FirebaseConstants.orders)
-                .where("status", isEqualTo: status)
-                .orderBy('finishedDate', descending: true)
-                .limit(quantity)
-                .get()
-            : await firebaseFirestore
-                .collection(FirebaseConstants.orders)
-                .where("status", isEqualTo: status)
-                .orderBy('finishedDate', descending: true)
-                .startAfterDocument(lastDoc)
-                .limit(quantity)
-                .get();
+        if (lastDoc == null) {
+          orderqs = await firebaseFirestore
+              .collection(FirebaseConstants.orders)
+              .where(
+                "status",
+                isEqualTo: !isCompleted ? status : null,
+                whereIn: isCompleted
+                    ? [
+                        OrderStatus.Delivered,
+                        OrderStatus.completed,
+                      ]
+                    : null,
+              )
+              .orderBy('finishedDate', descending: true)
+              .limit(quantity)
+              .get();
+        } else {
+          orderqs = await firebaseFirestore
+              .collection(FirebaseConstants.orders)
+              .where(
+                "status",
+                isEqualTo: !isCompleted ? status : null,
+                whereIn: isCompleted
+                    ? [
+                        OrderStatus.Delivered,
+                        OrderStatus.completed,
+                      ]
+                    : null,
+              )
+              .orderBy('finishedDate', descending: true)
+              .startAfterDocument(lastDoc)
+              .limit(quantity)
+              .get();
+        }
+
         if (orderqs.docs.isNotEmpty) {
           if (status == OrderStatus.Pending) {
             lastPendingOrder = orderqs.docs[orderqs.docs.length - 1];
@@ -549,13 +582,14 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         .doc(orderModel.id)
         .update(orderModel.toMap());
 
-    if (prevState == OrderStatus.Pending &&
+    if (prevState != OrderStatus.Delivered &&
         orderModel.status == OrderStatus.Delivered) {
       await addOrderChart(
         OrderChartModel(
           orderId: orderModel.id!,
           date: orderModel.finishedDate,
-          price: (orderModel.productPrice * orderModel.quantity) -
+          price: ((orderModel.productPrice * orderModel.quantity) +
+                  orderModel.deliveryPrice) -
               orderModel.payedPrice,
         ),
       );
@@ -836,6 +870,20 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
+  Future<int> countDoc(
+      String path, String keyForDate, String startDate, String endDate) async {
+    final aq = await firebaseFirestore
+        .collection(path)
+        .orderBy(keyForDate)
+        .startAt([startDate])
+        .endBefore([endDate])
+        .count()
+        .get();
+
+    return aq.count;
+  }
+
+  @override
   Future<List<EmployeeActivityModel>> getEmployeeeActivities(
       String? employeeId, int? quantity,
       {bool isNew = true}) async {
@@ -940,6 +988,28 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     }
     return lst;
   }
+
+  @override
+  Future<List<EmployeeActivityModel>> searchEmployee(
+      String month, String year, String employeeId) async {
+    final ds = await firebaseFirestore
+        .collection(FirebaseConstants.employeeActivity)
+        .where("employeeId", isEqualTo: employeeId)
+        .orderBy('date') //2023-08-23
+        .startAt(["$year-$month-01"]).endAt(["$year-$month-30"]).get();
+
+    List<EmployeeActivityModel> lst = [];
+
+    for (var data in ds.docs) {
+      lst.add(EmployeeActivityModel.fromMap(data));
+    }
+
+    if (ds.docs.isNotEmpty) {
+      lastEmployeeActivity = ds.docs[0];
+    }
+
+    return lst;
+  }
 }
 
 enum SearchType {
@@ -947,5 +1017,5 @@ enum SearchType {
   specificOrder,
   fromArrayOfValEmployeeActivitty,
   normalreviews,
-  normalItemHistories
+  normalItemHistories,
 }

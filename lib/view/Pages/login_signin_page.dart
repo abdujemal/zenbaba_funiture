@@ -20,7 +20,10 @@ class _LogInSignInPageState extends State<LogInSignInPage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(image: DecorationImage(image: AssetImage('assets/loginBackground.png'), fit: BoxFit.cover)),
+      decoration: const BoxDecoration(
+          image: DecorationImage(
+              image: AssetImage('assets/loginBackground.png'),
+              fit: BoxFit.cover)),
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SingleChildScrollView(
@@ -28,7 +31,9 @@ class _LogInSignInPageState extends State<LogInSignInPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 90,),
+                const SizedBox(
+                  height: 90,
+                ),
                 Image.asset(
                   "assets/logo.png",
                   width: 140,
@@ -36,8 +41,10 @@ class _LogInSignInPageState extends State<LogInSignInPage> {
                 const SizedBox(
                   height: 15,
                 ),
-                Obx((() => lsController.isLogin.value ? Login() : SignUp())),
-                const SizedBox(height: 40,),  
+                Obx((() => lsController.isLogin.value ? const Login() : const SignUp())),
+                const SizedBox(
+                  height: 40,
+                ),
                 GestureDetector(
                     onTap: () {
                       if (lsController.isLogin.value) {
@@ -46,24 +53,28 @@ class _LogInSignInPageState extends State<LogInSignInPage> {
                         lsController.setIsLoading(true);
                       }
                     },
-                    child: Obx(()=> Column(
-                      children: [
-                        Text(
-                          lsController.isLogin.value ?
-                          "New to this App":
-                          "Already have an account",
-                          style: TextStyle(color: textColor, fontSize: 12),
-                        ),
-                        const SizedBox(height: 8,),
-                        Text(
-                          lsController.isLogin.value ?
-                          "Create an Account":
-                          "Sign In",
-                          style: const TextStyle(
-                              color: Colors.black, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ))),
+                    child: Obx(() => Column(
+                          children: [
+                            Text(
+                              lsController.isLogin.value
+                                  ? "New to this App"
+                                  : "Already have an account",
+                              style: TextStyle(
+                                  color: backgroundColor, fontSize: 12),
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Text(
+                              lsController.isLogin.value
+                                  ? "Create an Account"
+                                  : "Sign In",
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ))),
                 const SizedBox(
                   height: 40,
                 )

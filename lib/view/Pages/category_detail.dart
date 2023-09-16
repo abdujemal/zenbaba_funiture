@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/products_gallery.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../controller/main_controller.dart';
@@ -18,6 +18,7 @@ class CategoryDetail extends StatefulWidget {
 
 class _CategoryDetailState extends State<CategoryDetail> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+  LSController lsController = Get.find<LSController>();
 
   // List<ProductModel> products = [];
 
@@ -29,7 +30,8 @@ class _CategoryDetailState extends State<CategoryDetail> {
   void initState() {
     super.initState();
     controller.addListener(handleScrolling);
-    mainConntroller.getProducts(category: widget.categoryName, quantity: numOfDocToGet);
+    mainConntroller.getProducts(
+        category: widget.categoryName, quantity: numOfDocToGet);
   }
 
   void handleScrolling() {
@@ -56,25 +58,30 @@ class _CategoryDetailState extends State<CategoryDetail> {
         backgroundColor: Colors.transparent,
         title: title(widget.categoryName),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(
+            Icons.arrow_back,
+            color: whiteColor,
+          ),
           onPressed: () {
             Get.back();
           },
         ),
         actions: [
-          IconButton(
-            onPressed: () {
-              Get.to(
-                () => AddProduct(
-                  category: widget.categoryName,
-                ),
-              );
-            },
-            icon: const Icon(
-              Icons.add,
-              size: 30,
-            ),
-          ),
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? IconButton(
+                  onPressed: () {
+                    Get.to(
+                      () => AddProduct(
+                        category: widget.categoryName,
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.add,
+                    size: 30,
+                  ),
+                )
+              : SizedBox(),
           IconButton(
             onPressed: () {
               mainConntroller.getProducts(

@@ -54,6 +54,8 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
 
   EmployeeModel? selectedEmployee;
 
+  bool withReciept = false;
+
   @override
   void initState() {
     mainConntroller.getEmployees().then((value) {
@@ -498,6 +500,23 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
                 const SizedBox(
                   height: 35,
                 ),
+                const SizedBox(
+                  width: 15,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                  ),
+                  child: CheckboxListTile(
+                    title: const Text("With Reciept"),
+                    value: withReciept,
+                    onChanged: (v) {
+                      setState(() {
+                        withReciept = v!;
+                      });
+                    },
+                  ),
+                ),
                 isLoading
                     ? CircularProgressIndicator(
                         color: primaryColor,
@@ -536,6 +555,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
                                   ExpenseModel(
                                     id: null,
                                     category: ExpenseCategory.rawMaterial,
+                                    withReceipt: withReciept,
                                     description:
                                         "$quantity${widget.itemModel.unit} of ${widget.itemModel.name}",
                                     price: (double.parse(_priceTc.text) *

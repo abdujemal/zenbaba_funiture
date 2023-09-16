@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/Pages/non_verified_page.dart';
 
 import '../../base_usecase.dart';
 import '../../constants.dart';
@@ -18,9 +19,16 @@ class LSController extends GetxController {
   Rx<RequestState> emailState = RequestState.idle.obs;
   Rx<RequestState> logoutState = RequestState.idle.obs;
   Rx<RequestState> updateState = RequestState.idle.obs;
+  Rx<RequestState> getUserState = RequestState.idle.obs;
 
-  Rx<UserModel> currentUser =
-      UserModel(id: "", image: '', name: '', priority: '', email: '').obs;
+  Rx<UserModel> currentUser = const UserModel(
+    id: "",
+    image: '',
+    name: '',
+    priority: '',
+    email: '',
+    phoneNumber: "",
+  ).obs;
 
   SignUpWithEmailPasswordUsecase signUpWithEmailPasswordUsecase;
   SignInWithEmailPasswordUSecase signInWithEmailPasswordUSecase;
@@ -60,28 +68,43 @@ class LSController extends GetxController {
   }
 
   Future<void> getUser() async {
+    getUserState.value = RequestState.loading;
+
     final res = await getUserUsecase.call(const NoParameters());
 
     res.fold((l) {
+      getUserState.value = RequestState.loaded;
+
       Get.off(() => const LogInSignInPage());
     }, (r) {
       currentUser.value = r;
-      Get.off(() => const InitialPage());
+      getUserState.value = RequestState.loaded;
+
+      if (currentUser.value.priority == UserPriority.Unsigned) {
+        Get.off(() => const NonVerfiedPage());
+      } else {
+        Get.off(() => const InitialPage());
+      }
     });
   }
 
-  signUpWithEmailnPassword(String email, String name, String password) async {
+  signUpWithEmailnPassword(
+      String email, String name, String phoneNumber, String password) async {
     emailState.value = RequestState.loading;
     final res = await signUpWithEmailPasswordUsecase.call(
-        SignUpWithEmailPasswordParams(
-            password,
-            UserModel(
-                id: null,
-                image: null,
-                name: name,
-                priority: UserPriority.Shopkeeper,
-                email: email),
-            image.value));
+      SignUpWithEmailPasswordParams(
+        password,
+        UserModel(
+          id: null,
+          image: null,
+          name: name,
+          priority: UserPriority.Unsigned,
+          email: email,
+          phoneNumber: phoneNumber,
+        ),
+        image.value,
+      ),
+    );
 
     res.fold((l) {
       emailState.value = RequestState.error;
@@ -89,7 +112,12 @@ class LSController extends GetxController {
     }, (r) {
       emailState.value = RequestState.loaded;
       currentUser.value = r;
-      Get.off(() => const InitialPage());
+
+      if (currentUser.value.priority == UserPriority.Unsigned) {
+        Get.off(() => const NonVerfiedPage());
+      } else {
+        Get.off(() => const InitialPage());
+      }
     });
   }
 
@@ -104,7 +132,12 @@ class LSController extends GetxController {
     }, (r) {
       emailState.value = RequestState.loaded;
       currentUser.value = r;
-      Get.off(() => const InitialPage());
+
+      if (currentUser.value.priority == UserPriority.Unsigned) {
+        Get.off(() => const NonVerfiedPage());
+      } else {
+        Get.off(() => const InitialPage());
+      }
     });
   }
 

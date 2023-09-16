@@ -17,7 +17,7 @@ class UpdateUserDialog extends StatefulWidget {
 }
 
 class _UpdateUserDialogState extends State<UpdateUserDialog> {
-  var selectedPriority = UserPriority.Shopkeeper;
+  var selectedPriority = UserPriority.Unsigned;
 
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 

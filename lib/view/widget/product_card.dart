@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../../data/model/product_model.dart';
@@ -21,18 +20,7 @@ class ProductCard extends StatefulWidget {
 
 class _ProductCardState extends State<ProductCard> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   // setImageFile();
-  // }
-
-  // setImageFile() async {
-  //   file = await
-  //   if (mounted) {
-  //     setState(() {});
-  //   }
-  // }
+  LSController lsController = Get.find<LSController>();
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +123,7 @@ class _ProductCardState extends State<ProductCard> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        '${widget.productModel.price} Br',
+                        '${lsController.currentUser.value.priority == UserPriority.WorkShopManager ? "????" : formatNumber(widget.productModel.price.round())} Br',
                         style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w800,

@@ -64,6 +64,11 @@ abstract class DatabaseRepo {
     int? quantity, {
     bool isNew = true,
   });
+  Future<Either<Exception,List<EmployeeActivityModel>>> searchEmployee(
+    String month,
+    String year,
+    String employeeId,
+  );
   Future<Either<Exception, List>> search(
     String firebasePath,
     String key,
@@ -72,4 +77,10 @@ abstract class DatabaseRepo {
     required String? key2,
     required String? val2,
   });
+  Future<Either<Exception, int>> countDoc(
+    String path,
+    String keyForDate,
+    String startDate,
+    String endDate,
+  );
 }

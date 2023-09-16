@@ -6,12 +6,21 @@ import 'package:zenbaba_funiture/view/widget/sl_input.dart';
 import '../../constants.dart';
 import '../controller/l_s_controller.dart';
 
-class Login extends StatelessWidget {
-  // const Login({ Key? key }) : super(key: key);
+class Login extends StatefulWidget {
+  const Login({super.key});
 
+  @override
+  State<Login> createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
+  // const Login({ Key? key }) : super(key: key);
   TextEditingController emailTC = TextEditingController();
+
   TextEditingController passwordTC = TextEditingController();
+
   final GlobalKey<FormState> _key = GlobalKey<FormState>();
+
   LSController lsController = Get.find<LSController>();
 
   @override
@@ -25,18 +34,22 @@ class Login extends StatelessWidget {
               SLInput(
                 inputColor: textColor,
                 controller: emailTC,
+                otherColor: backgroundColor,
+                isOutlined: true,
                 keyboardType: TextInputType.emailAddress,
                 title: 'Email',
                 hint: 'abc@website.com',
               ),
               const SizedBox(
-                height: 40,
+                height: 20,
               ),
               SLInput(
                 inputColor: textColor,
                 title: "Password",
                 hint: "*******",
                 isObscure: true,
+                otherColor: backgroundColor,
+                isOutlined: true,
                 keyboardType: TextInputType.text,
                 controller: passwordTC,
               ),
@@ -52,7 +65,7 @@ class Login extends StatelessWidget {
             onTap: () {},
             child: Text(
               "Forget password?",
-              style: TextStyle(color: textColor),
+              style: TextStyle(color: backgroundColor),
             ),
           ),
         ),

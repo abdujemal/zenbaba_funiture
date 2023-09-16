@@ -111,7 +111,7 @@ class _ProductGalleryState extends State<ProductGallery> {
                         child: RotatedBox(
                           quarterTurns: 2,
                           child: Text(
-                            "${images[index]['price']} Br",
+                            "${formatNumber((images[index]['price'] as double).round())} Br",
                             style: const TextStyle(
                                 fontWeight: FontWeight.w600,
                                 color: Colors.green),

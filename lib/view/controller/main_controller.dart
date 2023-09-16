@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
+import 'package:zenbaba_funiture/domain/usecase/count_doc_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
 
 import '../../base_usecase.dart';
@@ -43,6 +44,7 @@ import '../../domain/usecase/get_products_usecase.dart';
 import '../../domain/usecase/get_single_order_usecase.dart';
 import '../../domain/usecase/get_users_usecase.dart';
 import '../../domain/usecase/search_customers_usecase.dart';
+import '../../domain/usecase/search_employee_usecase.dart';
 import '../../domain/usecase/search_expense_usecase.dart';
 import '../../domain/usecase/search_products_usecase.dart';
 import '../../domain/usecase/search_usecase.dart';
@@ -80,6 +82,8 @@ class MainConntroller extends GetxController {
   Rx<RequestState> getCustomersStatus = RequestState.idle.obs;
   Rx<RequestState> getUsersStatus = RequestState.idle.obs;
   Rx<RequestState> getEmployeeStatus = RequestState.idle.obs;
+
+  Rx<RequestState> countDocsStatus = RequestState.idle.obs;
 
   RxList<ExpenseModel> payedExpenses = <ExpenseModel>[].obs;
   RxList<EmployeeModel> employees = <EmployeeModel>[].obs;
@@ -130,6 +134,8 @@ class MainConntroller extends GetxController {
   SearchUsecase searchUsecase;
   GetEmployeeActivitiesUsecase getEmployeeActivitiesUsecase;
   AddUpdateEmployeeActivityUsecase addUpdateEmployeeActivityUsecase;
+  CountDocUsecase countDocUsecase;
+  SearchEmployeeUsecase searchEmployeeUsecase;
 
   Future<SharedPreferences> sharedPreferences = SharedPreferences.getInstance();
 
@@ -165,6 +171,8 @@ class MainConntroller extends GetxController {
     this.addUpdateEmployeeActivityUsecase,
     this.getEmployeeActivitiesUsecase,
     this.searchUsecase,
+    this.countDocUsecase,
+    this.searchEmployeeUsecase,
   );
 
   setCurrentTabIndex(int val) {
@@ -178,6 +186,40 @@ class MainConntroller extends GetxController {
 
   toggleAddDialogue() {
     isAddDialogueOpen.value = !isAddDialogueOpen.value;
+  }
+
+  // count docs
+  Future<int> countDocs(
+    String path,
+    String keyForDate,
+    String startDate,
+    String endDate,
+  ) async {
+    int count = 0;
+
+    countDocsStatus.value = RequestState.loading;
+
+    final res = await countDocUsecase.call(
+      CountDocParams(
+        path: path,
+        keyForDate: keyForDate,
+        startDate: startDate,
+        endDate: endDate,
+      ),
+    );
+
+    res.fold(
+      (l) {
+        countDocsStatus.value = RequestState.error;
+        toast(l.toString(), ToastType.error);
+      },
+      (r) {
+        countDocsStatus.value = RequestState.loaded;
+        count = r;
+      },
+    );
+
+    return count;
   }
 
   // Search
@@ -328,8 +370,35 @@ class MainConntroller extends GetxController {
           ...employeesActivities,
         ];
       }
-      print(r);
     });
+  }
+
+  Future<List<EmployeeActivityModel>> searchEmployeeActivities(
+      String employeeId, String year, String month) async {
+    getEmployeeActivityStatus.value = RequestState.loading;
+
+    final res = await searchEmployeeUsecase.call(
+      SearchEmployeeParams(
+        employeeId: employeeId,
+        year: year,
+        month: month,
+      ),
+    );
+
+    List<EmployeeActivityModel> lst = [];
+
+    res.fold(
+      (l) {
+        getEmployeeActivityStatus.value = RequestState.error;
+        toast(l.toString(), ToastType.error);
+      },
+      (r) {
+        getEmployeeActivityStatus.value = RequestState.loaded;
+        employeesActivities.value = r;
+        lst = r;
+      },
+    );
+    return lst;
   }
 
   // delete
@@ -359,12 +428,15 @@ class MainConntroller extends GetxController {
     } else if (path == FirebaseConstants.customers) {
       customerStatus.value = RequestState.loading;
     }
-    final res = await deleteUsecase.call(DeleteParams(
+    final res = await deleteUsecase.call(
+      DeleteParams(
         alsoImage: alsoImage,
         id: id,
         path: path,
         name: name,
-        numOfImages: numOfImages));
+        numOfImages: numOfImages,
+      ),
+    );
 
     res.fold((l) {
       if (path == FirebaseConstants.expenses) {
@@ -717,6 +789,7 @@ class MainConntroller extends GetxController {
     SharedPreferences pref = await sharedPreferences;
 
     getOrdersStatus.value = RequestState.loading;
+
     final res = await getORderUsecase.call(GetOrderParams(
       quantity: quantity,
       status: status,
@@ -778,8 +851,8 @@ class MainConntroller extends GetxController {
         } else {
           completedOrders.addAll(r);
         }
-        completedOrders.sort((a, b) => DateTime.parse(a.finishedDate)
-            .compareTo(DateTime.parse(b.finishedDate)));
+        completedOrders.sort((a, b) => DateTime.parse(b.finishedDate)
+            .compareTo(DateTime.parse(a.finishedDate)));
       }
     });
   }
@@ -930,7 +1003,7 @@ class MainConntroller extends GetxController {
 
   // customers
 
-  getCustomers({int? quantity, int? end}) async {
+  Future<void> getCustomers({int? quantity, int? end}) async {
     getCustomersStatus.value = RequestState.loading;
     final res = await getCustomerUsecase.call(GetCustomersParam(
       start: quantity,
@@ -1007,7 +1080,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  getOrderChart() async {
+  Future<void> getOrderChart() async {
     getOrdersStatus.value = RequestState.loading;
 
     final res = await getOrderChartUsecase.call(const NoParameters());
@@ -1021,7 +1094,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  getExpenseChart() async {
+  Future<void> getExpenseChart() async {
     getExpensesStatus.value = RequestState.loading;
 
     final res = await getExpenseChartUsecase.call(const NoParameters());

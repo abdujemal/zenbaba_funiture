@@ -10,9 +10,11 @@ class EmployeeActivityItem extends StatefulWidget {
   final bool isLast;
   final EmployeeActivityModel employeeActivityModel;
   final bool isDiffenrentMonth;
+  final bool isSearchedItem;
 
   const EmployeeActivityItem(
       {super.key,
+      this.isSearchedItem = false,
       required this.employeeActivityModel,
       required this.isLast,
       required this.isDiffenrentMonth});
@@ -22,9 +24,39 @@ class EmployeeActivityItem extends StatefulWidget {
 }
 
 class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
+  bool isSearchedItem = false;
+
   @override
   void initState() {
     super.initState();
+    isSearchedItem = widget.isSearchedItem;
+    if (isSearchedItem) {
+      Future.delayed(const Duration(milliseconds: 700)).then((value) {
+        setState(() {
+          isSearchedItem = !isSearchedItem;
+        });
+        Future.delayed(const Duration(milliseconds: 300)).then((value) {
+          setState(() {
+            isSearchedItem = !isSearchedItem;
+          });
+          Future.delayed(const Duration(milliseconds: 700)).then((value) {
+            setState(() {
+              isSearchedItem = !isSearchedItem;
+            });
+            Future.delayed(const Duration(milliseconds: 300)).then((value) {
+              setState(() {
+                isSearchedItem = !isSearchedItem;
+              });
+              Future.delayed(const Duration(seconds: 1)).then((value) {
+                setState(() {
+                  isSearchedItem = !isSearchedItem;
+                });
+              });
+            });
+          });
+        });
+      });
+    }
   }
 
   @override
@@ -64,99 +96,102 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
             );
           },
           isLast: widget.isLast,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Text(
-                    DateFormat("EEE, MMM dd, yyyy").format(
-                      (DateTime.parse(widget.employeeActivityModel.date)),
-                    ),
-                    style: const TextStyle(fontWeight: FontWeight.w200),
-                  ),
-                  if (widget.employeeActivityModel.orders.isNotEmpty)
-                    ...List.generate(
-                      widget.employeeActivityModel.orders.length,
-                      (index) => Text(
-                        widget.employeeActivityModel.orders[index],
-                        style: TextStyle(color: primaryColor),
+          child: Container(
+            color: isSearchedItem ? Colors.white12 : null,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
+                  children: [
+                    Text(
+                      DateFormat("EEE, MMM dd, yyyy").format(
+                        (DateTime.parse(widget.employeeActivityModel.date)),
                       ),
+                      style: const TextStyle(fontWeight: FontWeight.w200),
                     ),
-                  if (widget.employeeActivityModel.orders.isEmpty)
-                    Center(
-                      child: Text(
-                        "...",
-                        style: TextStyle(color: primaryColor),
+                    if (widget.employeeActivityModel.orders.isNotEmpty)
+                      ...List.generate(
+                        widget.employeeActivityModel.orders.length,
+                        (index) => Text(
+                          widget.employeeActivityModel.orders[index],
+                          style: TextStyle(color: primaryColor),
+                        ),
                       ),
-                    ),
-                  if (widget.employeeActivityModel.itemsUsed.isNotEmpty)
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text("Item used"),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 10),
-                          child: Column(
-                            children: List.generate(
-                              widget.employeeActivityModel.itemsUsed.length,
-                              (index) => Text(
-                                widget.employeeActivityModel.itemsUsed[index],
+                    if (widget.employeeActivityModel.orders.isEmpty)
+                      Center(
+                        child: Text(
+                          "...",
+                          style: TextStyle(color: primaryColor),
+                        ),
+                      ),
+                    if (widget.employeeActivityModel.itemsUsed.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Item used"),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Column(
+                              children: List.generate(
+                                widget.employeeActivityModel.itemsUsed.length,
+                                (index) => Text(
+                                  widget.employeeActivityModel.itemsUsed[index],
+                                ),
                               ),
                             ),
-                          ),
-                        )
-                      ],
-                    )
-                ],
-              ),
-              const Spacer(),
-              Column(
-                children: [
-                  Text(
-                    "morning & afternoon",
-                    style: TextStyle(color: primaryColor),
-                  ),
-                  Text(
-                    "$morning | $afternoon",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (widget.employeeActivityModel.payment > 0.5)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 20),
-                      child: Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(1.5),
-                            decoration: BoxDecoration(
-                                border:
-                                    Border.all(color: primaryColor, width: 2),
-                                shape: BoxShape.circle),
-                            child: Icon(
-                              Icons.arrow_outward,
-                              color: primaryColor,
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Text(
-                            "${widget.employeeActivityModel.payment.round()} br",
-                            style: const TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          )
                         ],
+                      )
+                  ],
+                ),
+                const Spacer(),
+                Column(
+                  children: [
+                    Text(
+                      "morning & afternoon",
+                      style: TextStyle(color: primaryColor),
+                    ),
+                    Text(
+                      "$morning | $afternoon",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
                       ),
-                    )
-                ],
-              ),
-              const Spacer()
-            ],
+                    ),
+                    if (widget.employeeActivityModel.payment > 0.5)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(1.5),
+                              decoration: BoxDecoration(
+                                  border:
+                                      Border.all(color: primaryColor, width: 2),
+                                  shape: BoxShape.circle),
+                              child: Icon(
+                                Icons.arrow_outward,
+                                color: primaryColor,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            Text(
+                              "${widget.employeeActivityModel.payment.round()} br",
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                  ],
+                ),
+                const Spacer()
+              ],
+            ),
           ),
         )
         // Stack(

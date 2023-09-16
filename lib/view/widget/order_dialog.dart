@@ -29,7 +29,7 @@ class _OrderDialogState extends State<OrderDialog> {
     super.initState();
     values.add(widget.orderModel.productName);
     values.add(widget.orderModel.quantity.toString());
-    values.add('${widget.orderModel.productPrice} Br');
+    values.add('${formatNumber(widget.orderModel.productPrice.round())} Br');
   }
 
   @override

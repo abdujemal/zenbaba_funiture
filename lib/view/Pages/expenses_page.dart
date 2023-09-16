@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../../data/model/expense_model.dart';
@@ -18,6 +19,7 @@ class ExpensesPage extends StatefulWidget {
 
 class _ExpensesPageState extends State<ExpensesPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+  LSController lsController = Get.find<LSController>();
 
   int selectedTabIndex = 1;
 
@@ -48,18 +50,21 @@ class _ExpensesPageState extends State<ExpensesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryColor,
-        child: SvgPicture.asset(
-          "assets/plus.svg",
-          color: backgroundColor,
-          width: 20,
-          height: 20,
-        ),
-        onPressed: () {
-          Get.to(() => const AddExpense());
-        },
-      ),
+      floatingActionButton:
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? FloatingActionButton(
+                  backgroundColor: primaryColor,
+                  child: SvgPicture.asset(
+                    "assets/plus.svg",
+                    color: backgroundColor,
+                    width: 20,
+                    height: 20,
+                  ),
+                  onPressed: () {
+                    Get.to(() => const AddExpense());
+                  },
+                )
+              : null,
       appBar: AppBar(
         centerTitle: true,
         elevation: 0,

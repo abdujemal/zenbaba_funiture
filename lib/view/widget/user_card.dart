@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/view/widget/update_user.dart';
 
 import '../../constants.dart';
@@ -24,8 +25,8 @@ class _UserCardState extends State<UserCard> {
   }
 
   setImageFile() async {
-    imageFile = await displayImage(widget.userModel.image!,
-        widget.userModel.id!, FirebaseConstants.users);
+    imageFile = await displayImage(
+        widget.userModel.image!, widget.userModel.id!, FirebaseConstants.users);
     if (mounted) {
       setState(() {});
     }
@@ -57,7 +58,23 @@ class _UserCardState extends State<UserCard> {
                     : const SizedBox()),
       ),
       subtitle: Text(widget.userModel.email),
-      trailing: Text(widget.userModel.priority),
+      trailing: Column(
+        children: [
+          GestureDetector(
+              onTap: () async {
+                if (await canLaunchUrl(
+                    Uri.parse('tel://${widget.userModel.phoneNumber}'))) {
+                  await launchUrl(
+                      Uri.parse('tel://${widget.userModel.phoneNumber}'));
+                }
+              },
+              child: const Icon(
+                Icons.call,
+                color: Colors.green,
+              )),
+          Text(widget.userModel.priority),
+        ],
+      ),
     );
   }
 }

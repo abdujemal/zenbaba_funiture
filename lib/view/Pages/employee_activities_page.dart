@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:scroll_date_picker/scroll_date_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
@@ -22,6 +23,8 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
   final ScrollController _scrollController = ScrollController();
 
   bool isAtTheBottom = false;
+
+  DateTime _selectedDate = DateTime.now();
 
   @override
   void initState() {
@@ -85,9 +88,9 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
     }
   }
 
-  _scrollToEnd() {
+  _scrollToItem(int nth, int totalNum) {
     _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
+      (nth * 50).toDouble(),
       duration:
           const Duration(milliseconds: 500), // Adjust the duration as desired
       curve: Curves.easeInOut, // Adjust the curve as desired
@@ -103,18 +106,107 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: isAtTheBottom
-          ? null
-          : FloatingActionButton(
-              backgroundColor: mainBgColor,
-              child: Icon(
-                Icons.keyboard_arrow_down,
-                color: primaryColor,
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: mainBgColor,
+        child: Icon(
+          Icons.calendar_month,
+          color: primaryColor,
+        ),
+        onPressed: () {
+          Get.dialog(Dialog(
+            child: Container(
+              height: 100,
+              // width: double.infinity,
+              color: backgroundColor,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: ScrollDatePicker(
+                      selectedDate: _selectedDate,
+                      locale: const Locale('en'),
+                      options: DatePickerOptions(
+                        backgroundColor: backgroundColor,
+                        isLoop: false,
+                      ),
+                      scrollViewOptions: const DatePickerScrollViewOptions(
+                        month: ScrollViewDetailOptions(
+                          textStyle: TextStyle(
+                            fontSize: 13,
+                          ),
+                          selectedTextStyle: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                        day: ScrollViewDetailOptions(
+                          textStyle: TextStyle(
+                            fontSize: 13,
+                          ),
+                          selectedTextStyle: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                        year: ScrollViewDetailOptions(
+                          textStyle: TextStyle(
+                            fontSize: 13,
+                          ),
+                          selectedTextStyle: TextStyle(
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      onDateTimeChanged: (DateTime value) {
+                        setState(() {
+                          _selectedDate = value;
+                        });
+                      },
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: IconButton(
+                      onPressed: () {
+                        String m = "${_selectedDate.month}";
+                        if (_selectedDate.month < 10) {
+                          m = "0$m";
+                        }
+                        mainConntroller
+                            .searchEmployeeActivities(
+                          widget.employeeModel.id!,
+                          "${_selectedDate.year}",
+                          m,
+                        )
+                            .then((lst) {
+                          Future.delayed(const Duration(milliseconds: 200))
+                              .then(
+                            (value) {
+                              _scrollToItem(
+                                lst.indexWhere(
+                                  (e) =>
+                                      DateTime.parse(e.date).day ==
+                                      _selectedDate.day,
+                                ),
+                                lst.length,
+                              );
+                            },
+                          );
+                        });
+                        Get.back();
+                      },
+                      icon: Icon(
+                        Icons.search,
+                        color: primaryColor,
+                      ),
+                    ),
+                  )
+                ],
               ),
-              onPressed: () {
-                _scrollToEnd();
-              },
             ),
+          ));
+
+          // _scrollToEnd();
+        },
+      ),
       backgroundColor: backgroundColor,
       appBar: AppBar(
         toolbarHeight: 80,
@@ -212,7 +304,7 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
                   ),
                 )
               : RefreshIndicator(
-                  color: primaryColor,
+                  color: mainBgColor,
                   onRefresh: () async {
                     await mainConntroller.getEmployeeActivity(
                       widget.employeeModel.id!,
@@ -223,30 +315,47 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
                       isNew: false,
                     );
                   },
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    controller: _scrollController,
-                    padding: const EdgeInsets.all(15),
-                    itemCount: mainConntroller.employeesActivities.length,
-                    itemBuilder: (context, index) {
-                      int currentMonth = int.parse(mainConntroller
-                          .employeesActivities[index].date
-                          .split("-")[1]);
-                      int lastMonth = index > 0
-                          ? int.parse(mainConntroller
-                              .employeesActivities[index - 1].date
-                              .split("-")[1])
-                          : 0;
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          controller: _scrollController,
+                          padding: const EdgeInsets.all(15),
+                          itemCount: mainConntroller.employeesActivities.length,
+                          itemBuilder: (context, index) {
+                            int currentMonth = int.parse(mainConntroller
+                                .employeesActivities[index].date
+                                .split("-")[1]);
+                            int lastMonth = index > 0
+                                ? int.parse(mainConntroller
+                                    .employeesActivities[index - 1].date
+                                    .split("-")[1])
+                                : 0;
 
-                      return EmployeeActivityItem(
-                        employeeActivityModel:
-                            mainConntroller.employeesActivities[index],
-                        isLast:
-                            mainConntroller.employeesActivities.length - 1 ==
-                                index,
-                        isDiffenrentMonth: currentMonth > lastMonth,
-                      );
-                    },
+                            return EmployeeActivityItem(
+                              isSearchedItem: index ==
+                                  mainConntroller.employeesActivities
+                                      .indexWhere((e) =>
+                                          DateTime.parse(e.date)
+                                              .compareTo(_selectedDate) ==
+                                          0),
+                              employeeActivityModel:
+                                  mainConntroller.employeesActivities[index],
+                              isLast:
+                                  mainConntroller.employeesActivities.length -
+                                          1 ==
+                                      index,
+                              isDiffenrentMonth: currentMonth > lastMonth,
+                            );
+                          },
+                        ),
+                      ),
+                      if (mainConntroller.employeesActivities.isEmpty)
+                        const Center(
+                          child: Text("No Activity"),
+                        ),
+                    ],
                   ),
                 );
         },

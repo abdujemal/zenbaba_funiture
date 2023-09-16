@@ -39,6 +39,8 @@ class _AddExpenseState extends State<AddExpense> {
 
   EmployeeModel? selectedEmployee;
 
+  bool withReciept = false;
+
   @override
   void dispose() {
     descriptionTc.dispose();
@@ -82,6 +84,7 @@ class _AddExpenseState extends State<AddExpense> {
       sellerTc.text = widget.expenseModel!.seller;
       expenseState = widget.expenseModel!.expenseStatus;
       currentDate = widget.expenseModel!.date;
+      withReciept = widget.expenseModel!.withReceipt;
       setState(() {});
     }
   }
@@ -339,6 +342,23 @@ class _AddExpenseState extends State<AddExpense> {
                   ),
                 ),
                 const SizedBox(
+                  height: 15,
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 15,
+                  ),
+                  child: CheckboxListTile(
+                    title: const Text("With Reciept"),
+                    value: withReciept,
+                    onChanged: (v) {
+                      setState(() {
+                        withReciept = v!;
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(
                   height: 40,
                 ),
                 Obx(() {
@@ -363,6 +383,7 @@ class _AddExpenseState extends State<AddExpense> {
                               mainConntroller.addExpense(
                                 ExpenseModel(
                                   id: null,
+                                  withReceipt: withReciept,
                                   category: expenseCategory,
                                   description: descriptionTc.text,
                                   price: double.parse(priceTc.text),
@@ -377,6 +398,7 @@ class _AddExpenseState extends State<AddExpense> {
                             } else {
                               mainConntroller.updateExpense(
                                 widget.expenseModel!.copyWith(
+                                  withRecipt: withReciept,
                                   category: expenseCategory,
                                   description: descriptionTc.text,
                                   price: double.parse(priceTc.text),

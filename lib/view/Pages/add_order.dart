@@ -1154,20 +1154,19 @@ class _AddOrderState extends State<AddOrder> {
                     height: 8,
                   ),
 
-                if (!isPickup)
-                  SLInput(
-                    title: "Delivery price",
-                    hint: '10000',
-                    inputColor: whiteColor,
-                    otherColor: textColor,
-                    keyboardType: TextInputType.number,
-                    controller: _deliveryPriceTc,
-                    isOutlined: true,
-                  ),
-                if (!isPickup)
-                  const SizedBox(
-                    height: 15,
-                  ),
+                SLInput(
+                  title: "Delivery price",
+                  hint: '10000',
+                  inputColor: whiteColor,
+                  otherColor: textColor,
+                  keyboardType: TextInputType.number,
+                  controller: _deliveryPriceTc,
+                  isOutlined: true,
+                ),
+
+                const SizedBox(
+                  height: 15,
+                ),
                 SLInput(
                   title: "PrePayment",
                   hint: '10000',
@@ -1238,6 +1237,9 @@ class _AddOrderState extends State<AddOrder> {
                                             sefer: _seferTc.text,
                                             kk: selectedKK,
                                             location: _goLocationTc.text,
+                                            date: DateTime.now()
+                                                .toString()
+                                                .split(" ")[0],
                                           ),
                                         );
                                       }

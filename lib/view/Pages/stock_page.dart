@@ -19,7 +19,7 @@ class StockPage extends StatefulWidget {
   State<StockPage> createState() => _StockPageState();
 }
 
-class _StockPageState extends State<StockPage> {
+class _StockPageState extends State<StockPage> with AutomaticKeepAliveClientMixin<StockPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 
   double stockPadding = 10;
@@ -93,20 +93,23 @@ class _StockPageState extends State<StockPage> {
           preferredSize: const Size.fromHeight(40),
           child: Align(
             alignment: Alignment.bottomRight,
-            child: SpecialDropdown<String>(
-              title: "",
-              isDense: true,
-              textColor: textColor,
-              value: selectedDisplayOption,
-              width: 150,
-              noTitle: true,
-              list: displayOptions,
-              onChange: (value) {
-                setState(() {
-                  selectedDisplayOption = value;
-                });
-                refresh();
-              },
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: SpecialDropdown<String>(
+                title: "",
+                isDense: true,
+                textColor: textColor,
+                value: selectedDisplayOption,
+                width: 150,
+                noTitle: true,
+                list: displayOptions,
+                onChange: (value) {
+                  setState(() {
+                    selectedDisplayOption = value;
+                  });
+                  refresh();
+                },
+              ),
             ),
           ),
         ),
@@ -133,6 +136,48 @@ class _StockPageState extends State<StockPage> {
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    const Padding(
+                      padding:
+                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
+                      child: Text(
+                        "Out of Stock",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ),
+                    outOfStock.isEmpty
+                        ? const SizedBox(
+                            width: double.infinity,
+                            height: 150,
+                            child: Center(
+                              child: Text("No Items out of stock."),
+                            ),
+                          )
+                        : SizedBox(
+                            height: 170,
+                            child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              padding:
+                                  EdgeInsets.symmetric(vertical: stockPadding),
+                              itemCount: outOfStock.length,
+                              itemBuilder: (BuildContext context, int index) {
+                                return Padding(
+                                  padding: const EdgeInsets.only(left: 20),
+                                  child: ItemCard(
+                                    onTap: () {
+                                      Get.to(
+                                        () => StockDetailPage(
+                                          index: mainConntroller.items.indexOf(
+                                            outOfStock[index],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    itemModel: outOfStock[index],
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                     const Padding(
                       padding:
                           EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
@@ -166,50 +211,6 @@ class _StockPageState extends State<StockPage> {
                                     );
                                   },
                                   itemModel: inStock[index],
-                                );
-                              },
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 20,
-                                crossAxisSpacing: 10,
-                                childAspectRatio: 1.16,
-                              ),
-                            ),
-                          ),
-                    const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
-                      child: Text(
-                        "Out of Stock",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    outOfStock.isEmpty
-                        ? const SizedBox(
-                            width: double.infinity,
-                            height: 150,
-                            child: Center(
-                              child: Text("No Items out of stock."),
-                            ),
-                          )
-                        : Expanded(
-                            child: GridView.builder(
-                              scrollDirection: Axis.vertical,
-                              padding: EdgeInsets.all(stockPadding),
-                              itemCount: outOfStock.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return ItemCard(
-                                  onTap: () {
-                                    Get.to(
-                                      () => StockDetailPage(
-                                        index: mainConntroller.items.indexOf(
-                                          outOfStock[index],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  itemModel: outOfStock[index],
                                 );
                               },
                               gridDelegate:
@@ -263,4 +264,7 @@ class _StockPageState extends State<StockPage> {
       ),
     );
   }
+  
+  @override
+  bool get wantKeepAlive => true;
 }

@@ -1,8 +1,11 @@
+// ignore_for_file: deprecated_member_use, must_call_super
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/add_order.dart';
 import 'package:zenbaba_funiture/view/Pages/qr_scanner_page.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../../data/model/order_model.dart';
@@ -20,6 +23,7 @@ class OrderTab extends StatefulWidget {
 class _OrderTabState extends State<OrderTab>
     with AutomaticKeepAliveClientMixin<OrderTab> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+  LSController lsController = Get.find<LSController>();
 
   int selectedTabIndex = 0;
 
@@ -55,18 +59,21 @@ class _OrderTabState extends State<OrderTab>
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: Colors.transparent,
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: primaryColor,
-          child: SvgPicture.asset(
-            "assets/plus.svg",
-            color: backgroundColor,
-            width: 20,
-            height: 20,
-          ),
-          onPressed: () {
-            Get.to(() => const AddOrder());
-          },
-        ),
+        floatingActionButton:
+            lsController.currentUser.value.priority != UserPriority.AdminView
+                ? FloatingActionButton(
+                    backgroundColor: primaryColor,
+                    child: SvgPicture.asset(
+                      "assets/plus.svg",
+                      color: backgroundColor,
+                      width: 20,
+                      height: 20,
+                    ),
+                    onPressed: () {
+                      Get.to(() => const AddOrder());
+                    },
+                  )
+                : null,
         appBar: AppBar(
           centerTitle: true,
           elevation: 0,
@@ -96,40 +103,41 @@ class _OrderTabState extends State<OrderTab>
         body: Column(
           children: [
             Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20),
-              height: 40,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: mainBgColor,
-              ),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: OrderStatus.list.length - 1,
-                itemBuilder: (context, index) => GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      selectedTabIndex = index;
-                    });
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 7,
-                      horizontal: 15,
-                    ),
-                    decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(50),
-                        color: selectedTabIndex != index
-                            ? Colors.transparent
-                            : backgroundColor),
-                    child: Text(
-                      OrderStatus.list[index],
-                      style: const TextStyle(fontSize: 15),
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                height: 40,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(50),
+                  color: mainBgColor,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: List.generate(
+                    3,
+                    (index) => GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          selectedTabIndex = index;
+                        });
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.all(2),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 7,
+                          horizontal: 15,
+                        ),
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(50),
+                            color: selectedTabIndex != index
+                                ? Colors.transparent
+                                : backgroundColor),
+                        child: Text(
+                          OrderStatus.list[index],
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            ),
+                )),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 10, top: 10),
@@ -213,7 +221,7 @@ class _OrderTabState extends State<OrderTab>
                                 );
                                 await mainConntroller.getOrders(
                                   quantity: numOfDocToGet,
-                                  status: OrderStatus.Delivered,
+                                  status: OrderStatus.completed,
                                 );
                               },
                               backgroundColor: backgroundColor,

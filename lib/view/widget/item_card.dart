@@ -86,7 +86,6 @@ class _ItemCardState extends State<ItemCard> {
                                 )
                               : null,
                         );
-                       
                       },
                     ),
                     SizedBox(
@@ -96,10 +95,13 @@ class _ItemCardState extends State<ItemCard> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         widget.isHome
-                            ? Text(
-                                widget.itemModel.name,
-                                style: const TextStyle(
-                                  fontSize: 18,
+                            ? SizedBox(
+                                width: ct.maxWidth - 120,
+                                child: Text(
+                                  widget.itemModel.name,
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                  ),
                                 ),
                               )
                             : SizedBox(
@@ -112,15 +114,18 @@ class _ItemCardState extends State<ItemCard> {
                                 ),
                               ),
                         widget.isHome
-                            ? Text(
-                                "Last used for ${widget.itemModel.lastUsedFor}",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  color: textColor,
+                            ? SizedBox(
+                                width: ct.maxWidth - 120,
+                                child: Text(
+                                  "Last used for ${widget.itemModel.lastUsedFor}",
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    color: textColor,
+                                  ),
                                 ),
                               )
                             : Text(
-                                "${widget.itemModel.pricePerUnit.round()} birr",
+                                "${formatNumber(widget.itemModel.pricePerUnit.round())} birr",
                                 style: TextStyle(
                                   color: primaryColor,
                                 ),

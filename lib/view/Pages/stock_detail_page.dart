@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/widget/add_item_history_dialog.dart';
 import 'package:zenbaba_funiture/view/widget/left_line.dart';
 
@@ -22,6 +23,8 @@ class StockDetailPage extends StatefulWidget {
 
 class _StockDetailPageState extends State<StockDetailPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  LSController lsController = Get.find<LSController>();
 
   String? startDate;
 
@@ -92,105 +95,112 @@ class _StockDetailPageState extends State<StockDetailPage> {
           },
         ),
       ),
-      floatingActionButton: AnimatedContainer(
-        onEnd: () {
-          setState(() {
-            showIcons = !showIcons;
-          });
-        },
-        height: isExpanded ? 180 : 60,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(50),
-          color: primaryColor,
-        ),
-        duration: const Duration(
-          milliseconds: 500,
-        ),
-        child: Column(
-          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Spacer(),
-            if (isExpanded && showIcons)
-              IconButton(
-                onPressed: () {
-                  Get.dialog(
-                    AddItemHistoryDialog(
-                      itemStatus: ItemHistoryType.buyed,
-                      itemModel: mainConntroller.items[widget.index],
-                    ),
-                    barrierDismissible: false,
-                    transitionDuration: const Duration(
-                      milliseconds: 500,
-                    ),
-                  );
-                },
-                icon: SvgPicture.asset(
-                  'assets/buy.svg',
-                  color: backgroundColor,
-                  height: 40,
-                  width: 40,
-                ),
-              ),
-            const Spacer(),
-            if (isExpanded && showIcons)
-              IconButton(
-                onPressed: () {
-                  Get.dialog(
-                    AddItemHistoryDialog(
-                      itemStatus: ItemHistoryType.used,
-                      itemModel: mainConntroller.items[widget.index],
-                    ),
-                  );
-                },
-                icon: SvgPicture.asset(
-                  'assets/used.svg',
-                  color: backgroundColor,
-                  height: 40,
-                  width: 40,
-                ),
-              ),
-            const Spacer(),
-            InkWell(
-              onTap: () {
-                setState(() {
-                  isExpanded = !isExpanded;
-                  if (showIcons) {
-                    showIcons = false;
-                  }
-                });
-              },
-              borderRadius: BorderRadius.circular(50),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: primaryColor,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withAlpha(100),
-                      blurRadius: 10,
-                      spreadRadius: 5,
-                      offset: const Offset(0, 0),
-                    )
-                  ],
-                ),
-                child: isExpanded
-                    ? Icon(
-                        Icons.close,
-                        size: 20,
-                        color: backgroundColor,
+      floatingActionButton:
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? AnimatedContainer(
+                  onEnd: () {
+                    setState(() {
+                      showIcons = !showIcons;
+                    });
+                  },
+                  height: isExpanded ? 180 : 60,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(50),
+                    color: primaryColor,
+                  ),
+                  duration: const Duration(
+                    milliseconds: 500,
+                  ),
+                  child: Column(
+                    // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Spacer(),
+                      if (isExpanded && showIcons)
+                        UserPriority.isAdmin(
+                                lsController.currentUser.value.priority)
+                            ? IconButton(
+                                onPressed: () {
+                                  Get.dialog(
+                                    AddItemHistoryDialog(
+                                      itemStatus: ItemHistoryType.buyed,
+                                      itemModel:
+                                          mainConntroller.items[widget.index],
+                                    ),
+                                    barrierDismissible: false,
+                                    transitionDuration: const Duration(
+                                      milliseconds: 500,
+                                    ),
+                                  );
+                                },
+                                icon: SvgPicture.asset(
+                                  'assets/buy.svg',
+                                  color: backgroundColor,
+                                  height: 40,
+                                  width: 40,
+                                ),
+                              )
+                            : const SizedBox(),
+                      const Spacer(),
+                      if (isExpanded && showIcons)
+                        IconButton(
+                          onPressed: () {
+                            Get.dialog(
+                              AddItemHistoryDialog(
+                                itemStatus: ItemHistoryType.used,
+                                itemModel: mainConntroller.items[widget.index],
+                              ),
+                            );
+                          },
+                          icon: SvgPicture.asset(
+                            'assets/used.svg',
+                            color: backgroundColor,
+                            height: 40,
+                            width: 40,
+                          ),
+                        ),
+                      const Spacer(),
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            isExpanded = !isExpanded;
+                            if (showIcons) {
+                              showIcons = false;
+                            }
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(50),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: primaryColor,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(100),
+                                blurRadius: 10,
+                                spreadRadius: 5,
+                                offset: const Offset(0, 0),
+                              )
+                            ],
+                          ),
+                          child: isExpanded
+                              ? Icon(
+                                  Icons.close,
+                                  size: 20,
+                                  color: backgroundColor,
+                                )
+                              : SvgPicture.asset(
+                                  "assets/plus.svg",
+                                  color: backgroundColor,
+                                  height: 20,
+                                  width: 20,
+                                ),
+                        ),
                       )
-                    : SvgPicture.asset(
-                        "assets/plus.svg",
-                        color: backgroundColor,
-                        height: 20,
-                        width: 20,
-                      ),
-              ),
-            )
-          ],
-        ),
-      ),
+                    ],
+                  ),
+                )
+              : null,
       body: Obx(
         () {
           return RefreshIndicator(
@@ -409,13 +419,23 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                         Padding(
                                           padding:
                                               const EdgeInsets.only(left: 15),
-                                          child: Text(
-                                            "${itemHistories[index].price} br",
-                                            style: TextStyle(
-                                              color: primaryColor,
-                                              fontSize: 14,
-                                            ),
-                                          ),
+                                          child: lsController.currentUser.value
+                                                      .priority ==
+                                                  UserPriority.Designer
+                                              ? Text(
+                                                  "${formatNumber(double.parse(itemHistories[index].price).round())} br",
+                                                  style: TextStyle(
+                                                    color: primaryColor,
+                                                    fontSize: 14,
+                                                  ),
+                                                )
+                                              : Text(
+                                                  "???? br",
+                                                  style: TextStyle(
+                                                    color: primaryColor,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
                                         ),
                                     ],
                                   ),

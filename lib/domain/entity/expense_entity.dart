@@ -10,6 +10,7 @@ class ExpenseEntity extends Equatable {
   final String seller;
   final String date;
   final String? employeeId;
+  final bool withReceipt;
   const ExpenseEntity({
     required this.id,
     required this.category,
@@ -19,6 +20,7 @@ class ExpenseEntity extends Equatable {
     required this.seller,
     required this.date,
     required this.employeeId,
+    required this.withReceipt,
   });
   @override
   List<Object?> get props => [
@@ -30,5 +32,6 @@ class ExpenseEntity extends Equatable {
         seller,
         date,
         employeeId,
+        withReceipt,
       ];
 }

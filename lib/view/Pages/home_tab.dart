@@ -1,3 +1,5 @@
+// ignore_for_file: must_call_super
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -21,7 +23,6 @@ import '../../data/model/order_chart_model.dart';
 import '../controller/l_s_controller.dart';
 import '../controller/main_controller.dart';
 import '../widget/line_chart.dart';
-import '../widget/my_dropdown.dart';
 import '../widget/special_dropdown.dart';
 import 'expenses_page.dart';
 
@@ -34,6 +35,10 @@ class HomeTab extends StatefulWidget {
 
 class _HomeTabState extends State<HomeTab>
     with AutomaticKeepAliveClientMixin<HomeTab> {
+  String today = DateTime.now().toString().split(" ")[0];
+
+  bool isForFirstTime = true;
+
   double bigestPrice = 0;
   List<ExpenseCategoryModel> categories = [];
   var colorList = [
@@ -51,13 +56,21 @@ class _HomeTabState extends State<HomeTab>
     Colors.lime
   ];
 
-  List<LineChartModel> data = [];
-  List<String> dataType = ['Month', "Year"];
-  List<ExpenseChartModel> expenseData = [];
-  List<String> graphType = [
-    "Week",
-    "Year",
+  List<String> chartDisplayType = [
+    "Income",
+    "Expense",
   ];
+  String selectedChartDisplayType = "Income";
+
+  List<LineChartModel> data = [];
+  List<String> dataType = [
+    "Month",
+    "Year",
+    "Last Week",
+    "Last Month",
+    "Last Year",
+  ];
+  List<ExpenseChartModel> expenseData = [];
 
   List<Map<String, dynamic>> locations = [];
   LSController lsController = Get.find<LSController>();
@@ -77,22 +90,28 @@ class _HomeTabState extends State<HomeTab>
     "December",
   ];
 
-  int selectedIndex = 0;
+  int selectedIndex = 1;
   List<String> menus = ["Yesterday", "Today", "Tomorrow"];
 
   List<List<OrderModel>> orderDays = [];
 
   int numOfFemale = 0;
   int numOfMale = 0;
+
+  int lastNoCustomers = 0;
+  int noOfCustomers = 0;
+
   List<Map<String, dynamic>> customerSources = [];
   int selectedGraphType = 1;
   String selectedMonth = "";
-  var selectedType = 1;
+  int selectedType = 1;
   String selectedYear = "";
   String selectedYearForMonth = "";
   int totalCustomer = 0;
   double totalExpense = 0;
   double totalIncome = 0;
+  double lastTotalExpense = 0;
+  double lastTotalIncome = 0;
   List<String> weekDays = [
     "Mon",
     "Tues",
@@ -119,6 +138,10 @@ class _HomeTabState extends State<HomeTab>
     "2035",
   ];
 
+  int lastNoOfOrders = 0;
+
+  int noOfOrders = 0;
+
   @override
   void initState() {
     selectedMonth = months[DateTime.now().month - 1];
@@ -131,33 +154,33 @@ class _HomeTabState extends State<HomeTab>
     refresh();
   }
 
-  refresh() {
-    mainConntroller.getExpenseChart();
-    mainConntroller.getOrderChart();
-    mainConntroller.getCustomers();
-    mainConntroller.getOrders(
+  Future<void> refresh() async {
+    await mainConntroller.getExpenseChart();
+    await mainConntroller.getOrderChart();
+    await mainConntroller.getCustomers();
+    await mainConntroller.getOrders(
       quantity: numOfDocToGet,
       status: OrderStatus.Pending,
     );
-    mainConntroller.getOrders(
+    await mainConntroller.getOrders(
       quantity: numOfDocToGet,
       status: OrderStatus.proccessing,
     );
-    mainConntroller.getOrders(
+    await mainConntroller.getOrders(
       quantity: numOfDocToGet,
       status: OrderStatus.completed,
     );
-    mainConntroller.getExpenses(
+    await mainConntroller.getExpenses(
       quantity: numOfDocToGet,
       status: ExpenseState.payed,
     );
-    mainConntroller.getItems();
+    await mainConntroller.getItems();
     calculateCustomers();
 
-    loadOrders();
+    await loadOrders();
   }
 
-  loadOrders() async {
+  Future<void> loadOrders() async {
     final todaylst = await mainConntroller.search(
       FirebaseConstants.orders,
       'finishedDate',
@@ -192,6 +215,8 @@ class _HomeTabState extends State<HomeTab>
     totalExpense = 0;
     totalIncome = 0;
     bigestPrice = 0;
+    lastTotalIncome = 0;
+    lastTotalExpense = 0;
     data = [];
     expenseData = [];
     for (int i = 1; i <= 30; i++) {
@@ -236,10 +261,12 @@ class _HomeTabState extends State<HomeTab>
     setState(() {});
   }
 
-  calculateForMonth() {
+  calculateForMonth({bool state = true}) {
     totalExpense = 0;
     totalIncome = 0;
     bigestPrice = 0;
+    lastTotalIncome = 0;
+    lastTotalExpense = 0;
     data = [];
     expenseData = [];
     for (String month in months) {
@@ -275,14 +302,440 @@ class _HomeTabState extends State<HomeTab>
       );
     }
     getPrices();
+    if (state) {
+      setState(() {});
+    }
+  }
+
+  calculateForLastWeek() async {
+    totalExpense = 0;
+    totalIncome = 0;
+    bigestPrice = 0;
+    data = [];
+    expenseData = [];
+    // calculating customers
+    noOfCustomers = 0;
+    lastNoCustomers = 0;
+    // calculating last last week
+    lastTotalIncome = 0;
+    lastTotalExpense = 0;
+
+    // calculating last week
+    for (int i in List.generate(7, (i) => i + 1)) {
+      double expensePrice = 0;
+      double incomePrice = 0;
+      for (OrderChartModel orderModel in mainConntroller.ordersChart) {
+        if (DateTime.parse(orderModel.date).compareTo(
+              DateTime.parse(today).subtract(
+                Duration(days: 7 - i),
+              ),
+            ) ==
+            0) {
+          incomePrice += orderModel.price;
+          totalIncome += orderModel.price;
+        }
+        // calculating last last week
+        if (DateTime.parse(orderModel.date).compareTo(
+              DateTime.parse(today).add(
+                Duration(days: 7 + i),
+              ),
+            ) ==
+            0) {
+          lastTotalIncome += orderModel.price;
+        }
+      }
+      for (ExpenseChartModel expenseModel in mainConntroller.expensesChart) {
+        if (DateTime.parse(expenseModel.date).compareTo(
+              DateTime.parse(today).subtract(
+                Duration(days: 7 - i),
+              ),
+            ) ==
+            0) {
+          expensePrice += expenseModel.price;
+          totalExpense += expenseModel.price;
+          expenseData.add(expenseModel);
+        }
+        // calculating last last week
+        if (DateTime.parse(expenseModel.date).compareTo(
+              DateTime.parse(today).add(
+                Duration(days: 7 + i),
+              ),
+            ) ==
+            0) {
+          lastTotalExpense += expenseModel.price;
+        }
+      }
+      // calculateing number of customers
+      for (CustomerModel customerModel in mainConntroller.customers) {
+        if (DateTime.parse(customerModel.date).compareTo(
+              DateTime.parse(today).subtract(
+                Duration(days: 7 - i),
+              ),
+            ) ==
+            0) {
+          noOfCustomers += 1;
+        }
+
+        // calculating last number of cusomers
+        if (DateTime.parse(customerModel.date).compareTo(
+              DateTime.parse(today).add(
+                Duration(days: 7 + i),
+              ),
+            ) ==
+            0) {
+          lastNoCustomers += 1;
+        }
+      }
+
+      if (bigestPrice < incomePrice) {
+        bigestPrice = incomePrice;
+      }
+      if (bigestPrice < expensePrice) {
+        bigestPrice = expensePrice;
+      }
+      data.add(
+        LineChartModel(
+          title: "${i * 2}",
+          leftVal: incomePrice,
+          rightVal: expensePrice,
+        ),
+      );
+    }
+    // counting orders
+    String lastWeek = DateTime.parse(today)
+        .subtract(const Duration(days: 7))
+        .toString()
+        .split(" ")[0];
+
+    String lastlastWeek = DateTime.parse(today)
+        .subtract(const Duration(days: 14))
+        .toString()
+        .split(" ")[0];
+
+    mainConntroller
+        .countDocs(
+      FirebaseConstants.orders,
+      "orderedDate",
+      lastlastWeek,
+      lastWeek,
+    )
+        .then((value) {
+      lastNoOfOrders = value;
+      setState(() {});
+    });
+
+    mainConntroller
+        .countDocs(
+      FirebaseConstants.orders,
+      "orderedDate",
+      lastWeek,
+      today,
+    )
+        .then((value) {
+      noOfOrders = value;
+      setState(() {});
+    });
+
+    getPrices();
+    setState(() {});
+  }
+
+  calculateForLastMonth() {
+    totalExpense = 0;
+    totalIncome = 0;
+    bigestPrice = 0;
+    data = [];
+    expenseData = [];
+    // calculating customers
+    noOfCustomers = 0;
+    lastNoCustomers = 0;
+    // calculating last last month
+    lastTotalIncome = 0;
+    lastTotalExpense = 0;
+
+    // calculating last month
+    for (int i in List.generate(30, (i) => i + 1)) {
+      double expensePrice = 0;
+      double incomePrice = 0;
+      for (OrderChartModel orderModel in mainConntroller.ordersChart) {
+        if (DateTime.parse(orderModel.date).compareTo(
+              DateTime.parse(today).subtract(
+                Duration(days: 30 - i),
+              ),
+            ) ==
+            0) {
+          incomePrice += orderModel.price;
+          totalIncome += orderModel.price;
+        }
+        // calculating last last month
+        if (DateTime.parse(orderModel.date).compareTo(
+              DateTime.parse(today).add(
+                Duration(days: -30 - i),
+              ),
+            ) ==
+            0) {
+          lastTotalIncome += orderModel.price;
+        }
+      }
+      for (ExpenseChartModel expenseModel in mainConntroller.expensesChart) {
+        if (DateTime.parse(expenseModel.date).compareTo(
+              DateTime.parse(today).subtract(
+                Duration(days: 30 - i),
+              ),
+            ) ==
+            0) {
+          expensePrice += expenseModel.price;
+          totalExpense += expenseModel.price;
+          expenseData.add(expenseModel);
+        }
+        // calculating last last month
+        if (DateTime.parse(expenseModel.date).compareTo(
+              DateTime.parse(today).add(
+                Duration(days: -30 - i),
+              ),
+            ) ==
+            0) {
+          lastTotalExpense += expenseModel.price;
+        }
+      }
+      // calculateing number of customers
+      for (CustomerModel customerModel in mainConntroller.customers) {
+        if (DateTime.parse(customerModel.date).compareTo(
+              DateTime.parse(today).subtract(
+                Duration(days: 30 - i),
+              ),
+            ) ==
+            0) {
+          noOfCustomers += 1;
+        }
+
+        // calculating last number of cusomers
+        if (DateTime.parse(customerModel.date).compareTo(
+              DateTime.parse(today).add(
+                Duration(days: -30 - i),
+              ),
+            ) ==
+            0) {
+          lastNoCustomers += 1;
+        }
+      }
+
+      if (bigestPrice < incomePrice) {
+        bigestPrice = incomePrice;
+      }
+      if (bigestPrice < expensePrice) {
+        bigestPrice = expensePrice;
+      }
+      data.add(
+        LineChartModel(
+          title: "${(i / 30) * 14}",
+          leftVal: incomePrice,
+          rightVal: expensePrice,
+        ),
+      );
+    }
+
+    // counting orders
+    String lastMonth = DateTime.parse(today)
+        .subtract(const Duration(days: 30))
+        .toString()
+        .split(" ")[0];
+
+    String lastlastMonth = DateTime.parse(today)
+        .subtract(const Duration(days: 60))
+        .toString()
+        .split(" ")[0];
+
+    mainConntroller
+        .countDocs(
+      FirebaseConstants.orders,
+      "orderedDate",
+      lastlastMonth,
+      lastMonth,
+    )
+        .then((value) {
+      lastNoOfOrders = value;
+      setState(() {});
+    });
+
+    mainConntroller
+        .countDocs(
+      FirebaseConstants.orders,
+      "orderedDate",
+      lastMonth,
+      today,
+    )
+        .then((value) {
+      noOfOrders = value;
+      setState(() {});
+    });
+
+    getPrices();
+    setState(() {});
+  }
+
+  calculateForLastYear() {
+    totalExpense = 0;
+    totalIncome = 0;
+    bigestPrice = 0;
+    data = [];
+    expenseData = [];
+    // calculating customers
+    noOfCustomers = 0;
+    lastNoCustomers = 0;
+    // calculating last last year
+    lastTotalIncome = 0;
+    lastTotalExpense = 0;
+
+    // calculating last year
+    for (int i in List.generate(12, (i) => i + 1)) {
+      double expensePrice = 0;
+      double incomePrice = 0;
+      for (OrderChartModel orderModel in mainConntroller.ordersChart) {
+        if (DateTime.parse(
+              orderModel.date,
+            ).isBefore(DateTime.now().subtract(
+              Duration(days: 360 - (30 * i)),
+            )) &&
+            DateTime.parse(
+              orderModel.date,
+            ).isAfter(DateTime.now().subtract(
+              Duration(days: 360 - (30 * (i - 1))),
+            ))) {
+          incomePrice += orderModel.price;
+          totalIncome += orderModel.price;
+        }
+
+        // calculate last last income
+        if (DateTime.parse(
+              orderModel.date,
+            ).isBefore(DateTime.now().subtract(
+              Duration(days: 360 + (30 * i)),
+            )) &&
+            DateTime.parse(
+              orderModel.date,
+            ).isAfter(DateTime.now().subtract(
+              Duration(days: 360 + (30 * (i - 1))),
+            ))) {
+          lastTotalIncome += orderModel.price;
+        }
+      }
+      for (ExpenseChartModel expenseModel in mainConntroller.expensesChart) {
+        if (DateTime.parse(
+              expenseModel.date,
+            ).isBefore(DateTime.now().subtract(
+              Duration(days: 360 - (30 * i)),
+            )) &&
+            DateTime.parse(
+              expenseModel.date,
+            ).isAfter(DateTime.now().subtract(
+              Duration(days: 360 - (30 * (i - 1))),
+            ))) {
+          expensePrice += expenseModel.price;
+          totalExpense += expenseModel.price;
+          expenseData.add(expenseModel);
+        }
+        // calculate last last expense
+        if (DateTime.parse(
+              expenseModel.date,
+            ).isBefore(DateTime.now().subtract(
+              Duration(days: 360 + (30 * i)),
+            )) &&
+            DateTime.parse(
+              expenseModel.date,
+            ).isAfter(DateTime.now().subtract(
+              Duration(days: 360 + (30 * (i - 1))),
+            ))) {
+          lastTotalExpense += expenseModel.price;
+        }
+      }
+      // calculateing number of customers
+      for (CustomerModel customerModel in mainConntroller.customers) {
+        if (DateTime.parse(
+              customerModel.date,
+            ).isBefore(DateTime.now().subtract(
+              Duration(days: 360 - (30 * i)),
+            )) &&
+            DateTime.parse(
+              customerModel.date,
+            ).isAfter(DateTime.now().subtract(
+              Duration(days: 360 - (30 * (i - 1))),
+            ))) {
+          noOfCustomers += 1;
+        }
+
+        // calculating last number of cusomers
+        if (DateTime.parse(
+              customerModel.date,
+            ).isBefore(DateTime.now().subtract(
+              Duration(days: 360 + (30 * i)),
+            )) &&
+            DateTime.parse(
+              customerModel.date,
+            ).isAfter(DateTime.now().subtract(
+              Duration(days: 360 + (30 * (i - 1))),
+            ))) {
+          lastNoCustomers += 1;
+        }
+      }
+
+      if (bigestPrice < incomePrice) {
+        bigestPrice = incomePrice;
+      }
+      if (bigestPrice < expensePrice) {
+        bigestPrice = expensePrice;
+      }
+      // print("income Price: $bigestPrice");
+      data.add(
+        LineChartModel(
+          title: "${(i / 12) * 14}",
+          leftVal: incomePrice,
+          rightVal: expensePrice,
+        ),
+      );
+    }
+    // counting orders
+    String lastYear = DateTime.parse(today)
+        .subtract(const Duration(days: 365))
+        .toString()
+        .split(" ")[0];
+
+    String lastlastYear = DateTime.parse(today)
+        .subtract(const Duration(days: (365 * 2)))
+        .toString()
+        .split(" ")[0];
+
+    mainConntroller
+        .countDocs(
+      FirebaseConstants.orders,
+      "orderedDate",
+      lastlastYear,
+      lastYear,
+    )
+        .then((value) {
+      lastNoOfOrders = value;
+      setState(() {});
+    });
+
+    mainConntroller
+        .countDocs(
+      FirebaseConstants.orders,
+      "orderedDate",
+      lastYear,
+      today,
+    )
+        .then((value) {
+      noOfOrders = value;
+      setState(() {});
+    });
+
+    getPrices();
     setState(() {});
   }
 
   getPrices() {
     categories = [];
-    // for (String cat in ExpenseCategory.list) {
-    //   categories.add(value);
-    // }
+
     for (String cat in ExpenseCategory.list) {
       double price = 0;
       bool doesCatExist = false;
@@ -305,6 +758,7 @@ class _HomeTabState extends State<HomeTab>
       }
       doesCatExist = false;
     }
+    categories.sort((a, b) => b.price.compareTo(a.price));
   }
 
   myContainer(Color color, String title, double value) {
@@ -314,14 +768,16 @@ class _HomeTabState extends State<HomeTab>
         vertical: 15,
       ),
       decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-                color: Colors.black.withAlpha(140),
-                spreadRadius: 2,
-                blurRadius: 8)
-          ]),
+        color: color,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withAlpha(140),
+            spreadRadius: 2,
+            blurRadius: 8,
+          )
+        ],
+      ),
       child: Column(
         children: [
           Text(title),
@@ -358,6 +814,8 @@ class _HomeTabState extends State<HomeTab>
     }
     setState(() {
       customerSources.addAll(newCustomerSources);
+      customerSources
+          .sort((a, b) => (b["value"] as int).compareTo(a["value"] as int));
     });
 
     locations = [];
@@ -376,6 +834,7 @@ class _HomeTabState extends State<HomeTab>
     }
     setState(() {
       locations.addAll(newLocations);
+      locations.sort((a, b) => (b["num"] as int).compareTo(a["num"] as int));
     });
   }
 
@@ -387,7 +846,7 @@ class _HomeTabState extends State<HomeTab>
         centerTitle: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
-        title: title("Home"),
+        title: title("Analytics"),
         leading: IconButton(
           icon: SvgPicture.asset(
             'assets/menu icon.svg',
@@ -399,883 +858,1314 @@ class _HomeTabState extends State<HomeTab>
           },
         ),
         actions: [
-          IconButton(
-            onPressed: () async {
-              refresh();
-            },
-            icon: const Icon(
-              Icons.refresh,
-              size: 30,
-            ),
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          children: [
-            selectedType == 0
-                ? Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SpecialDropdown<String>(
-                        value: selectedMonth,
-                        list: months,
-                        title: "Months",
-                        onChange: (val) {
-                          setState(() {
-                            selectedMonth = val!;
-                            calculateForDate();
-                          }); //0972503987
-                        },
-                        width: 200,
-                        margin: 0,
-                      ),
-                      const SizedBox(
-                        width: 10,
-                      ),
-                      MyDropdown(
-                        value: selectedYearForMonth,
-                        list: years,
-                        title: "Years",
-                        onChange: (val) {
-                          setState(() {
-                            selectedYearForMonth = val!;
-                            calculateForDate();
-                          });
-                        },
-                        width: 100,
-                        margin: 0,
-                      ),
-                    ],
-                  )
-                : MyDropdown(
-                    value: selectedYear,
-                    list: years,
-                    title: "Years",
-                    onChange: (val) {
+          UserPriority.isAdmin(lsController.currentUser.value.priority)
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 13),
+                  child: SpecialDropdown(
+                    title: "",
+                    noTitle: true,
+                    items: dataType
+                        .map(
+                          (e) => DropdownMenuItem<String>(
+                              value: e,
+                              child: Text(
+                                e.toString(),
+                                style: TextStyle(
+                                  color: whiteColor,
+                                  fontSize: 11,
+                                ),
+                              )),
+                        )
+                        .toList(),
+                    value: dataType[selectedType],
+                    width: 127,
+                    list: dataType,
+                    isDense: true,
+                    isOutLined: true,
+                    bgColor: backgroundColor,
+                    onChange: (v) {
                       setState(() {
-                        selectedYear = val!;
-                        calculateForMonth();
+                        selectedType = dataType.indexOf(v);
+                        if (selectedType == 0) {
+                          calculateForDate();
+                        } else if (selectedType == 1) {
+                          calculateForMonth();
+                        } else if (selectedType == 2) {
+                          calculateForLastWeek();
+                        } else if (selectedType == 3) {
+                          calculateForLastMonth();
+                        } else if (selectedType == 4) {
+                          calculateForLastYear();
+                        }
                       });
                     },
-                    width: 200,
                   ),
-            const SizedBox(
-              height: 20,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: AspectRatio(
-                aspectRatio: 1.23,
-                child: Container(
-                  padding: const EdgeInsets.only(right: 20, left: 5),
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(18)),
-                    color: mainBgColor,
-                  ),
-                  child: Stack(
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: <Widget>[
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: List.generate(
-                              dataType.length,
-                              (index) => GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedType = index;
-                                    if (selectedType == 0) {
-                                      calculateForDate();
-                                    } else {
-                                      calculateForMonth();
-                                    }
-                                  });
-                                },
-                                child: Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: Text(
-                                    dataType[index],
-                                    style: TextStyle(
-                                        color: selectedType == index
-                                            ? textColor
-                                            : Colors.black,
-                                        fontSize: 17),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 37,
-                          ),
-                          Obx(() {
-                            if (mainConntroller.getOrdersStatus.value ==
-                                RequestState.loading) {
-                              return Expanded(
-                                child: SizedBox(
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      color: primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            return Expanded(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.only(right: 16, left: 6),
-                                child: LineChartSample(
-                                  bigPrice: bigestPrice,
-                                  isMonth: dataType[selectedType] == "Month",
-                                  data: data,
-                                ),
-                              ),
-                            );
-                          }),
-                          const SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+                )
+              : const SizedBox()
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await refresh();
+        },
+        color: primaryColor,
+        backgroundColor: backgroundColor,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 20,
               ),
-            ),
-            const SizedBox(
-              height: 13,
-            ),
-            GridView.count(
-              crossAxisCount: 2,
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              mainAxisSpacing: 20,
-              crossAxisSpacing: 25,
-              padding: const EdgeInsets.all(10),
-              children: [
-                section(
-                  mh: 0,
-                  mv: 0,
-                  mb: 0,
-                  b: 30,
-                  paddingh: 15,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SvgPicture.asset(
-                          "assets/income.svg",
-                          color: whiteColor,
-                          width: 30,
-                          height: 30,
-                        ),
-                        const Text(
-                          "income",
-                          style: TextStyle(
-                            fontSize: 18,
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: AspectRatio(
+                        aspectRatio: selectedType == 0 || selectedType == 1
+                            ? 1 / 1.1
+                            : 1 / 0.8,
+                        child: Container(
+                          padding: const EdgeInsets.only(right: 20, left: 5),
+                          decoration: BoxDecoration(
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(18)),
+                            color: mainBgColor,
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                section(
-                  mh: 0,
-                  mv: 0,
-                  mb: 0,
-                  b: 30,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SvgPicture.asset(
-                          "assets/expense.svg",
-                          color: whiteColor,
-                          width: 30,
-                          height: 30,
-                        ),
-                        const Text(
-                          "expense",
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                section(
-                  mh: 0,
-                  mv: 0,
-                  mb: 0,
-                  b: 30,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SvgPicture.asset(
-                          "assets/order.svg",
-                          color: whiteColor,
-                          width: 30,
-                          height: 30,
-                        ),
-                        const Text(
-                          "order",
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
-                        const SizedBox()
-                      ],
-                    ),
-                  ],
-                ),
-                section(
-                  mh: 0,
-                  mv: 0,
-                  mb: 0,
-                  b: 30,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        SvgPicture.asset(
-                          "assets/customer.svg",
-                          color: whiteColor,
-                          width: 30,
-                          height: 30,
-                        ),
-                        const Text(
-                          "customers",
-                          style: TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
-              ],
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            section(
-              mv: 0,
-              mb: 20,
-              mh: 10,
-              b: 30,
-              children: [
-                Stack(
-                  children: [
-                    PieChart(
-                      chartRadius: 150,
-                      ringStrokeWidth: 10,
-                      colorList: [whiteColor, primaryColor],
-                      dataMap: {
-                        "lose": 5,
-                        'profit': 5,
-                      },
-                      chartType: ChartType.ring,
-                      legendOptions: const LegendOptions(
-                        showLegends: false,
-                      ),
-                      chartValuesOptions: const ChartValuesOptions(
-                        showChartValues: false,
-                      ),
-                    ),
-                    const Positioned.fill(
-                      child: Center(
-                        child: Text(
-                          "Profit",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                )
-              ],
-            ),
-            Obx(() {
-              return section(
-                mv: 0,
-                mb: 25,
-                mh: 10,
-                paddingh: 15,
-                b: 30,
-                children: [
-                  Row(
-                    children: [
-                      const Text(
-                        "Transaction History",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {
-                          Get.to(() => const ExpensesPage());
-                        },
-                        child: Text(
-                          "See all",
-                          style: TextStyle(fontSize: 18, color: textColor),
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 20,
-                      )
-                    ],
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  if (mainConntroller.getExpensesStatus.value ==
-                      RequestState.loading)
-                    Center(
-                      child: CircularProgressIndicator(
-                        color: primaryColor,
-                      ),
-                    ),
-                  if (mainConntroller.getExpensesStatus.value !=
-                      RequestState.loading)
-                    ...mainConntroller.payedExpenses.isNotEmpty
-                        ? List.generate(
-                            mainConntroller.payedExpenses.length < 3
-                                ? mainConntroller.payedExpenses.length
-                                : 3, (index) {
-                            ExpenseModel expenseModel =
-                                mainConntroller.payedExpenses[index];
-                            return LeftLined(
-                              circleColor: primaryColor,
-                              onTap: () {},
-                              isLast: index == 2,
-                              showBottomBorder: index != 2,
-                              child: Row(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        expenseModel.category,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 8.0,
-                                          top: 3,
-                                        ),
-                                        child: Text(
-                                          expenseModel.category ==
-                                                  ExpenseCategory.rawMaterial
-                                              ? expenseModel.description
-                                              : expenseModel.seller,
-                                          style: TextStyle(
-                                            color: primaryColor,
-                                            fontSize: 12,
+                          child: Stack(
+                            children: <Widget>[
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: <Widget>[
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  selectedType == 0
+                                      ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SpecialDropdown<String>(
+                                              isDense: true,
+                                              isOutLined: true,
+                                              value: selectedMonth,
+                                              bgColor: backgroundColor,
+                                              list: months,
+                                              title: "Months",
+                                              onChange: (val) {
+                                                setState(() {
+                                                  selectedMonth = val!;
+                                                  calculateForDate();
+                                                }); //0972503987
+                                              },
+                                              width: 200,
+                                              margin: 0,
+                                            ),
+                                            const SizedBox(
+                                              width: 10,
+                                            ),
+                                            SpecialDropdown<String>(
+                                              isDense: true,
+                                              isOutLined: true,
+                                              bgColor: backgroundColor,
+                                              value: selectedYearForMonth,
+                                              list: years,
+                                              title: "Years",
+                                              onChange: (val) {
+                                                setState(() {
+                                                  selectedYearForMonth = val!;
+                                                  calculateForDate();
+                                                });
+                                              },
+                                              width: 110,
+                                              margin: 0,
+                                            ),
+                                          ],
+                                        )
+                                      : selectedType == 1
+                                          ? Center(
+                                              child: SpecialDropdown<String>(
+                                                isDense: true,
+                                                isOutLined: true,
+                                                bgColor: backgroundColor,
+                                                value: selectedYear,
+                                                list: years,
+                                                title: "Years",
+                                                onChange: (val) {
+                                                  setState(() {
+                                                    selectedYear = val!;
+                                                    calculateForMonth();
+                                                  });
+                                                },
+                                                width: 200,
+                                              ),
+                                            )
+                                          : const SizedBox(),
+                                  SpecialDropdown<String>(
+                                    title: "",
+                                    noTitle: false,
+                                    value: selectedChartDisplayType,
+                                    width: 120,
+                                    list: chartDisplayType,
+                                    isDense: true,
+                                    items: chartDisplayType
+                                        .map(
+                                          (e) => DropdownMenuItem(
+                                            value: e,
+                                            child: Text(
+                                              e,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ),
+                                        )
+                                        .toList(),
+                                    onChange: (v) {
+                                      setState(() {
+                                        selectedChartDisplayType = v;
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    height: 20,
+                                  ),
+                                  Obx(() {
+                                    if (mainConntroller.getOrdersStatus.value ==
+                                            RequestState.loaded &&
+                                        isForFirstTime) {
+                                      calculateForMonth(state: false);
+                                      isForFirstTime = false;
+                                    }
+                                    if (mainConntroller.getOrdersStatus.value ==
+                                        RequestState.loading) {
+                                      return Expanded(
+                                        child: SizedBox(
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              color: primaryColor,
+                                            ),
                                           ),
                                         ),
-                                      )
-                                    ],
+                                      );
+                                    }
+                                    return Expanded(
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(
+                                            right: 16, left: 6),
+                                        child: LineChartSample(
+                                          bigPrice: bigestPrice,
+                                          dataType: dataType[selectedType],
+                                          isStatic: dataType[selectedType] ==
+                                                  "Month" ||
+                                              dataType[selectedType] == "Year",
+                                          data: data,
+                                          displayType: selectedChartDisplayType,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                  const SizedBox(
+                                    height: 10,
                                   ),
-                                  const Spacer(),
-                                  Text(
-                                    "${expenseModel.price} Br",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
                                 ],
                               ),
-                            );
-                          })
-                        : [
-                            const Text("No Transaction"),
-                          ],
-                ],
-              );
-            }),
-            section(
-              mv: 0,
-              mb: 25,
-              mh: 10,
-              paddingh: 15,
-              b: 30,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              "assets/male.svg",
-                              color: textColor,
-                              width: 32,
-                              height: 32,
-                            ),
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            Text(
-                              "Male",
-                              style: TextStyle(
-                                fontSize: 17,
-                                color: textColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          "$numOfMale",
-                          style: const TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
+                            ],
                           ),
                         ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          "${((numOfMale / (numOfMale + numOfFemale)) * 100).round()}%",
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: primaryColor,
-                          ),
-                        )
-                      ],
-                    ),
-                    SizedBox(
-                      height: 70,
-                      child: VerticalDivider(
-                        color: textColor,
-                        thickness: 0.6,
                       ),
-                    ),
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              "assets/female.svg",
-                              color: textColor,
-                              width: 32,
-                              height: 32,
-                            ),
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            Text(
-                              "Female",
-                              style: TextStyle(
-                                fontSize: 17,
-                                color: textColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          "$numOfFemale",
-                          style: const TextStyle(
-                            fontSize: 25,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        Text(
-                          "${((numOfFemale / (numOfMale + numOfFemale)) * 100).round()}%",
-                          style: TextStyle(
-                            fontSize: 17,
-                            color: primaryColor,
-                          ),
-                        )
-                      ],
                     )
-                  ],
-                )
-              ],
-            ),
-            section(
-              mv: 0,
-              mb: 25,
-              mh: 10,
-              paddingh: 15,
-              b: 30,
-              children: [
-                const Text(
-                  "Customer source",
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Text(
-                      "Source",
-                      style: TextStyle(
-                        color: textColor,
-                      ),
-                    ),
-                    Text(
-                      "Amount",
-                      style: TextStyle(
-                        color: textColor,
-                      ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  color: textColor,
-                  thickness: 0.6,
-                ),
-                ...List.generate(
-                  customerSources.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: LayoutBuilder(builder: (context, ct) {
-                      final w = ct.maxWidth - 200;
-                      return Row(
-                        children: [
-                          Text(
-                            customerSources[index]["source"],
-                            style: const TextStyle(
-                              fontSize: 18,
-                            ),
-                          ),
-                          const Spacer(),
-                          Text(
-                            "${customerSources[index]["value"]}",
-                            style: const TextStyle(
-                              fontSize: 18,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 20,
-                          ),
-                          Container(
-                            width: w,
-                            height: 5,
-                            decoration: BoxDecoration(
-                              color: greyColor,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Row(
+                  : const SizedBox(),
+              const SizedBox(
+                height: 13,
+              ),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? GridView.count(
+                      crossAxisCount: 2,
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 25,
+                      padding: const EdgeInsets.all(10),
+                      children: [
+                        section(
+                          mh: 0,
+                          mv: 0,
+                          mb: 0,
+                          b: 30,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          paddingh: 15,
+                          children: [
+                            const SizedBox(height: 7),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Container(
-                                  width: (customerSources[index]["value"] /
-                                          (numOfFemale + numOfMale)) *
-                                      w,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: primaryColor,
-                                    borderRadius: BorderRadius.circular(20),
+                                SvgPicture.asset(
+                                  "assets/income.svg",
+                                  color: whiteColor,
+                                  width: 30,
+                                  height: 30,
+                                ),
+                                const Text(
+                                  "income",
+                                  style: TextStyle(
+                                    fontSize: 18,
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                        ],
-                      );
-                    }),
-                  ),
-                )
-              ],
-            ),
-            section(
-              mv: 0,
-              mb: 25,
-              mh: 10,
-              paddingh: 15,
-              b: 30,
-              children: [
-                const Text(
-                  "Out of stock items",
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                Obx(
-                  () {
-                    List<ItemModel> outOfStockItems = mainConntroller.items
-                        .where((p0) => p0.quantity == 0)
-                        .toList();
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Column(
-                        children: List.generate(
-                          outOfStockItems.length,
-                          (index) => ItemCard(
-                            itemModel: outOfStockItems[index],
-                            isStock: false,
-                            isHome: true,
-                            showBottomBorder:
-                                outOfStockItems.length - 1 != index,
-                            onTap: () {
-                              Get.to(
-                                () => StockDetailPage(
-                                  index: mainConntroller.items.indexOf(
-                                    outOfStockItems[index],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                )
-              ],
-            ),
-            section(
-              mv: 0,
-              mb: 25,
-              mh: 10,
-              paddingh: 15,
-              b: 30,
-              children: [
-                const Text(
-                  "Order",
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Stack(
-                        children: [
-                          const Positioned.fill(
-                            bottom: -40,
-                            child: Divider(
-                              thickness: 2,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: List.generate(
-                              menus.length,
-                              (index) => GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedIndex = index;
-                                  });
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: index == selectedIndex
-                                            ? primaryColor
-                                            : backgroundColor,
-                                        width: 2,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(menus[index]),
-                                ),
+                            const Spacer(),
+                            Text(
+                              "${formatNumber(totalIncome.round())} br",
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (orderDays.isEmpty)
-                      const Center(
-                        child: SizedBox(
-                          height: 60,
-                          child: Center(child: Text("Loading...")),
-                        ),
-                      ),
-                    if (orderDays.isNotEmpty)
-                      Column(
-                        children: [
-                          if (orderDays[selectedIndex].isNotEmpty)
-                            ...List.generate(orderDays[selectedIndex].length,
-                                (index) {
-                              OrderModel model =
-                                  orderDays[selectedIndex][index];
-                              return OrderItem(
-                                isFinished:
-                                    model.status == OrderStatus.completed,
-                                isDelivery: model.deliveryOption ==
-                                    DeliveryOption.delivery,
-                                orderModel: model,
+                            const Spacer(),
+                            Builder(builder: (context) {
+                              int prcnt = 0;
+                              if (lastTotalIncome == 0) {
+                                prcnt = 100;
+                                if (totalIncome == 0) {
+                                  prcnt = 0;
+                                }
+                              } else {
+                                prcnt = (((totalIncome - lastTotalIncome) /
+                                            lastTotalIncome) *
+                                        100)
+                                    .round();
+                              }
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    dataType[selectedType].contains("Week")
+                                        ? "This Week"
+                                        : dataType[selectedType]
+                                                .contains("Month")
+                                            ? "This Month"
+                                            : dataType[selectedType]
+                                                    .contains("Year")
+                                                ? "This Year"
+                                                : "",
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  RotatedBox(
+                                    quarterTurns: prcnt.isNegative ? -2 : 0,
+                                    child: Icon(
+                                      Icons.arrow_outward,
+                                      color: prcnt.isNegative
+                                          ? Colors.red
+                                          : Colors.green,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  Text(
+                                    "$prcnt%",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                ],
                               );
-                            }),
-                          if (orderDays[selectedIndex].isEmpty)
-                            const Center(
-                              child: SizedBox(
-                                height: 60,
-                                child: Center(
-                                  child: Text("No order"),
+                            })
+                          ],
+                        ),
+                        section(
+                          mh: 0,
+                          mv: 0,
+                          mb: 0,
+                          b: 30,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 7),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/expense.svg",
+                                  color: whiteColor,
+                                  width: 30,
+                                  height: 30,
+                                ),
+                                const Text(
+                                  "expense",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              "${formatNumber(totalExpense.round())} br",
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            Builder(builder: (context) {
+                              int prcnt = 0;
+                              if (lastTotalExpense == 0) {
+                                prcnt = 100;
+                                if (totalExpense == 0) {
+                                  prcnt = 0;
+                                }
+                              } else {
+                                prcnt = (((totalExpense - lastTotalExpense) /
+                                            lastTotalExpense) *
+                                        100)
+                                    .round();
+                              }
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    dataType[selectedType].contains("Week")
+                                        ? "This Week"
+                                        : dataType[selectedType]
+                                                .contains("Month")
+                                            ? "This Month"
+                                            : dataType[selectedType]
+                                                    .contains("Year")
+                                                ? "This Year"
+                                                : "",
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  RotatedBox(
+                                    quarterTurns: prcnt.isNegative ? -2 : 0,
+                                    child: Icon(
+                                      Icons.arrow_outward,
+                                      color: prcnt.isNegative
+                                          ? Colors.red
+                                          : Colors.green,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  Text(
+                                    "$prcnt%",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                ],
+                              );
+                            })
+                          ],
+                        ),
+                        section(
+                          mh: 0,
+                          mv: 0,
+                          mb: 0,
+                          b: 30,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 7),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/order.svg",
+                                  color: whiteColor,
+                                  width: 30,
+                                  height: 30,
+                                ),
+                                const Text(
+                                  "order",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox()
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              formatNumber(noOfOrders.round()),
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            Builder(builder: (context) {
+                              int prcnt = 0;
+                              if (lastNoOfOrders == 0) {
+                                prcnt = 100;
+                                if (noOfOrders == 0) {
+                                  prcnt = 0;
+                                }
+                              } else {
+                                prcnt = (((noOfOrders - lastNoOfOrders) /
+                                            lastNoOfOrders) *
+                                        100)
+                                    .round();
+                              }
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    dataType[selectedType].contains("Week")
+                                        ? "This Week"
+                                        : dataType[selectedType]
+                                                .contains("Month")
+                                            ? "This Month"
+                                            : dataType[selectedType]
+                                                    .contains("Year")
+                                                ? "This Year"
+                                                : "",
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  RotatedBox(
+                                    quarterTurns: prcnt.isNegative ? -2 : 0,
+                                    child: Icon(
+                                      Icons.arrow_outward,
+                                      color: prcnt.isNegative
+                                          ? Colors.red
+                                          : Colors.green,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  Text(
+                                    "$prcnt%",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                ],
+                              );
+                            })
+                          ],
+                        ),
+                        section(
+                          mh: 0,
+                          mv: 0,
+                          mb: 0,
+                          b: 30,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(
+                              height: 7,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/customer.svg",
+                                  color: whiteColor,
+                                  width: 30,
+                                  height: 30,
+                                ),
+                                const Text(
+                                  "customers",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              formatNumber(noOfCustomers),
+                              style: TextStyle(
+                                fontSize: 20,
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            Builder(builder: (context) {
+                              int prcnt = 0;
+                              if (lastNoCustomers == 0) {
+                                prcnt = 100;
+                                if (noOfCustomers == 0) {
+                                  prcnt = 0;
+                                }
+                              } else {
+                                prcnt = (((noOfCustomers - lastNoCustomers) /
+                                            lastNoCustomers) *
+                                        100)
+                                    .round();
+                              }
+                              return Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    dataType[selectedType].contains("Week")
+                                        ? "This Week"
+                                        : dataType[selectedType]
+                                                .contains("Month")
+                                            ? "This Month"
+                                            : dataType[selectedType]
+                                                    .contains("Year")
+                                                ? "This Year"
+                                                : "",
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  RotatedBox(
+                                    quarterTurns: prcnt.isNegative ? -2 : 0,
+                                    child: Icon(
+                                      Icons.arrow_outward,
+                                      color: prcnt.isNegative
+                                          ? Colors.red
+                                          : Colors.green,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  Text(
+                                    "$prcnt%",
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                    ),
+                                  )
+                                ],
+                              );
+                            })
+                          ],
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+              const SizedBox(
+                height: 15,
+              ),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 20,
+                      mh: 10,
+                      b: 30,
+                      children: [
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Stack(
+                          children: [
+                            PieChart(
+                              chartRadius: 150,
+                              ringStrokeWidth: 10,
+                              colorList: [whiteColor, primaryColor],
+                              dataMap: const {
+                                'mainProfit': 60.0,
+                                "investorProfit": 40.0,
+                              },
+                              chartType: ChartType.ring,
+                              legendOptions: const LegendOptions(
+                                showLegends: false,
+                              ),
+                              chartValuesOptions: const ChartValuesOptions(
+                                showChartValues: false,
+                              ),
+                            ),
+                            const Positioned.fill(
+                              child: Center(
+                                child: Text(
+                                  "Profit",
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             )
-                        ],
-                      ),
-                  ],
-                )
-              ],
-            ),
-            section(
-              mv: 0,
-              mb: 25,
-              mh: 10,
-              paddingh: 15,
-              b: 30,
-              children: [
-                const Text(
-                  "Expense",
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Obx(() {
-                  if (mainConntroller.getExpensesStatus.value ==
-                      RequestState.loading) {
-                    return SizedBox(
-                      height: 300,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: primaryColor,
-                        ),
-                      ),
-                    );
-                  }
-                  if (categories.isEmpty) {
-                    return const SizedBox(
-                      height: 300,
-                      child: Center(
-                        child: Text("No Expenses"),
-                      ),
-                    );
-                  }
-                  return Column(
-                    children: List.generate(
-                      categories.length,
-                      (index) {
-                        return ExpenseCategoryCard(
-                          expenseCategoryModel: categories[index],
-                        );
-                      },
-                    ),
-                  );
-                }),
-              ],
-            ),
-            section(
-              mv: 0,
-              mb: 25,
-              mh: 10,
-              paddingh: 15,
-              b: 30,
-              children: [
-                const Text(
-                  "Customer location",
-                  style: TextStyle(fontSize: 18),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                Row(
-                  children: [
-                    const Spacer(),
-                    Text(
-                      "Source",
-                      style: TextStyle(
-                        color: textColor,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      "Amount",
-                      style: TextStyle(
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 40,
-                    ),
-                    Text(
-                      "100%",
-                      style: TextStyle(
-                        color: primaryColor,
-                      ),
-                    ),
-                    const SizedBox(
-                      width: 20,
-                    )
-                  ],
-                ),
-                Divider(
-                  color: textColor,
-                  thickness: 0.6,
-                ),
-                ...List.generate(
-                  locations.length,
-                  (index) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Text(
-                          locations[index]["kk"],
-                          style: const TextStyle(
-                            fontSize: 18,
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          "${locations[index]["num"]}",
-                          style: const TextStyle(
-                            fontSize: 18,
-                          ),
+                          ],
                         ),
                         const SizedBox(
-                          width: 40,
+                          height: 20,
                         ),
-                        Text(
-                          "${(((locations[index]["num"] / totalCustomer) as double) * 100).round()}%",
-                          style: TextStyle(
-                            color: primaryColor,
-                          ),
-                        ),
+                        Builder(builder: (context) {
+                          double netIncome = totalIncome - totalExpense;
+                          double mainIncome = netIncome * 0.6;
+                          double investorIncome = netIncome * 0.4;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 25,
+                                    ),
+                                    Text(
+                                      "${formatNumber(investorIncome.round())} br",
+                                      style: TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    if (netIncome > 0)
+                                      Text(
+                                        "${((investorIncome / netIncome) * 100).round()}%",
+                                        style: TextStyle(
+                                          fontSize: 17,
+                                          color: primaryColor,
+                                        ),
+                                      )
+                                  ],
+                                ),
+                              ),
+                              SizedBox(
+                                height: 60,
+                                child: VerticalDivider(
+                                  width: 10,
+                                  thickness: .7,
+                                  color: greyColor,
+                                ),
+                              ),
+                              Expanded(
+                                child: Column(
+                                  children: [
+                                    const SizedBox(
+                                      height: 25,
+                                    ),
+                                    Text(
+                                      "${formatNumber(mainIncome.round())} br",
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 10,
+                                    ),
+                                    if (netIncome > 0)
+                                      Text(
+                                        "${((mainIncome / netIncome) * 100).round()}%",
+                                        style: const TextStyle(
+                                          fontSize: 17,
+                                        ),
+                                      )
+                                  ],
+                                ),
+                              )
+                            ],
+                          );
+                        }),
                         const SizedBox(
-                          width: 20,
+                          height: 15,
                         )
                       ],
-                    ),
-                  ),
-                )
-              ],
-            ),
-            const SizedBox(
-              height: 70,
-            )
-          ],
+                    )
+                  : const SizedBox(),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? Obx(() {
+                      return section(
+                        mv: 0,
+                        mb: 25,
+                        mh: 10,
+                        paddingh: 15,
+                        b: 30,
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                "Transaction History",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: () {
+                                  Get.to(() => const ExpensesPage());
+                                },
+                                child: Text(
+                                  "See all",
+                                  style:
+                                      TextStyle(fontSize: 18, color: textColor),
+                                ),
+                              ),
+                              const SizedBox(
+                                width: 20,
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          if (mainConntroller.getExpensesStatus.value ==
+                              RequestState.loading)
+                            Center(
+                              child: CircularProgressIndicator(
+                                color: primaryColor,
+                              ),
+                            ),
+                          if (mainConntroller.getExpensesStatus.value !=
+                              RequestState.loading)
+                            ...mainConntroller.payedExpenses.isNotEmpty
+                                ? List.generate(
+                                    mainConntroller.payedExpenses.length < 3
+                                        ? mainConntroller.payedExpenses.length
+                                        : 3, (index) {
+                                    ExpenseModel expenseModel =
+                                        mainConntroller.payedExpenses[index];
+                                    return LeftLined(
+                                      circleColor: primaryColor,
+                                      onTap: () {},
+                                      isLast: index == 2,
+                                      showBottomBorder: index != 2,
+                                      child: Row(
+                                        children: [
+                                          Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                expenseModel.category,
+                                                style: const TextStyle(
+                                                  fontSize: 18,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding: const EdgeInsets.only(
+                                                  left: 8.0,
+                                                  top: 3,
+                                                ),
+                                                child: Text(
+                                                  expenseModel.category ==
+                                                          ExpenseCategory
+                                                              .rawMaterial
+                                                      ? expenseModel.description
+                                                      : expenseModel.seller,
+                                                  style: TextStyle(
+                                                    color: primaryColor,
+                                                    fontSize: 12,
+                                                  ),
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          const Spacer(),
+                                          Text(
+                                            "${formatNumber(expenseModel.price.round())} Br",
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  })
+                                : [
+                                    const Text("No Transaction"),
+                                  ],
+                        ],
+                      );
+                    })
+                  : const SizedBox(),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 25,
+                      mh: 10,
+                      paddingh: 15,
+                      b: 30,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/male.svg",
+                                      color: textColor,
+                                      width: 32,
+                                      height: 32,
+                                    ),
+                                    const SizedBox(
+                                      width: 15,
+                                    ),
+                                    Text(
+                                      "Male",
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  "$numOfMale",
+                                  style: const TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                if (!(numOfMale / totalCustomer).isNaN)
+                                  Text(
+                                    "${((numOfMale / totalCustomer) * 100).round()}%",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: primaryColor,
+                                    ),
+                                  )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 70,
+                              child: VerticalDivider(
+                                color: textColor,
+                                thickness: 0.6,
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    SvgPicture.asset(
+                                      "assets/female.svg",
+                                      color: textColor,
+                                      width: 32,
+                                      height: 32,
+                                    ),
+                                    const SizedBox(
+                                      width: 15,
+                                    ),
+                                    Text(
+                                      "Female",
+                                      style: TextStyle(
+                                        fontSize: 17,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  "$numOfFemale",
+                                  style: const TextStyle(
+                                    fontSize: 25,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: 10,
+                                ),
+                                if (!((numOfFemale / (numOfMale + numOfFemale))
+                                    .isNaN))
+                                  Text(
+                                    "${((numOfFemale / (numOfMale + numOfFemale)) * 100).round()}%",
+                                    style: TextStyle(
+                                      fontSize: 17,
+                                      color: primaryColor,
+                                    ),
+                                  )
+                              ],
+                            )
+                          ],
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 25,
+                      mh: 10,
+                      paddingh: 15,
+                      b: 30,
+                      children: [
+                        const Text(
+                          "Customer source",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            Text(
+                              "Source",
+                              style: TextStyle(
+                                color: textColor,
+                              ),
+                            ),
+                            Text(
+                              "Amount",
+                              style: TextStyle(
+                                color: textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Divider(
+                          color: textColor,
+                          thickness: 0.6,
+                        ),
+                        ...List.generate(
+                          customerSources.length,
+                          (index) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: LayoutBuilder(builder: (context, ct) {
+                              final w =
+                                  ct.maxWidth.isNaN || ct.maxWidth.isInfinite
+                                      ? 150.0
+                                      : ct.maxWidth - 200;
+                              return Row(
+                                children: [
+                                  Text(
+                                    customerSources[index]["source"],
+                                    style: const TextStyle(
+                                      fontSize: 17,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    "${customerSources[index]["value"]}",
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    width: 20,
+                                  ),
+                                  Container(
+                                    width: w,
+                                    height: 5,
+                                    decoration: BoxDecoration(
+                                      color: greyColor,
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: (customerSources[index]
+                                                      ["value"] /
+                                                  (numOfFemale + numOfMale)) *
+                                              w,
+                                          height: 5,
+                                          decoration: BoxDecoration(
+                                            color: primaryColor,
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                ],
+                              );
+                            }),
+                          ),
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+              UserPriority.canAccessStock(
+                      lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 25,
+                      mh: 10,
+                      paddingh: 15,
+                      b: 30,
+                      children: [
+                        const Text(
+                          "Out of stock items",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Obx(
+                          () {
+                            List<ItemModel> outOfStockItems = mainConntroller
+                                .items
+                                .where((p0) => p0.quantity == 0)
+                                .toList();
+
+                            return Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Column(
+                                children: List.generate(
+                                  outOfStockItems.length,
+                                  (index) => ItemCard(
+                                    itemModel: outOfStockItems[index],
+                                    isStock: false,
+                                    isHome: true,
+                                    showBottomBorder:
+                                        outOfStockItems.length - 1 != index,
+                                    onTap: () {
+                                      Get.to(
+                                        () => StockDetailPage(
+                                          index: mainConntroller.items.indexOf(
+                                            outOfStockItems[index],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+              UserPriority.canAccessOrder(
+                      lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 25,
+                      mh: 10,
+                      paddingh: 15,
+                      b: 30,
+                      children: [
+                        const Text(
+                          "Order",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Column(
+                          children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 10),
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    bottom: -37,
+                                    child: Divider(
+                                      thickness: 2,
+                                      color: backgroundColor,
+                                    ),
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: List.generate(
+                                      menus.length,
+                                      (index) => GestureDetector(
+                                        onTap: () {
+                                          setState(() {
+                                            selectedIndex = index;
+                                          });
+                                        },
+                                        child: Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            border: Border(
+                                              bottom: BorderSide(
+                                                color: index == selectedIndex
+                                                    ? primaryColor
+                                                    : backgroundColor,
+                                                width: 2,
+                                              ),
+                                            ),
+                                          ),
+                                          child: Text(menus[index]),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (orderDays.isEmpty)
+                              const Center(
+                                child: SizedBox(
+                                  height: 60,
+                                  child: Center(child: Text("Loading...")),
+                                ),
+                              ),
+                            if (orderDays.isNotEmpty)
+                              Column(
+                                children: [
+                                  if (orderDays[selectedIndex].isNotEmpty)
+                                    ...List.generate(
+                                        orderDays[selectedIndex].length,
+                                        (index) {
+                                      OrderModel model =
+                                          orderDays[selectedIndex][index];
+                                      return OrderItem(
+                                        isFinished: model.status ==
+                                            OrderStatus.completed,
+                                        isDelivery: model.deliveryOption ==
+                                            DeliveryOption.delivery,
+                                        orderModel: model,
+                                      );
+                                    }),
+                                  if (orderDays[selectedIndex].isEmpty)
+                                    const Center(
+                                      child: SizedBox(
+                                        height: 60,
+                                        child: Center(
+                                          child: Text("No order"),
+                                        ),
+                                      ),
+                                    )
+                                ],
+                              ),
+                          ],
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 25,
+                      mh: 10,
+                      paddingh: 15,
+                      b: 30,
+                      children: [
+                        const Text(
+                          "Expense",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Obx(() {
+                          if (mainConntroller.getExpensesStatus.value ==
+                              RequestState.loading) {
+                            return SizedBox(
+                              height: 100,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: primaryColor,
+                                ),
+                              ),
+                            );
+                          }
+                          if (categories.isEmpty) {
+                            return const SizedBox(
+                              height: 100,
+                              child: Center(
+                                child: Text("No Expenses"),
+                              ),
+                            );
+                          }
+                          return Column(
+                            children: List.generate(
+                              categories.length,
+                              (index) {
+                                return ExpenseCategoryCard(
+                                  expenseCategoryModel: categories[index],
+                                );
+                              },
+                            ),
+                          );
+                        }),
+                      ],
+                    )
+                  : const SizedBox(),
+              UserPriority.isAdmin(lsController.currentUser.value.priority)
+                  ? section(
+                      mv: 0,
+                      mb: 25,
+                      mh: 10,
+                      paddingh: 15,
+                      b: 30,
+                      children: [
+                        const Text(
+                          "Customer location",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
+                        Row(
+                          children: [
+                            const Spacer(),
+                            Text(
+                              "Source",
+                              style: TextStyle(
+                                color: textColor,
+                              ),
+                            ),
+                            const Spacer(),
+                            Text(
+                              "Amount",
+                              style: TextStyle(
+                                color: textColor,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 40,
+                            ),
+                            Text(
+                              "100%",
+                              style: TextStyle(
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            )
+                          ],
+                        ),
+                        Divider(
+                          color: textColor,
+                          thickness: 0.6,
+                        ),
+                        ...List.generate(
+                          locations.length,
+                          (index) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Text(
+                                  locations[index]["kk"],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  "${locations[index]["num"]}",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 40,
+                                ),
+                                Text(
+                                  "${(((locations[index]["num"] / totalCustomer) as double) * 100).round()}%",
+                                  style: TextStyle(
+                                    color: primaryColor,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  width: 20,
+                                )
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  : const SizedBox(),
+              const SizedBox(
+                height: 70,
+              )
+            ],
+          ),
         ),
       ),
     );

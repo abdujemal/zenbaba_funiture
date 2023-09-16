@@ -1,4 +1,3 @@
-
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -65,9 +64,7 @@ class _CalenderPageState extends State<CalenderPage> {
         ),
       );
     }
-    setState(() {
-      
-    });
+    setState(() {});
   }
 
   @override
@@ -103,6 +100,7 @@ class _CalenderPageState extends State<CalenderPage> {
       ),
       body: MonthView<OrderModel?>(
         controller: calController,
+
         // to provide custom UI for month cells.
         cellBuilder: (date, events, isToday, isInMonth) {
           DateTime today =
@@ -171,7 +169,7 @@ class _CalenderPageState extends State<CalenderPage> {
         },
         minMonth: DateTime(1990),
         maxMonth: DateTime(2050),
-        initialMonth: DateTime(2023),
+        initialMonth: DateTime.now(),
         cellAspectRatio: 1,
         onCellTap: (events, date) {
           // Implement callback when user taps on a cell.

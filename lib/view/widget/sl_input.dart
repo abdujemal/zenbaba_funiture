@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../constants.dart';
 
+// ignore: must_be_immutable
 class SLInput extends StatelessWidget {
   final String title, hint;
   final TextInputType keyboardType;

@@ -18,34 +18,13 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    lsController.getUser();
     // mainConntroller.getCustomers();
-    mainConntroller.getExpenses(
-      quantity: numOfDocToGet,
-      status: ExpenseState.unpayed,
-    );
-    mainConntroller.getExpenses(
-      quantity: numOfDocToGet,
-      status: ExpenseState.payed,
-    );
-    mainConntroller.getItems();
-    mainConntroller.getOrders(
-      quantity: numOfDocToGet,
-      status: OrderStatus.Pending,
-    );
-    mainConntroller.getOrders(
-      quantity: numOfDocToGet,
-      status: OrderStatus.proccessing,
-    );
-    mainConntroller.getOrders(
-      quantity: numOfDocToGet,
-      status: OrderStatus.Delivered,
-    );
-    // mainConntroller.getProducts();
-    mainConntroller.getUsers();
-    mainConntroller.getExpenseChart();
-    mainConntroller.getOrderChart();
-    mainConntroller.getCustomers();
+    checkUser();
+  }
+
+  checkUser() async {
+    
+    await lsController.getUser();
   }
 
   @override

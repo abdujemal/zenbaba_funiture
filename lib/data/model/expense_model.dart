@@ -11,6 +11,7 @@ class ExpenseModel extends ExpenseEntity {
   final String date;
   final String seller;
   final String? employeeId;
+  final bool withReceipt;
   const ExpenseModel({
     required this.id,
     required this.category,
@@ -20,6 +21,7 @@ class ExpenseModel extends ExpenseEntity {
     required this.seller,
     required this.date,
     required this.employeeId,
+    required this.withReceipt,
   }) : super(
           id: id,
           category: category,
@@ -29,19 +31,22 @@ class ExpenseModel extends ExpenseEntity {
           date: date,
           seller: seller,
           employeeId: employeeId,
+          withReceipt: withReceipt,
         );
 
   factory ExpenseModel.fromFirebase(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
     return ExpenseModel(
-        id: snapshot.id,
-        seller: data['seller'],
-        employeeId: data['employeeId'],
-        date: data['date'],
-        category: data['category'],
-        description: data['description'],
-        price: data['price'],
-        expenseStatus: data['expenseStatus']);
+      id: snapshot.id,
+      seller: data['seller'],
+      employeeId: data['employeeId'],
+      date: data['date'],
+      category: data['category'],
+      description: data['description'],
+      price: data['price'],
+      expenseStatus: data['expenseStatus'],
+      withReceipt: data['withReceipt'] ?? false,
+    );
   }
 
   Map<String, dynamic> toMap() {
@@ -53,6 +58,7 @@ class ExpenseModel extends ExpenseEntity {
       'seller': seller,
       'date': date,
       'employeeId': employeeId,
+      'withReceipt': withReceipt,
     };
   }
 
@@ -65,6 +71,7 @@ class ExpenseModel extends ExpenseEntity {
     String? date,
     String? seller,
     String? employeeId,
+    bool? withRecipt
   }) {
     return ExpenseModel(
       id: id ?? this.id,
@@ -75,6 +82,7 @@ class ExpenseModel extends ExpenseEntity {
       expenseStatus: expenseStatus ?? this.expenseStatus,
       date: date ?? this.date,
       seller: seller ?? this.seller,
+      withReceipt: withRecipt ?? withReceipt,
     );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/add_emploee_page.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/employee_item.dart';
 
@@ -16,6 +17,8 @@ class EmployeePage extends StatefulWidget {
 
 class _EmployeePageState extends State<EmployeePage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  LSController lsController = Get.find<LSController>();
 
   @override
   void initState() {
@@ -51,17 +54,20 @@ class _EmployeePageState extends State<EmployeePage> {
           )
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryColor,
-        onPressed: () {
-          Get.to(() => const AddEmployeePage());
-        },
-        child: SvgPicture.asset(
-          "assets/plus.svg",
-          height: 20,
-          width: 20,
-        ),
-      ),
+      floatingActionButton:
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? FloatingActionButton(
+                  backgroundColor: primaryColor,
+                  onPressed: () {
+                    Get.to(() => const AddEmployeePage());
+                  },
+                  child: SvgPicture.asset(
+                    "assets/plus.svg",
+                    height: 20,
+                    width: 20,
+                  ),
+                )
+              : null,
       body: RefreshIndicator(
         onRefresh: () async {
           await mainConntroller.getEmployees();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../controller/main_controller.dart';
@@ -17,6 +18,8 @@ class ItemsPage extends StatefulWidget {
 
 class _ItemsPageState extends State<ItemsPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
+
+  LSController lsController = Get.find<LSController>();
 
   int selectCategoryIndex = 0;
 
@@ -40,17 +43,20 @@ class _ItemsPageState extends State<ItemsPage> {
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: primaryColor,
-        onPressed: () {
-          Get.to(() => const AddItem());
-        },
-        child: SvgPicture.asset(
-          'assets/plus.svg',
-          width: 15,
-          height: 15,
-        ),
-      ),
+      floatingActionButton:
+          lsController.currentUser.value.priority != UserPriority.AdminView
+              ? FloatingActionButton(
+                  backgroundColor: primaryColor,
+                  onPressed: () {
+                    Get.to(() => const AddItem());
+                  },
+                  child: SvgPicture.asset(
+                    'assets/plus.svg',
+                    width: 15,
+                    height: 15,
+                  ),
+                )
+              : null,
       body: Column(
         children: [
           Container(
