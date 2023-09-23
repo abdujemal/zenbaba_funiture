@@ -175,7 +175,7 @@ class _HomeTabState extends State<HomeTab>
       status: ExpenseState.payed,
     );
     await mainConntroller.getItems();
-    calculateCustomers();
+    await calculateCustomers();
 
     await loadOrders();
   }
@@ -790,7 +790,7 @@ class _HomeTabState extends State<HomeTab>
     );
   }
 
-  calculateCustomers() {
+  Future<void> calculateCustomers() async{
     customerSources = [];
     List<Map<String, dynamic>> newCustomerSources = [];
 
@@ -878,7 +878,7 @@ class _HomeTabState extends State<HomeTab>
                         )
                         .toList(),
                     value: dataType[selectedType],
-                    width: 127,
+                    width: 102,
                     list: dataType,
                     isDense: true,
                     isOutLined: true,
@@ -1587,7 +1587,7 @@ class _HomeTabState extends State<HomeTab>
                                 child: Text(
                                   "See all",
                                   style:
-                                      TextStyle(fontSize: 18, color: textColor),
+                                      TextStyle(fontSize: 15, color: textColor),
                                 ),
                               ),
                               const SizedBox(

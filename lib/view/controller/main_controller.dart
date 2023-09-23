@@ -42,6 +42,7 @@ import '../../domain/usecase/get_order_chart_usecase.dart';
 import '../../domain/usecase/get_order_usecase.dart';
 import '../../domain/usecase/get_products_usecase.dart';
 import '../../domain/usecase/get_single_order_usecase.dart';
+import '../../domain/usecase/get_stock_activities_usecase.dart';
 import '../../domain/usecase/get_users_usecase.dart';
 import '../../domain/usecase/search_customers_usecase.dart';
 import '../../domain/usecase/search_employee_usecase.dart';
@@ -66,6 +67,9 @@ class MainConntroller extends GetxController {
   RxList<String> dropdownVal = <String>[].obs;
 
   Rx<RequestState> expenseStatus = RequestState.idle.obs;
+  Rx<RequestState> getNewStockActivityStatus = RequestState.idle.obs;
+  Rx<RequestState> getAddStockActivityStatus = RequestState.idle.obs;
+
   Rx<RequestState> orderStatus = RequestState.idle.obs;
   Rx<RequestState> productStatus = RequestState.idle.obs;
   Rx<RequestState> itemStatus = RequestState.idle.obs;
@@ -82,7 +86,6 @@ class MainConntroller extends GetxController {
   Rx<RequestState> getCustomersStatus = RequestState.idle.obs;
   Rx<RequestState> getUsersStatus = RequestState.idle.obs;
   Rx<RequestState> getEmployeeStatus = RequestState.idle.obs;
-
   Rx<RequestState> countDocsStatus = RequestState.idle.obs;
 
   RxList<ExpenseModel> payedExpenses = <ExpenseModel>[].obs;
@@ -136,6 +139,7 @@ class MainConntroller extends GetxController {
   AddUpdateEmployeeActivityUsecase addUpdateEmployeeActivityUsecase;
   CountDocUsecase countDocUsecase;
   SearchEmployeeUsecase searchEmployeeUsecase;
+  GetStockActivitiesUsecase getStockActivitiesUsecase;
 
   Future<SharedPreferences> sharedPreferences = SharedPreferences.getInstance();
 
@@ -173,6 +177,7 @@ class MainConntroller extends GetxController {
     this.searchUsecase,
     this.countDocUsecase,
     this.searchEmployeeUsecase,
+    this.getStockActivitiesUsecase,
   );
 
   setCurrentTabIndex(int val) {
@@ -1001,6 +1006,38 @@ class MainConntroller extends GetxController {
     });
   }
 
+  getStockActivities(int quantity, bool isNew) async {
+    if (isNew) {
+      getNewStockActivityStatus.value = RequestState.loading;
+    } else {
+      getAddStockActivityStatus.value = RequestState.loading;
+    }
+    final res = await getStockActivitiesUsecase
+        .call(GetStockActivityParams(quantity: quantity, isNew: isNew));
+
+    res.fold(
+      (l) {
+        if (isNew) {
+          getNewStockActivityStatus.value = RequestState.error;
+        } else {
+          getAddStockActivityStatus.value = RequestState.error;
+        }
+        toast(l.toString(), ToastType.error);
+      },
+      (r) {
+        if (isNew) {
+          getNewStockActivityStatus.value = RequestState.loaded;
+
+          itemHistories.value = r;
+        } else {
+          getAddStockActivityStatus.value = RequestState.loaded;
+
+          itemHistories.addAll(r);
+        }
+      },
+    );
+  }
+
   // customers
 
   Future<void> getCustomers({int? quantity, int? end}) async {
@@ -1029,6 +1066,7 @@ class MainConntroller extends GetxController {
       toast(l.toString(), ToastType.error);
     }, (r) {
       getCustomersStatus.value = RequestState.loaded;
+
       customers.value = r;
     });
   }

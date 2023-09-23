@@ -73,7 +73,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
 
   setImageFile() async {
     imageFile = await displayImage(mainConntroller.items[widget.index].image!,
-        mainConntroller.items[widget.index].name, FirebaseConstants.items);
+        mainConntroller.items[widget.index].id!, FirebaseConstants.items);
     if (mounted) {
       setState(() {});
     }

@@ -123,6 +123,8 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
                 children: [
                   Expanded(
                     child: ScrollDatePicker(
+                      minimumDate: DateTime(2015),
+                      maximumDate: DateTime(2100),
                       selectedDate: _selectedDate,
                       locale: const Locale('en'),
                       options: DatePickerOptions(

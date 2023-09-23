@@ -41,6 +41,7 @@ abstract class DatabaseDataSrc {
   Future<void> updateOrder(OrderModel orderModel, String prevState);
   Future<void> addItem(ItemModel itemModel, File? file);
   Future<List<ItemModel>> getItems();
+  Future<List<ItemHistoryModel>> getStockActivities(int quantity, bool isNew);
   Future<void> updateItem(ItemModel itemModel, File? file, {int? quantity});
   Future<void> addItemHistory(ItemHistoryModel itemHistoryModel, String itemId);
   Future<void> addExpense(ExpenseModel expenseModel);
@@ -98,6 +99,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     required this.firebaseStorage,
   });
 
+  DocumentSnapshot? lastStoreActivity;
   DocumentSnapshot? lastProductDoc;
   DocumentSnapshot? lastPendingOrder;
   DocumentSnapshot? lastProccessingOrder;
@@ -347,6 +349,41 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     }
 
     return items;
+  }
+
+  @override
+  Future<List<ItemHistoryModel>> getStockActivities(
+      int quantity, bool isNew) async {
+    QuerySnapshot? qs;
+
+    if (isNew) {
+      lastStoreActivity = null;
+    }
+
+    qs = lastStoreActivity == null
+        ? await firebaseFirestore
+            .collection(FirebaseConstants.itemsHistories)
+            .orderBy('date', descending: true)
+            .limit(quantity)
+            .get()
+        : await firebaseFirestore
+            .collection(FirebaseConstants.itemsHistories)
+            .orderBy('date', descending: true)
+            .startAfterDocument(lastStoreActivity!)
+            .limit(quantity)
+            .get();
+    if (qs.docs.isNotEmpty) {
+      lastStoreActivity = qs.docs[qs.docs.length - 1];
+    }
+
+    List<ItemHistoryModel> histories = [];
+
+    for (var snap in qs.docs) {
+      ItemHistoryModel model = ItemHistoryModel.fromMap(snap);
+      histories.add(model);
+    }
+
+    return histories;
   }
 
   @override

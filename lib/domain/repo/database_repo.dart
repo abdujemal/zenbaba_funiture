@@ -34,6 +34,8 @@ abstract class DatabaseRepo {
       OrderModel orderModel, String prevState);
   Future<Either<Exception, void>> addItem(ItemModel itemModel, File? file);
   Future<Either<Exception, List<ItemModel>>> getItems();
+  Future<Either<Exception, List<ItemHistoryModel>>> getStockActivities(
+      int quantity, bool isNew);
   Future<Either<Exception, void>> updateItem(ItemModel itemModel, File? file,
       {int? quantity});
   Future<Either<Exception, void>> addItemHistory(
@@ -64,7 +66,7 @@ abstract class DatabaseRepo {
     int? quantity, {
     bool isNew = true,
   });
-  Future<Either<Exception,List<EmployeeActivityModel>>> searchEmployee(
+  Future<Either<Exception, List<EmployeeActivityModel>>> searchEmployee(
     String month,
     String year,
     String employeeId,

@@ -8,6 +8,7 @@ import 'package:zenbaba_funiture/domain/usecase/add_update_employee_usecase.dart
 import 'package:zenbaba_funiture/domain/usecase/count_doc_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_activities.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
+import 'package:zenbaba_funiture/domain/usecase/get_stock_activities_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/search_employee_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/search_usecase.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
@@ -93,6 +94,7 @@ void setup() {
       di(),
       di(),
       di(),
+      di(),
     ),
   );
 
@@ -115,6 +117,7 @@ void setup() {
   di.registerLazySingleton<DatabaseRepo>(() => DatabaseRepoImpl(di()));
 
   // usecase
+  di.registerLazySingleton(() => GetStockActivitiesUsecase(di()));
   di.registerLazySingleton(() => SearchEmployeeUsecase(di()));
   di.registerLazySingleton(() => CountDocUsecase(databaseRepo: di()));
   di.registerLazySingleton(() => SearchUsecase(databaseRepo: di()));

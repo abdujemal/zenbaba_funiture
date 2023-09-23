@@ -57,22 +57,25 @@ class _UserCardState extends State<UserCard> {
                       )
                     : const SizedBox()),
       ),
-      subtitle: Text(widget.userModel.email),
+      subtitle: Text(widget.userModel.phoneNumber),
       trailing: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           GestureDetector(
               onTap: () async {
-                if (await canLaunchUrl(
-                    Uri.parse('tel://${widget.userModel.phoneNumber}'))) {
-                  await launchUrl(
-                      Uri.parse('tel://${widget.userModel.phoneNumber}'));
-                }
+                await launchUrl(
+                    Uri.parse('tel:${widget.userModel.phoneNumber}'));
               },
               child: const Icon(
                 Icons.call,
                 color: Colors.green,
               )),
-          Text(widget.userModel.priority),
+          Text(
+            widget.userModel.priority,
+            style: const TextStyle(
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
     );

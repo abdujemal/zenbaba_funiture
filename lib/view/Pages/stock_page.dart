@@ -1,8 +1,8 @@
+// ignore_for_file: must_call_super
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
-import 'package:zenbaba_funiture/data/model/item_history_model.dart';
 import 'package:zenbaba_funiture/view/Pages/stock_detail_page.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 import 'package:zenbaba_funiture/view/widget/stock_item_by_activity.dart';
@@ -19,7 +19,8 @@ class StockPage extends StatefulWidget {
   State<StockPage> createState() => _StockPageState();
 }
 
-class _StockPageState extends State<StockPage> with AutomaticKeepAliveClientMixin<StockPage> {
+class _StockPageState extends State<StockPage>
+    with AutomaticKeepAliveClientMixin<StockPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 
   double stockPadding = 10;
@@ -28,14 +29,12 @@ class _StockPageState extends State<StockPage> with AutomaticKeepAliveClientMixi
 
   String selectedDisplayOption = "By stock";
 
-  List<ItemHistoryModel> itemHistories = [];
-
-  bool isLoading = false;
+  ScrollController scrollController = ScrollController();
 
   @override
   initState() {
     super.initState();
-
+    scrollController.addListener(handleScrolling);
     refresh();
   }
 
@@ -43,20 +42,18 @@ class _StockPageState extends State<StockPage> with AutomaticKeepAliveClientMixi
     if (selectedDisplayOption == "By stock") {
       mainConntroller.getItems();
     } else {
-      setState(() {
-        isLoading = true;
-      });
-      final lst = await mainConntroller.search(
-        FirebaseConstants.itemsHistories,
-        'date',
-        "*",
-        SearchType.normalItemHistories,
-      );
+      mainConntroller.getStockActivities(numOfDocToGet, true);
+    }
+  }
 
-      itemHistories = lst.map((e) => e as ItemHistoryModel).toList();
-      setState(() {
-        isLoading = false;
-      });
+  handleScrolling() {
+    if (scrollController.offset >= scrollController.position.maxScrollExtent) {
+      if (mainConntroller.getNewStockActivityStatus.value !=
+              RequestState.loading ||
+          mainConntroller.getAddStockActivityStatus.value !=
+              RequestState.loading) {
+        mainConntroller.getStockActivities(numOfDocToGet, false);
+      }
     }
   }
 
@@ -224,47 +221,66 @@ class _StockPageState extends State<StockPage> with AutomaticKeepAliveClientMixi
                           ),
                   ],
                 )
-              : isLoading
+              : mainConntroller.getNewStockActivityStatus.value.isLoading
                   ? Center(
                       child: CircularProgressIndicator(
                         color: primaryColor,
                       ),
                     )
-                  : itemHistories.isEmpty
+                  : mainConntroller.itemHistories.isEmpty
                       ? const Center(
                           child: Text("No Activity"),
                         )
-                      : RefreshIndicator(
-                          onRefresh: () async {
-                            refresh();
-                          },
-                          backgroundColor: backgroundColor,
-                          color: primaryColor,
-                          child: ListView.builder(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            itemCount: itemHistories.length,
-                            itemBuilder: (context, index) {
-                              DateTime currentDay =
-                                  DateTime.parse(itemHistories[index].date);
+                      : Column(
+                          children: [
+                            Expanded(
+                              child: RefreshIndicator(
+                                onRefresh: () async {
+                                  refresh();
+                                },
+                                backgroundColor: backgroundColor,
+                                color: primaryColor,
+                                child: ListView.builder(
+                                  controller: scrollController,
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  itemCount:
+                                      mainConntroller.itemHistories.length,
+                                  itemBuilder: (context, index) {
+                                    DateTime currentDay = DateTime.parse(
+                                        mainConntroller
+                                            .itemHistories[index].date);
 
-                              DateTime lastDay = index > 0
-                                  ? DateTime.parse(
-                                      itemHistories[index - 1].date)
-                                  : DateTime.parse(itemHistories[index].date);
+                                    DateTime lastDay = index > 0
+                                        ? DateTime.parse(mainConntroller
+                                            .itemHistories[index - 1].date)
+                                        : DateTime.parse(mainConntroller
+                                            .itemHistories[index].date);
 
-                              return StockItemByActivity(
-                                itemHistoryModel: itemHistories[index],
-                                showDate: currentDay.compareTo(lastDay) != 0 ||
-                                    index == 0,
-                              );
-                            },
-                          ),
+                                    return StockItemByActivity(
+                                      itemHistoryModel:
+                                          mainConntroller.itemHistories[index],
+                                      showDate:
+                                          currentDay.compareTo(lastDay) != 0 ||
+                                              index == 0,
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            mainConntroller
+                                    .getAddStockActivityStatus.value.isLoading
+                                ? CircularProgressIndicator(
+                                    color: primaryColor,
+                                  )
+                                : const SizedBox()
+                          ],
                         );
         },
       ),
     );
   }
-  
+
   @override
   bool get wantKeepAlive => true;
 }

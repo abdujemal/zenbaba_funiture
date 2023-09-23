@@ -399,4 +399,15 @@ class DatabaseRepoImpl extends DatabaseRepo {
       return left(e);
     }
   }
+  
+  @override
+  Future<Either<Exception, List<ItemHistoryModel>>> getStockActivities(int quantity, bool isNew) async {
+    try {
+      final res =
+          await databaseDataSrc.getStockActivities(quantity, isNew);
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
 }

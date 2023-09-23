@@ -39,6 +39,7 @@ class LSController extends GetxController {
       this.signUpWithEmailPasswordUsecase, this.signInWithEmailPasswordUSecase);
 
   updateUser(UserModel userModel) async {
+    
     updateState.value = RequestState.loading;
 
     final res = await setUserUsecase.call(SetUserParams(userModel));

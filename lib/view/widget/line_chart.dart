@@ -66,7 +66,7 @@ class _LineChartSampleState extends State<LineChartSample> {
         } else if (widget.bigPrice <= 1600000) {
           topPrice = 1600000;
         } else {
-          topPrice = 2400000;
+          topPrice = 6400000;
         }
 
         double yValExpense = (lineChart.rightVal / topPrice) * 4;
@@ -94,7 +94,7 @@ class _LineChartSampleState extends State<LineChartSample> {
         } else if (widget.bigPrice <= 1600000) {
           topPrice = 1600000;
         } else {
-          topPrice = 2400000;
+          topPrice = 6400000;
         }
 
         double yValExpense = (lineChart.rightVal / topPrice) * 4;
@@ -106,7 +106,7 @@ class _LineChartSampleState extends State<LineChartSample> {
 
         if (incomeLineData.isEmpty) {
           incomeLineData.add(const FlSpot(0, 0));
-        }        
+        }
 
         expenseLineData.add(FlSpot(xVal + 1, yValExpense));
         incomeLineData.add(FlSpot(xVal + 1, yValIncome));
@@ -183,8 +183,8 @@ class _LineChartSampleState extends State<LineChartSample> {
       ];
 
   Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      color: Color(0xff75729e),
+    final style = TextStyle(
+      color: textColor,
       fontWeight: FontWeight.bold,
       fontSize: 14,
     );
@@ -261,16 +261,16 @@ class _LineChartSampleState extends State<LineChartSample> {
     } else {
       switch (value.toInt()) {
         case 1:
-          text = '2M';
+          text = '1.6M';
           break;
         case 2:
-          text = '4M';
+          text = '3.2M';
           break;
         case 3:
-          text = '6M';
+          text = '4.8M';
           break;
         case 4:
-          text = '8M';
+          text = '6.4M';
           break;
         default:
           return Container();
@@ -365,6 +365,8 @@ class _LineChartSampleState extends State<LineChartSample> {
             style: style);
       } else {
         text = Text(
+          // // !List.generate(12, (i) => (i / 12) * 14).contains(value)
+          // value % 2 == 0 ? "m" : "",
           DateFormat("MM").format(
             DateTime.now().add(
               Duration(

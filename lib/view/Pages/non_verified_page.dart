@@ -48,23 +48,44 @@ class _NonVerfiedPageState extends State<NonVerfiedPage> {
                           fontSize: 20,
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
                         height: 20,
                       ),
                       Obx(() {
-                        return lsController.getUserState.value ==
-                                RequestState.loading
+                        return lsController.logoutState.value ==
+                                    RequestState.loading ||
+                                lsController.getUserState.value ==
+                                    RequestState.loading
                             ? CircularProgressIndicator(
                                 color: primaryColor,
                               )
-                            : CustomBtn(
-                                btnState: Btn.filled,
-                                width: 200,
-                                color: primaryColor,
-                                onTap: () {
-                                  lsController.getUser();
-                                },
-                                text: "Check Again",
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CustomBtn(
+                                    btnState: Btn.filled,
+                                    width: 150,
+                                    color: primaryColor,
+                                    onTap: () {
+                                      lsController.logout();
+                                    },
+                                    text: "Logout",
+                                    tColor: mainBgColor,
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  CustomBtn(
+                                    btnState: Btn.filled,
+                                    width: 150,
+                                    color: primaryColor,
+                                    onTap: () {
+                                      lsController.getUser();
+                                    },
+                                    text: "Check Again",
+                                    tColor: mainBgColor,
+                                  ),
+                                ],
                               );
                       }),
                     ])

@@ -268,7 +268,6 @@ class UserPriority {
       priority == WorkShopManager ||
       priority == Designer;
 
-  
   static canAccessOrder(priority) =>
       isAdmin(priority) ||
       priority == Sells ||
@@ -340,6 +339,10 @@ void toast(String message, ToastType toastType, {bool isLong = false}) {
 enum ToastType { success, error }
 
 enum RequestState { idle, loaded, loading, error }
+
+extension RequestStateExtention on RequestState {
+  bool get isLoading => this == RequestState.loading;
+}
 
 Future<File?> displayImage(String? imgUrl, String name, String dir) async {
   final directory = await getApplicationSupportDirectory();

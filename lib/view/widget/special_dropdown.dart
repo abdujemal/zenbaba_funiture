@@ -76,10 +76,10 @@ class _SpecialDropdownState<T> extends State<SpecialDropdown<T>> {
                 border: widget.isOutLined ? Border.all(color: textColor) : null,
                 borderRadius:
                     BorderRadius.circular(widget.isOutLined ? 7 : 15)),
-            padding: const EdgeInsets.symmetric(horizontal: 18),
+            padding: const EdgeInsets.symmetric(horizontal: 10),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<T>(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.symmetric(vertical: 4),
                 value: widget.value,
                 isDense: widget.isDense,
                 icon: const Icon(Icons.keyboard_arrow_down),

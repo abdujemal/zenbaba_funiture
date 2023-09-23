@@ -34,34 +34,39 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      initialBinding: GetBindings(),
-      debugShowCheckedModeBanner: false,
-      title: 'Zenbaba Furniture',
-      theme: ThemeData(
-        primarySwatch: Colors.orange, // Set your desired primary color
-      ).copyWith(
-        primaryColor: mainColor,
-        textTheme: TextTheme(
-          bodyText2: GoogleFonts.montserrat(),
-        ),
-        appBarTheme: AppBarTheme(
-          titleTextStyle: TextStyle(
-            color: whiteColor,
-          ),
-          actionsIconTheme: IconThemeData(
-            color: whiteColor,
-          ),
-          iconTheme: IconThemeData(
-            color: whiteColor,
-          ),
-        ),
-        iconTheme: IconThemeData(color: whiteColor),
-      
+    return MediaQuery(
+      data: MediaQuery.of(context).copyWith(
+        textScaleFactor: 1.0,
       ),
-      
-      themeMode: ThemeMode.dark,
-      home: const SplashScreen(),
+      child: GetMaterialApp(
+        initialBinding: GetBindings(),
+        debugShowCheckedModeBanner: false,
+        title: 'Zenbaba Furniture',
+        theme: ThemeData(
+          primarySwatch: Colors.orange, // Set your desired primary color
+        ).copyWith(
+          primaryColor: mainColor,
+          textTheme: TextTheme(
+            bodyText2: GoogleFonts.montserrat().copyWith(
+              fontSize: 15,
+            ),
+          ),
+          appBarTheme: AppBarTheme(
+            titleTextStyle: TextStyle(
+              color: whiteColor,
+            ),
+            actionsIconTheme: IconThemeData(
+              color: whiteColor,
+            ),
+            iconTheme: IconThemeData(
+              color: whiteColor,
+            ),
+          ),
+          iconTheme: IconThemeData(color: whiteColor),
+        ),
+        themeMode: ThemeMode.dark,
+        home: const SplashScreen(),
+      ),
     );
   }
 }
