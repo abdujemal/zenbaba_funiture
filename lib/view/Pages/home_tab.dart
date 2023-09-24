@@ -790,7 +790,7 @@ class _HomeTabState extends State<HomeTab>
     );
   }
 
-  Future<void> calculateCustomers() async{
+  Future<void> calculateCustomers() async {
     customerSources = [];
     List<Map<String, dynamic>> newCustomerSources = [];
 
@@ -1662,7 +1662,7 @@ class _HomeTabState extends State<HomeTab>
                                     );
                                   })
                                 : [
-                                    const Text("No Transaction"),
+                                    const Center(child: Text("No Transaction")),
                                   ],
                         ],
                       );

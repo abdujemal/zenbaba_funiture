@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:textfield_tags/textfield_tags.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
 import '../../data/model/product_model.dart';
@@ -207,15 +208,24 @@ class _AddProductState extends State<AddProduct> {
                     focusNode: fn,
                     decoration: InputDecoration(
                       isDense: true,
-                      border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: textColor,
-                        ),
+                      fillColor: mainBgColor,
+                      filled: true,
+                      hintStyle: TextStyle(color: textColor),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: textColor,
-                        ),
+                        borderRadius: BorderRadius.circular(15),
+                        borderSide: BorderSide.none,
                       ),
                       hintText: _controller.hasTags ? '' : "Enter tag...",
                       errorText: error,
@@ -320,7 +330,7 @@ class _AddProductState extends State<AddProduct> {
                 InkWell(
                   onTap: () async {
                     List<XFile> xFiles =
-                        await ImagePicker().pickMultiImage(imageQuality: 10);
+                        await ImagePicker().pickMultiImage(imageQuality: 25);
                     selectedImages = [];
                     if (xFiles.isNotEmpty) {
                       for (XFile xFile in xFiles) {
@@ -374,7 +384,7 @@ class _AddProductState extends State<AddProduct> {
                 const SizedBox(
                   height: 15,
                 ),
-                MyDropdown(
+                SpecialDropdown(
                   value: selectedCategory,
                   list: ProductCategory.list,
                   title: "Category",

@@ -675,16 +675,16 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   @override
   Future<void> delete(String path, String id, String name, bool alsoImage,
       int? numOfImages) async {
-    await firebaseFirestore.collection(path).doc(id).delete();
     if (alsoImage) {
-      if (path == FirebaseConstants.items) {
-        await firebaseStorage.ref().child('$path/$name').delete();
-      } else if (path == FirebaseConstants.products) {
+      if (path == FirebaseConstants.products) {
         for (int i = 0; i < numOfImages!; i++) {
           await firebaseStorage.ref().child('$path/$name$i').delete();
         }
+      } else {
+        await firebaseStorage.ref().child('$path/$name').delete();
       }
     }
+    await firebaseFirestore.collection(path).doc(id).delete();
 
     if (path == FirebaseConstants.orders) {
       await deleteOrderChart(id);
@@ -849,7 +849,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
       if (file != null) {
         UploadTask uploadTask =
-            firebaseStorage.ref().child("Employee/$eid").putFile(file);
+            firebaseStorage.ref().child("${FirebaseConstants.employees}/$eid").putFile(file);
         imgUrl =
             await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
       }
@@ -864,7 +864,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       if (file != null) {
         UploadTask uploadTask = firebaseStorage
             .ref()
-            .child("Employee/${employeeModel.id}")
+            .child("${FirebaseConstants.employees}/${employeeModel.id}")
             .putFile(file);
         imgUrl =
             await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();

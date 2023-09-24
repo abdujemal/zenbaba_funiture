@@ -262,7 +262,8 @@ class MainConntroller extends GetxController {
   }
 
   // employeees
-  addUpdateEmployee(EmployeeModel employeeModel, File? file) async {
+  addUpdateEmployee(EmployeeModel employeeModel, File? file,
+      {bool isUpdate = false}) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -271,7 +272,6 @@ class MainConntroller extends GetxController {
     }
 
     employeeStatus.value = RequestState.loading;
-    String employeeName = employeeModel.id!;
 
     final res = await addUpdateEmployeeUsecase(
         AddUpdateEmployeeParams(employeeModel, file));
@@ -282,8 +282,8 @@ class MainConntroller extends GetxController {
       },
       (r) {
         // deleting previously downloaded files
-        if (file != null) {
-          displayImage(null, employeeName, FirebaseConstants.employees)
+        if (file != null && isUpdate) {
+          displayImage(null, employeeModel.id!, FirebaseConstants.employees)
               .then((value) {
             if (value != null) {
               value.delete();
@@ -432,6 +432,8 @@ class MainConntroller extends GetxController {
       productStatus.value = RequestState.loading;
     } else if (path == FirebaseConstants.customers) {
       customerStatus.value = RequestState.loading;
+    } else if (path == FirebaseConstants.employees) {
+      employeeStatus.value = RequestState.loading;
     }
     final res = await deleteUsecase.call(
       DeleteParams(
@@ -454,6 +456,8 @@ class MainConntroller extends GetxController {
         productStatus.value = RequestState.error;
       } else if (path == FirebaseConstants.customers) {
         customerStatus.value = RequestState.error;
+      } else if (path == FirebaseConstants.employees) {
+        employeeStatus.value = RequestState.error;
       }
       toast(l.toString(), ToastType.error);
     }, (r) {
@@ -467,6 +471,8 @@ class MainConntroller extends GetxController {
         productStatus.value = RequestState.loaded;
       } else if (path == FirebaseConstants.customers) {
         customerStatus.value = RequestState.loaded;
+      } else if (path == FirebaseConstants.employees) {
+        employeeStatus.value = RequestState.loaded;
       }
 
       if (path == FirebaseConstants.expenses) {
@@ -479,6 +485,8 @@ class MainConntroller extends GetxController {
         // getProducts();
       } else if (path == FirebaseConstants.customers) {
         // getCustomers();
+      } else if (path == FirebaseConstants.employees) {
+        getEmployees();
       }
 
       Get.back();

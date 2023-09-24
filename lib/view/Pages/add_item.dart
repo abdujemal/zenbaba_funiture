@@ -330,7 +330,7 @@ class _AddItemState extends State<AddItem> {
                                             mainConntroller.delete(
                                                 FirebaseConstants.items,
                                                 widget.itemModel!.id!,
-                                                widget.itemModel!.name,
+                                                widget.itemModel!.id!,
                                                 true,
                                                 null);
                                           },

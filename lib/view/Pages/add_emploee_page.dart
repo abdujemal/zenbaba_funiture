@@ -93,8 +93,10 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               InkWell(
                 onTap: () async {
                   selectedFile = null;
-                  final filex =
-                      await ImagePicker().pickImage(source: ImageSource.camera);
+                  final filex = await ImagePicker().pickImage(
+                    source: ImageSource.camera,
+                    imageQuality: 25,
+                  );
                   if (filex != null) {
                     setState(() {
                       selectedFile = File(filex.path);
@@ -299,17 +301,15 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               Obx(() {
                 return Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 23),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: mainConntroller.employeeStatus.value ==
-                                RequestState.loading
-                            ? Center(
-                                child: CircularProgressIndicator(
-                                    color: primaryColor),
-                              )
-                            : CustomBtn(
+                  child: mainConntroller.employeeStatus.value.isLoading
+                      ? Center(
+                          child: CircularProgressIndicator(color: primaryColor),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: CustomBtn(
                                 btnState: Btn.filled,
                                 color: primaryColor,
                                 onTap: () {
@@ -353,6 +353,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                           salaryType: selectedSalaryType,
                                         ),
                                         selectedFile,
+                                        isUpdate: true,
                                       );
                                     }
                                   }
@@ -360,30 +361,31 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                 tColor: backgroundColor,
                                 text: "Save",
                               ),
-                      ),
-                      if (widget.employeeModel != null)
-                        const SizedBox(
-                          width: 30,
+                            ),
+                            if (widget.employeeModel != null)
+                              const SizedBox(
+                                width: 30,
+                              ),
+                            if (widget.employeeModel != null)
+                              Expanded(
+                                child: CustomBtn(
+                                  btnState: Btn.filled,
+                                  color: Colors.red,
+                                  tColor: Colors.white,
+                                  onTap: () {
+                                    mainConntroller.delete(
+                                      FirebaseConstants.employees,
+                                      widget.employeeModel!.id!,
+                                      widget.employeeModel!.id!,
+                                      true,
+                                      0,
+                                    );
+                                  },
+                                  text: "Delete",
+                                ),
+                              )
+                          ],
                         ),
-                      if (widget.employeeModel != null)
-                        Expanded(
-                          child: CustomBtn(
-                            btnState: Btn.filled,
-                            color: Colors.red,
-                            tColor: Colors.white,
-                            onTap: () {
-                              mainConntroller.delete(
-                                  FirebaseConstants.employees,
-                                  widget.employeeModel!.id!,
-                                  "",
-                                  false,
-                                  0);
-                            },
-                            text: "Delete",
-                          ),
-                        )
-                    ],
-                  ),
                 );
               }),
               const SizedBox(
