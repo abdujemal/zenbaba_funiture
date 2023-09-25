@@ -8,7 +8,7 @@ import '../../injection.dart';
 import '../controller/l_s_controller.dart';
 import '../controller/main_controller.dart';
 import '../widget/bottom_nav.dart';
-import 'home_tab.dart';
+import 'home tab/home_tab.dart';
 import 'order_tab.dart';
 
 class MainPage extends StatefulWidget {
