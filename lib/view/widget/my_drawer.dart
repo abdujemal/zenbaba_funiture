@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -94,25 +96,34 @@ class _MyDrawerState extends State<MyDrawer> {
               },
               child: Row(
                 children: [
-                  CircleAvatar(
-                    radius: 29,
-                    backgroundImage: imageFile != null && imageFile!.path != ""
-                        ? FileImage(imageFile!)
-                        : null,
-                    backgroundColor: backgroundColor,
-                    child: Center(
-                      child: imageFile == null
-                          ? CircularProgressIndicator(
-                              color: primaryColor,
-                            )
-                          : imageFile!.path == ""
-                              ? const Icon(
-                                  Icons.signal_wifi_off_sharp,
-                                  size: 29,
-                                )
-                              : const SizedBox(),
-                    ),
-                  ),
+                  kIsWeb
+                      ? CircleAvatar(
+                          radius: 29,
+                          backgroundImage: CachedNetworkImageProvider(
+                            lsController.currentUser.value.image!,
+                          ),
+                          backgroundColor: backgroundColor,
+                        )
+                      : CircleAvatar(
+                          radius: 29,
+                          backgroundImage:
+                              imageFile != null && imageFile!.path != ""
+                                  ? FileImage(imageFile!)
+                                  : null,
+                          backgroundColor: backgroundColor,
+                          child: Center(
+                            child: imageFile == null
+                                ? CircularProgressIndicator(
+                                    color: primaryColor,
+                                  )
+                                : imageFile!.path == ""
+                                    ? const Icon(
+                                        Icons.signal_wifi_off_sharp,
+                                        size: 29,
+                                      )
+                                    : const SizedBox(),
+                          ),
+                        ),
                   const SizedBox(
                     width: 10,
                   ),

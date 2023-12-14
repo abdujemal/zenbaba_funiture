@@ -255,11 +255,12 @@ class _AddCutomerState extends State<AddCutomer> {
                                 color: textColor,
                                 onTap: () {
                                   mainConntroller.delete(
-                                      FirebaseConstants.customers,
-                                      widget.customerModel!.id!,
-                                      widget.customerModel!.name,
-                                      false,
-                                      null);
+                                    FirebaseConstants.customers,
+                                    widget.customerModel!.id!,
+                                    widget.customerModel!.name,
+                                    false,
+                                    [],
+                                  );
                                 },
                               ),
                             ],

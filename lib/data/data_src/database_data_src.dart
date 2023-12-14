@@ -1,10 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:html' as html;
 import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+
 import 'package:zenbaba_funiture/data/model/item_history_model.dart';
 import 'package:zenbaba_funiture/data/model/review_model.dart';
 
@@ -57,7 +59,7 @@ abstract class DatabaseDataSrc {
       String key, String value, int length);
   Future<void> updateCustomer(CustomerModel customerModel);
   Future<void> delete(
-      String path, String id, String name, bool alsoImage, int? numOfImages);
+      String path, String id, String name, bool alsoImage, List<String> images);
   Future<void> addUpdateEmpoloyee(EmployeeModel employeeModel, File? file);
   Future<List<EmployeeModel>> getEmployees();
   Future<void> addUpdateEmployeeActivity(
@@ -168,6 +170,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
           .collection(FirebaseConstants.items)
           .doc(itemId)
           .set(itemModel.toMap());
+      return;
     } else {
       final ref = firebaseStorage
           .ref()
@@ -230,10 +233,13 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   @override
   Future<void> addProduct(ProductModel productModel, List<File> files) async {
     if (productModel.images.isNotEmpty && files.isEmpty) {
+      print("files is empty");
       await firebaseFirestore
           .collection(FirebaseConstants.products)
           .add(productModel.toMap());
     } else {
+      print("files is not empty");
+
       List<String> imagesUrl = [];
       int i = 0;
       for (File file in files) {
@@ -470,9 +476,9 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
     for (var snap in orderqs.docs) {
       OrderModel orderModel = OrderModel.fromFirebase(snap);
+
       orders.add(orderModel);
     }
-
     print("orders: ${orders.length}");
 
     return orders;
@@ -674,14 +680,13 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
   @override
   Future<void> delete(String path, String id, String name, bool alsoImage,
-      int? numOfImages) async {
+      List<String> images) async {
     if (alsoImage) {
-      if (path == FirebaseConstants.products) {
-        for (int i = 0; i < numOfImages!; i++) {
-          await firebaseStorage.ref().child('$path/$name$i').delete();
+      for (String img in images) {
+        if (img.isNotEmpty) {
+          String filePath = firebaseStorage.refFromURL(img).fullPath;
+          await firebaseStorage.ref().child(filePath).delete();
         }
-      } else {
-        await firebaseStorage.ref().child('$path/$name').delete();
       }
     }
     await firebaseFirestore.collection(path).doc(id).delete();
@@ -848,8 +853,10 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       // it is new
 
       if (file != null) {
-        UploadTask uploadTask =
-            firebaseStorage.ref().child("${FirebaseConstants.employees}/$eid").putFile(file);
+        UploadTask uploadTask = firebaseStorage
+            .ref()
+            .child("${FirebaseConstants.employees}/$eid")
+            .putFile(file);
         imgUrl =
             await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
       }

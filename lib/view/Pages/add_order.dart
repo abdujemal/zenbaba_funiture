@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:date_time_picker/date_time_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -18,6 +20,8 @@ import '../widget/custom_btn.dart';
 import '../widget/order_dialog.dart';
 import '../widget/order_product_card.dart';
 import '../widget/sl_input.dart';
+
+// TODO: bankaccount should be recomanded
 
 class AddOrder extends StatefulWidget {
   final OrderModel? orderModel;
@@ -41,6 +45,10 @@ class _AddOrderState extends State<AddOrder> {
       price: 0,
       tags: const [],
       size: " ",
+      rawMaterials: const [],
+      labourCost: 0,
+      overhead: 0,
+      profit: 0,
     ),
   ];
 
@@ -58,25 +66,26 @@ class _AddOrderState extends State<AddOrder> {
 
   String orderState = OrderStatus.Pending;
 
-  TextEditingController _seferTc = TextEditingController();
-  TextEditingController _custumerNameTc = TextEditingController(text: "  ");
-  TextEditingController _phoneNumberTc = TextEditingController();
-  TextEditingController _goLocationTc = TextEditingController();
-  TextEditingController _productSkuTc = TextEditingController();
-  TextEditingController _deliveryPriceTc = TextEditingController();
-  TextEditingController _productNameTc = TextEditingController();
-  TextEditingController _productPriceTc = TextEditingController();
-  TextEditingController _productDescriptionTc = TextEditingController();
-  TextEditingController _payedPriceTc = TextEditingController();
-  TextEditingController _colorTc = TextEditingController();
-  TextEditingController _sizeTc = TextEditingController();
+  final TextEditingController _seferTc = TextEditingController();
+  final TextEditingController _custumerNameTc =
+      TextEditingController(text: "  ");
+  final TextEditingController _phoneNumberTc = TextEditingController();
+  final TextEditingController _goLocationTc = TextEditingController();
+  final TextEditingController _productSkuTc = TextEditingController();
+  final TextEditingController _deliveryPriceTc = TextEditingController();
+  final TextEditingController _productNameTc = TextEditingController();
+  final TextEditingController _productPriceTc = TextEditingController();
+  final TextEditingController _productDescriptionTc = TextEditingController();
+  final TextEditingController _payedPriceTc = TextEditingController();
+  final TextEditingController _colorTc = TextEditingController();
+  final TextEditingController _sizeTc = TextEditingController();
+  final TextEditingController _bankAccountTc = TextEditingController();
 
   TextfieldTagsController tagsController = TextfieldTagsController();
 
   bool isCustomerExist = false;
 
   ProductModel selectedProduct = ProductModel(
-    tags: const [],
     id: "1",
     name: "Custom",
     sku: " ",
@@ -84,7 +93,12 @@ class _AddOrderState extends State<AddOrder> {
     description: " ",
     images: const [],
     price: 0,
+    tags: const [],
     size: " ",
+    rawMaterials: const [],
+    labourCost: 0,
+    overhead: 0,
+    profit: 0,
   );
 
   String selectedGender = Gender.Male;
@@ -110,6 +124,8 @@ class _AddOrderState extends State<AddOrder> {
   bool isNewProduct = false;
 
   bool isNewCustomer = false;
+
+  bool withReciept = false;
 
   var _distanceToField;
 
@@ -158,6 +174,8 @@ class _AddOrderState extends State<AddOrder> {
       selectedPaymentMethod = widget.orderModel!.paymentMethod;
       selectedProductImage = widget.orderModel!.imgUrl;
       _productDescriptionTc.text = widget.orderModel!.productDescription;
+      _bankAccountTc.text = widget.orderModel!.bankAccount ?? "";
+      withReciept = widget.orderModel!.withReciept;
     }
 
     if (widget.orderModel != null) {
@@ -190,6 +208,7 @@ class _AddOrderState extends State<AddOrder> {
     _deliveryPriceTc.dispose();
     _productNameTc.dispose();
     _payedPriceTc.dispose();
+    _bankAccountTc.dispose();
     super.dispose();
   }
 
@@ -810,7 +829,14 @@ class _AddOrderState extends State<AddOrder> {
                             height: 100,
                             fit: BoxFit.cover,
                           )
-                        : const SizedBox()
+                        : kIsWeb
+              ? CachedNetworkImage(
+                  imageUrl: widget.orderModel!.imgUrl,
+                  height: 100,
+                  width: 100,
+                  fit: BoxFit.cover,
+                )
+              : const SizedBox()
                     : const SizedBox(),
                 const SizedBox(
                   height: 20,
@@ -826,7 +852,6 @@ class _AddOrderState extends State<AddOrder> {
                     });
                   },
                 ),
-
                 const SizedBox(
                   height: 15,
                 ),
@@ -886,7 +911,6 @@ class _AddOrderState extends State<AddOrder> {
                     controller: _phoneNumberTc,
                     isOutlined: true,
                   ),
-
                 const SizedBox(
                   height: 15,
                 ),
@@ -966,11 +990,9 @@ class _AddOrderState extends State<AddOrder> {
                   controller: _colorTc,
                   isOutlined: true,
                 ),
-
                 const SizedBox(
                   height: 15,
                 ),
-
                 SLInput(
                   title: "Size",
                   hint: '23 cm * 100 cm * 10',
@@ -994,11 +1016,9 @@ class _AddOrderState extends State<AddOrder> {
                     controller: _productDescriptionTc,
                     isOutlined: true,
                   ),
-
                 const SizedBox(
                   height: 15,
                 ),
-
                 SpecialDropdown<String>(
                   value: selectedSource,
                   list: CustomerSource.list,
@@ -1088,7 +1108,6 @@ class _AddOrderState extends State<AddOrder> {
                       ],
                     ),
                   ),
-
                 if (!isPickup && isNewCustomer)
                   SLInput(
                     title: "",
@@ -1153,7 +1172,6 @@ class _AddOrderState extends State<AddOrder> {
                   const SizedBox(
                     height: 8,
                   ),
-
                 SLInput(
                   title: "Delivery price",
                   hint: '10000',
@@ -1163,7 +1181,6 @@ class _AddOrderState extends State<AddOrder> {
                   controller: _deliveryPriceTc,
                   isOutlined: true,
                 ),
-
                 const SizedBox(
                   height: 15,
                 ),
@@ -1194,15 +1211,41 @@ class _AddOrderState extends State<AddOrder> {
                   },
                 ),
                 const SizedBox(
-                  height: 40,
+                  height: 15,
                 ),
-                // mainConntroller.orderStatus.value == RequestState.loading
-                //     ? CircularProgressIndicator(
-                //         color: primaryColor,
-                //       )
-                //     : const SizedBox(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                  ),
+                  child: CheckboxListTile(
+                    title: const Text("with Reciept"),
+                    value: withReciept,
+                    onChanged: (v) {
+                      setState(() {
+                        withReciept = v!;
+                      });
+                    },
+                  ),
+                ),
                 const SizedBox(
                   height: 15,
+                ),
+                !withReciept
+                    ? SLInput(
+                        validation: (val) {
+                          return null;
+                        },
+                        title: "Bank Account (optional)",
+                        hint: '1000033426548',
+                        inputColor: whiteColor,
+                        otherColor: textColor,
+                        keyboardType: TextInputType.number,
+                        controller: _bankAccountTc,
+                        isOutlined: true,
+                      )
+                    : const SizedBox(),
+                const SizedBox(
+                  height: 40,
                 ),
                 Obx(
                   () {
@@ -1258,6 +1301,10 @@ class _AddOrderState extends State<AddOrder> {
                                                   _productPriceTc.text),
                                               tags: tagsController.getTags!,
                                               size: _sizeTc.text,
+                                              rawMaterials: [],
+                                              labourCost: 0,
+                                              overhead: 0,
+                                              profit: 0,
                                             ),
                                             selectedImages,
                                           );
@@ -1269,6 +1316,11 @@ class _AddOrderState extends State<AddOrder> {
                                       await mainConntroller.addOrder(
                                         OrderModel(
                                           id: null,
+                                          withReciept: withReciept,
+                                          bankAccount:
+                                              _bankAccountTc.text.isEmpty
+                                                  ? null
+                                                  : _bankAccountTc.text,
                                           customerId: cid,
                                           customerName: _custumerNameTc.text,
                                           phoneNumber: _phoneNumberTc.text,
@@ -1304,6 +1356,11 @@ class _AddOrderState extends State<AddOrder> {
                                       await mainConntroller.updateOrder(
                                         OrderModel(
                                           id: widget.orderModel!.id,
+                                          withReciept: withReciept,
+                                          bankAccount:
+                                              _bankAccountTc.text.isEmpty
+                                                  ? null
+                                                  : _bankAccountTc.text,
                                           customerId:
                                               widget.orderModel!.customerId,
                                           deliveryPrice: double.parse(
@@ -1364,7 +1421,7 @@ class _AddOrderState extends State<AddOrder> {
                                                     widget.orderModel!
                                                         .productName,
                                                     false,
-                                                    null);
+                                                    []);
                                               }
                                             },
                                             text: "Delete")

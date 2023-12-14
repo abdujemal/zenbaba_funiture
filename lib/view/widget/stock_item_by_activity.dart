@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -44,7 +46,7 @@ class StockItemByActivity extends StatelessWidget {
                   color: mainBgColor,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                padding: const EdgeInsets.all(9),
+                // pardding: const EdgeInsets.all(9),
                 child: Row(
                   children: [
                     FutureBuilder(
@@ -64,7 +66,13 @@ class StockItemByActivity extends StatelessWidget {
                                     image: FileImage(ds.data!),
                                     fit: BoxFit.cover,
                                   )
-                                : null,
+                                : kIsWeb
+                                    ? DecorationImage(
+                                        image: CachedNetworkImageProvider(
+                                          itemHistoryModel.itemImg,
+                                        ),
+                                      )
+                                    : null,
                           ),
                           child: ds.data == null
                               ? Center(

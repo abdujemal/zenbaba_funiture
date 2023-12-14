@@ -25,7 +25,7 @@ class CategoryCard extends StatelessWidget {
       child: Card(
         shadowColor: Colors.black,
         elevation: 14,
-        color: mainBgColor,
+        color: mainColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(25),
         ),
@@ -46,7 +46,7 @@ class CategoryCard extends StatelessWidget {
             //     ),
             //   ),
             // ),
-          
+
             productCategoryModel.name != ProductCategory.Custom
                 ? Image.asset(
                     productCategoryModel.assetImage,
@@ -58,7 +58,7 @@ class CategoryCard extends StatelessWidget {
                     Icons.more_horiz,
                     size: 80,
                   ),
-            
+
             Text(
               productCategoryModel.name,
               style: const TextStyle(fontSize: 20),

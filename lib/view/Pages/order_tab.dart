@@ -60,7 +60,7 @@ class _OrderTabState extends State<OrderTab>
     return Scaffold(
         backgroundColor: Colors.transparent,
         floatingActionButton:
-            lsController.currentUser.value.priority != UserPriority.AdminView
+            UserPriority.canAccessOrder(lsController.currentUser.value.priority)
                 ? FloatingActionButton(
                     backgroundColor: primaryColor,
                     child: SvgPicture.asset(
@@ -243,6 +243,7 @@ class _OrderTabState extends State<OrderTab>
                                     );
                                   } else {
                                     return OrderItem(
+                                      showPrice: UserPriority.canSeeOrderPrice(lsController.currentUser.value.priority),
                                       isFinished: orders[index].status ==
                                           OrderStatus.completed,
                                       isDelivery:

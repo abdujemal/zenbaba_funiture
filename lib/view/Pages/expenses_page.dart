@@ -21,7 +21,7 @@ class _ExpensesPageState extends State<ExpensesPage> {
   MainConntroller mainConntroller = Get.find<MainConntroller>();
   LSController lsController = Get.find<LSController>();
 
-  int selectedTabIndex = 1;
+  int selectedTabIndex = 0;
 
   ScrollController controller = ScrollController();
 

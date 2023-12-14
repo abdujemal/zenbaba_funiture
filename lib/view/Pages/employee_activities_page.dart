@@ -1,9 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
+import 'package:zenbaba_funiture/domain/entity/employee_activity_entity.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/employee_activity_item.dart';
 
@@ -25,10 +28,13 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
   bool isAtTheBottom = false;
 
   DateTime _selectedDate = DateTime.now();
+  late DateTime startDateFrom;
 
   @override
   void initState() {
     super.initState();
+
+    startDateFrom = DateTime.parse(widget.employeeModel.startFromDate);
 
     // getall the activities
     mainConntroller.getEmployeeActivity(widget.employeeModel.id!).then((value) {
@@ -38,25 +44,26 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
           : null;
       final dnceTodaynLastDay = lastActivites != null
           ? DateTime.now().difference(DateTime.parse(lastActivites.date)).inDays
-          : 0;
+          : DateTime.parse(today).difference(startDateFrom).inDays;
 
       if (mainConntroller.employeesActivities.isEmpty) {
         // no activities it starts from today
-        mainConntroller.addUpdateEmployeeActivity(
-          EmployeeActivityModel(
-            id: null,
-            employeeId: widget.employeeModel.id!,
-            employeeName: widget.employeeModel.name,
-            date: today,
-            payment: 0,
-            orders: const [],
-            morning: false,
-            afternoon: false,
-            itemsUsed: const [],
-          ),
-          getBack: false,
-        );
-      } else if (dnceTodaynLastDay > 0) {
+        // mainConntroller.addUpdateEmployeeActivity(
+        //   EmployeeActivityModel(
+        //     id: null,
+        //     employeeId: widget.employeeModel.id!,
+        //     employeeName: widget.employeeModel.name,
+        //     date: today,
+        //     payment: 0,
+        //     orders: const [],
+        //     morning: EmployeeAttendance.present,
+        //     afternoon: EmployeeAttendance.present,
+        //     itemsUsed: const [],
+        //   ),
+        //   getBack: false,
+        // );
+        addActivitiesFromStartToNow(dnceTodaynLastDay);
+      } else {
         // there is activities takes the last activity and
         // add activity until today
         addActivitiesUntilToday(dnceTodaynLastDay);
@@ -69,22 +76,45 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
     while (i > 0) {
       print("Just added: ${DateTime.now().add(Duration(days: -(i - 1))).day}");
       mainConntroller.addUpdateEmployeeActivity(
-          EmployeeActivityModel(
-            id: null,
-            employeeId: widget.employeeModel.id!,
-            date: DateTime.now()
-                .add(Duration(days: -(i - 1)))
-                .toString()
-                .split(" ")[0],
-            employeeName: widget.employeeModel.name,
-            payment: 0,
-            orders: const [],
-            morning: false,
-            afternoon: false,
-            itemsUsed: const [],
-          ),
-          getBack: false);
+        EmployeeActivityModel(
+          id: null,
+          employeeId: widget.employeeModel.id!,
+          date: DateTime.now()
+              .add(Duration(days: -(i - 1)))
+              .toString()
+              .split(" ")[0],
+          employeeName: widget.employeeModel.name,
+          payment: 0,
+          orders: const [],
+          morning: EmployeeAttendance.present,
+          afternoon: EmployeeAttendance.present,
+          itemsUsed: const [],
+        ),
+        getBack: false,
+      );
       i--;
+    }
+  }
+
+  addActivitiesFromStartToNow(int numOfDays) {
+    print("numOfDays: $numOfDays");
+    int i = 0;
+    while (i <= numOfDays) {
+      mainConntroller.addUpdateEmployeeActivity(
+        EmployeeActivityModel(
+          id: null,
+          employeeId: widget.employeeModel.id!,
+          date: startDateFrom.add(Duration(days: i)).toString().split(" ")[0],
+          employeeName: widget.employeeModel.name,
+          payment: 0,
+          orders: const [],
+          morning: EmployeeAttendance.present,
+          afternoon: EmployeeAttendance.present,
+          itemsUsed: const [],
+        ),
+        getBack: false,
+      );
+      i++;
     }
   }
 
@@ -232,17 +262,22 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
                     );
                   },
                   child: Ink(
-                    child: CircleAvatar(
-                      backgroundImage:
-                          ds.data != null ? FileImage(ds.data!) : null,
-                      radius: 25,
-                      child: ds.data == null
-                          ? const Icon(
-                              Icons.image,
-                              size: 30,
-                            )
-                          : null,
-                    ),
+                    child: ds.data != null
+                        ? CircleAvatar(
+                            backgroundImage: FileImage(ds.data!),
+                            radius: 25,
+                          )
+                        : kIsWeb
+                            ? CircleAvatar(
+                                backgroundImage: CachedNetworkImageProvider(
+                                  widget.employeeModel.imgUrl!,
+                                ),
+                                radius: 25,
+                              )
+                            : const CircleAvatar(
+                                radius: 25,
+                                child: CircularProgressIndicator(),
+                              ),
                   ),
                 );
               },

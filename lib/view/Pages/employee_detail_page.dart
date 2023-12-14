@@ -1,6 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/constants.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
@@ -26,6 +29,7 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
   LSController lsController = Get.find<LSController>();
 
   double absent = 0;
+  double late = 0;
   List<String> orders = [];
   List<String> itemsUsed = [];
 
@@ -39,11 +43,18 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
           orders = [...orders, ...model.orders];
           itemsUsed = [...itemsUsed, ...model.itemsUsed];
 
-          if (!model.morning) {
+          if (model.morning == EmployeeAttendance.absent) {
             absent += 0.5;
           }
-          if (!model.afternoon) {
+          if (model.afternoon == EmployeeAttendance.absent) {
             absent += 0.5;
+          }
+
+          if (model.morning == EmployeeAttendance.late) {
+            late += 0.5;
+          }
+          if (model.afternoon == EmployeeAttendance.late) {
+            late += 0.5;
           }
         }
       },
@@ -160,18 +171,22 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                               }
                             },
                             child: Ink(
-                              child: CircleAvatar(
-                                backgroundImage: ds.data != null
-                                    ? FileImage(ds.data!)
-                                    : null,
-                                radius: 35,
-                                child: ds.data == null
-                                    ? const Icon(
-                                        Icons.image,
-                                        size: 30,
-                                      )
-                                    : null,
-                              ),
+                              child: ds.data != null
+                                  ? CircleAvatar(
+                                      backgroundImage: FileImage(ds.data!),
+                                      radius: 25,
+                                    )
+                                  : kIsWeb
+                                      ? CircleAvatar(
+                                          backgroundImage:
+                                              CachedNetworkImageProvider(
+                                            widget.employeeModel.imgUrl!,
+                                          ),
+                                          radius: 25,
+                                        )
+                                      : const CircleAvatar(
+                                          child: CircularProgressIndicator(),
+                                        ),
                             ),
                           );
                         },
@@ -288,6 +303,18 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                       thickness: 1,
                       color: Colors.white24,
                     ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  myKeyVal(
+                    "Start Date",
+                    DateFormat("dd MMM / yyyy").format(
+                        DateTime.parse(widget.employeeModel.startFromDate)),
+                  ),
+                  const Divider(
+                    thickness: 1,
+                    color: Colors.white24,
+                  ),
                 ],
               ),
             ),
@@ -356,7 +383,16 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                                   ),
                                 if (widget.employeeModel.type !=
                                     EmployeeType.contract)
-                                  SizedBox(
+                                  myKeyVal("Late", "$late"),
+                                if (widget.employeeModel.type !=
+                                    EmployeeType.contract)
+                                  const Divider(
+                                    color: Colors.white24,
+                                    thickness: 1,
+                                  ),
+                                if (widget.employeeModel.type !=
+                                    EmployeeType.contract)
+                                  const SizedBox(
                                     height: 15,
                                   ),
                                 myKeyVal(
@@ -369,7 +405,7 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                                   color: Colors.white24,
                                   thickness: 1,
                                 ),
-                                SizedBox(
+                                const SizedBox(
                                   height: 15,
                                 ),
                                 myKeyVal(

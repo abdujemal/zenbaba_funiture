@@ -16,6 +16,7 @@ class EmployeeModel extends EmployeeEntity {
   final String type;
   final String payment;
   final String salaryType;
+  final String startFromDate;
   const EmployeeModel({
     required this.id,
     required this.imgUrl,
@@ -27,6 +28,7 @@ class EmployeeModel extends EmployeeEntity {
     required this.type,
     required this.payment,
     required this.salaryType,
+    required this.startFromDate,
   }) : super(
           id: id,
           imgUrl: imgUrl,
@@ -38,6 +40,7 @@ class EmployeeModel extends EmployeeEntity {
           type: type,
           payment: payment,
           salaryType: salaryType,
+          startFromDate: startFromDate,
         );
 
   Map<String, dynamic> toMap() {
@@ -51,23 +54,25 @@ class EmployeeModel extends EmployeeEntity {
       'type': type,
       'payment': payment,
       'salaryType': salaryType,
+      'startFromDate': startFromDate
     };
   }
 
   factory EmployeeModel.fromMap(DocumentSnapshot snap) {
     final map = snap.data() as Map<String, dynamic>;
     return EmployeeModel(
-      id: snap.id,
-      imgUrl: map['imgUrl'] as String,
-      name: map['name'] as String,
-      phoneNo: map['phoneNo'] as String,
-      age: map['age'] as String,
-      location: map['location'] as String,
-      position: map['position'] as String,
-      type: map['type'] as String,
-      payment: map['payment'] as String,
-      salaryType: map['salaryType'] as String,
-    );
+        id: snap.id,
+        imgUrl: map['imgUrl'] as String,
+        name: map['name'] as String,
+        phoneNo: map['phoneNo'] as String,
+        age: map['age'] as String,
+        location: map['location'] as String,
+        position: map['position'] as String,
+        type: map['type'] as String,
+        payment: map['payment'] as String,
+        salaryType: map['salaryType'] as String,
+        startFromDate:
+            map['startFromDate'] ?? DateTime.now().toString().split(" ")[0]);
   }
 
   String toJson() => json.encode(toMap());
@@ -83,6 +88,7 @@ class EmployeeModel extends EmployeeEntity {
     String? type,
     String? payment,
     String? salaryType,
+    String? startFromDate,
   }) {
     return EmployeeModel(
       id: id ?? this.id,
@@ -95,6 +101,7 @@ class EmployeeModel extends EmployeeEntity {
       type: type ?? this.type,
       payment: payment ?? this.payment,
       salaryType: salaryType ?? this.salaryType,
+      startFromDate: startFromDate ?? this.startFromDate,
     );
   }
 }

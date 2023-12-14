@@ -12,6 +12,7 @@ class EmployeeEntity extends Equatable {
   final String type;
   final String payment;
   final String salaryType;
+  final String startFromDate;
   const EmployeeEntity({
     required this.id,
     required this.imgUrl,
@@ -23,6 +24,7 @@ class EmployeeEntity extends Equatable {
     required this.type,
     required this.payment,
     required this.salaryType,
+    required this.startFromDate,
   });
 
   @override
@@ -37,5 +39,6 @@ class EmployeeEntity extends Equatable {
         type,
         payment,
         salaryType,
+        startFromDate,
       ];
 }

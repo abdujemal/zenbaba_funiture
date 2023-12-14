@@ -286,6 +286,7 @@ class _CustomerDetailsPageState extends State<CustomerDetailsPage> {
                                     child: Column(
                                       children: [
                                         OrderItem(
+                                          showPrice: UserPriority.canSeeOrderPrice(lsController.currentUser.value.priority),
                                           isFinished: orders[index].status ==
                                               OrderStatus.completed,
                                           isDelivery:

@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/item_details.dart';
@@ -38,90 +40,89 @@ class _ItemCardState extends State<ItemCard> {
                     ),
                   );
                 },
-            child: LayoutBuilder(builder: (context, ct) {
-              return Container(
-                margin: const EdgeInsets.symmetric(
-                  horizontal: 10,
+            child: Container(
+              margin: const EdgeInsets.symmetric(
+                horizontal: 10,
+              ),
+              padding: const EdgeInsets.symmetric(
+                vertical: 13,
+              ),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: widget.showBottomBorder
+                      ? BorderSide(
+                          color: textColor,
+                          width: .7,
+                        )
+                      : BorderSide.none,
                 ),
-                padding: const EdgeInsets.symmetric(
-                  vertical: 13,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: widget.showBottomBorder
-                        ? BorderSide(
-                            color: textColor,
-                            width: .7,
-                          )
-                        : BorderSide.none,
+              ),
+              child: Row(
+                children: [
+                  FutureBuilder(
+                    future: displayImage(
+                      widget.itemModel.image!,
+                      widget.itemModel.id!,
+                      FirebaseConstants.items,
+                    ),
+                    builder: (context, ds) {
+                      return Container(
+                        width: widget.isHome ? 75 : 60,
+                        height: widget.isHome ? 80 : 60,
+                        decoration: BoxDecoration(
+                          borderRadius:
+                              BorderRadius.circular(widget.isHome ? 20 : 30),
+                          color: mainBgColor,
+                          image: widget.itemModel.image!.isEmpty
+                              ? null
+                              : ds.data != null
+                                  ? DecorationImage(
+                                      image: FileImage(ds.data!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : kIsWeb
+                                      ? DecorationImage(
+                                          image: CachedNetworkImageProvider(
+                                              widget.itemModel.image!),
+                                        )
+                                      : null,
+                        ),
+                        child: ds.data == null && !kIsWeb
+                            ? Center(
+                                child: CircularProgressIndicator(
+                                  color: primaryColor,
+                                ),
+                              )
+                            : null,
+                      );
+                    },
                   ),
-                ),
-                child: Row(
-                  children: [
-                    FutureBuilder(
-                      future: displayImage(
-                        widget.itemModel.image!,
-                        widget.itemModel.id!,
-                        FirebaseConstants.items,
-                      ),
-                      builder: (context, ds) {
-                        return Container(
-                          width: widget.isHome ? 75 : 60,
-                          height: widget.isHome ? 80 : 60,
-                          decoration: BoxDecoration(
-                            borderRadius:
-                                BorderRadius.circular(widget.isHome ? 20 : 30),
-                            image: ds.data != null
-                                ? DecorationImage(
-                                    image: FileImage(ds.data!),
-                                    fit: BoxFit.cover,
-                                  )
-                                : null,
-                          ),
-                          child: ds.data == null
-                              ? Center(
-                                  child: CircularProgressIndicator(
-                                    color: primaryColor,
-                                  ),
-                                )
-                              : null,
-                        );
-                      },
-                    ),
-                    SizedBox(
-                      width: widget.isHome ? 20 : 40,
-                    ),
-                    Column(
+                  SizedBox(
+                    width: widget.isHome ? 20 : 40,
+                  ),
+                  Expanded(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         widget.isHome
-                            ? SizedBox(
-                                width: ct.maxWidth - 120,
-                                child: Text(
-                                  widget.itemModel.name,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                  ),
+                            ? Text(
+                                widget.itemModel.name,
+                                style: const TextStyle(
+                                  fontSize: 15,
                                 ),
                               )
-                            : SizedBox(
-                                width: ct.maxWidth - 120,
-                                child: Text(
-                                  widget.itemModel.name,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                  ),
+                            : Text(
+                                widget.itemModel.name,
+                                style: const TextStyle(
+                                  fontSize: 18,
                                 ),
                               ),
                         widget.isHome
-                            ? SizedBox(
-                                width: ct.maxWidth - 120,
-                                child: Text(
-                                  "Last used for ${widget.itemModel.lastUsedFor}",
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    color: textColor,
-                                  ),
+                            ? Text(
+                                "Last used for ${widget.itemModel.lastUsedFor}",
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: textColor,
                                 ),
                               )
                             : Text(
@@ -131,11 +132,11 @@ class _ItemCardState extends State<ItemCard> {
                                 ),
                               )
                       ],
-                    )
-                  ],
-                ),
-              );
-            }),
+                    ),
+                  )
+                ],
+              ),
+            ),
           )
         : Stack(
             children: [
@@ -154,7 +155,7 @@ class _ItemCardState extends State<ItemCard> {
                       );
                     },
                 child: Container(
-                  width: 170,
+                  width: double.infinity,
                   decoration: BoxDecoration(
                     color: mainBgColor,
                     borderRadius: BorderRadius.circular(15),
@@ -179,37 +180,48 @@ class _ItemCardState extends State<ItemCard> {
                           builder: (context, ds) {
                             return Padding(
                               padding: const EdgeInsets.all(8.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(15),
-                                child: ds.data != null
-                                    ? ds.data!.path == ""
-                                        ? Container(
-                                            width: 80,
-                                            height: 80,
-                                            color: mainBgColor,
-                                            child: const Center(
-                                              child: Icon(
-                                                Icons.wifi_off,
-                                                size: 110,
-                                              ),
-                                            ),
-                                          )
-                                        : Image.file(
-                                            ds.data!,
-                                            width: 80,
-                                            height: 80,
-                                            fit: BoxFit.cover,
-                                          )
-                                    : SizedBox(
-                                        width: 80,
-                                        height: 80,
-                                        child: Center(
-                                          child: CircularProgressIndicator(
-                                            color: primaryColor,
-                                          ),
-                                        ),
-                                      ),
-                              ),
+                              child: widget.itemModel.image!.isEmpty
+                                  ? Container()
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(15),
+                                      child: ds.data != null
+                                          ? ds.data!.path == ""
+                                              ? Container(
+                                                  width: 80,
+                                                  height: 80,
+                                                  color: mainBgColor,
+                                                  child: const Center(
+                                                    child: Icon(
+                                                      Icons.wifi_off,
+                                                      size: 110,
+                                                    ),
+                                                  ),
+                                                )
+                                              : Image.file(
+                                                  ds.data!,
+                                                  width: 80,
+                                                  height: 80,
+                                                  fit: BoxFit.cover,
+                                                )
+                                          : kIsWeb
+                                              ? CachedNetworkImage(
+                                                  imageUrl:
+                                                      widget.itemModel.image!,
+                                                  width: 80,
+                                                  height: 80,
+                                                  fit: BoxFit.cover,
+                                                )
+                                              : SizedBox(
+                                                  width: 80,
+                                                  height: 80,
+                                                  child: Center(
+                                                    child:
+                                                        CircularProgressIndicator(
+                                                      color: primaryColor,
+                                                    ),
+                                                  ),
+                                                ),
+                                    ),
                             );
                           }),
                       Padding(

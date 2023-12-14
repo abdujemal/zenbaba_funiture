@@ -178,6 +178,18 @@ class _HomeTabState extends State<HomeTab>
     await calculateCustomers();
 
     await loadOrders();
+
+    if (selectedType == 0) {
+      calculateForDate();
+    } else if (selectedType == 1) {
+      calculateForMonth();
+    } else if (selectedType == 2) {
+      calculateForLastWeek();
+    } else if (selectedType == 3) {
+      calculateForLastMonth();
+    } else if (selectedType == 4) {
+      calculateForLastYear();
+    }
   }
 
   Future<void> loadOrders() async {
@@ -878,7 +890,7 @@ class _HomeTabState extends State<HomeTab>
                         )
                         .toList(),
                     value: dataType[selectedType],
-                    width: 102,
+                    width: 105,
                     list: dataType,
                     isDense: true,
                     isOutLined: true,
@@ -1641,7 +1653,8 @@ class _HomeTabState extends State<HomeTab>
                                                           ExpenseCategory
                                                               .rawMaterial
                                                       ? expenseModel.description
-                                                      : expenseModel.seller,
+                                                      : expenseModel.seller ??
+                                                          "",
                                                   style: TextStyle(
                                                     color: primaryColor,
                                                     fontSize: 12,
@@ -2002,6 +2015,7 @@ class _HomeTabState extends State<HomeTab>
                                       OrderModel model =
                                           orderDays[selectedIndex][index];
                                       return OrderItem(
+                                        showPrice: UserPriority.canSeeOrderPrice(lsController.currentUser.value.priority),
                                         isFinished: model.status ==
                                             OrderStatus.completed,
                                         isDelivery: model.deliveryOption ==

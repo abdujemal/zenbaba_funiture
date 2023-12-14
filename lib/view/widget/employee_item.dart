@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/constants.dart';
@@ -37,20 +39,26 @@ class EmployeeItem extends StatelessWidget {
               );
             },
             child: Ink(
-              child: CircleAvatar(
-                backgroundImage: ds.data != null ? FileImage(ds.data!) : null,
-                radius: 30,
-                child: ds.data == null
-                    ? CircularProgressIndicator(
-                        color: primaryColor,
-                      )
-                    : ds.data!.path == ""
-                        ? const Icon(
-                            Icons.signal_wifi_off_sharp,
-                            size: 29,
-                          )
-                        : null,
-              ),
+              child: ds.data != null
+                  ? CircleAvatar(
+                      backgroundImage: FileImage(ds.data!),
+                      radius: 30,
+                      child: ds.data!.path == ""
+                          ? const Icon(
+                              Icons.signal_wifi_off_sharp,
+                              size: 29,
+                            )
+                          : null,
+                    )
+                  : kIsWeb
+                      ? CircleAvatar(
+                          backgroundImage:
+                              CachedNetworkImageProvider(employeeModel.imgUrl!),
+                          radius: 30,
+                        )
+                      : const CircleAvatar(
+                          radius: 30,
+                        ),
             ),
           );
         },

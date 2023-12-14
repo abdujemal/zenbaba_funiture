@@ -24,7 +24,7 @@ class ExpenseChartModel extends ExpenseChartEnitity {
     return ExpenseChartModel(
       id: snap.id,
       date: data["date"],
-      price: data["price"],
+      price: double.parse(data["price"].toString()),
       category: data['category'],
     );
   }

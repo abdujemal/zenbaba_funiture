@@ -113,113 +113,49 @@ class _StockPageState extends State<StockPage>
       ),
       body: Obx(
         () {
-          List<ItemModel> inStock = [];
-          List<ItemModel> outOfStock = [];
+          List<ItemModel> stocks = mainConntroller.items;
+          // List<ItemModel> outOfStock = [];
 
-          for (ItemModel item in mainConntroller.items) {
-            if (item.quantity == 0) {
-              outOfStock.add(item);
-            } else {
-              inStock.add(item);
-            }
-          }
+          // for (ItemModel item in mainConntroller.items) {
+          //   if (item.quantity == 0) {
+          //     outOfStock.add(item);
+          //   } else {
+          //     inStock.add(item);
+          //   }
+          // }
 
           if (mainConntroller.getItemsStatus.value == RequestState.loading) {
             return Center(
-              child: CircularProgressIndicator(color: primaryColor),
+              child: CircularProgressIndicator(
+                color: primaryColor,
+              ),
             );
           }
           return selectedDisplayOption == "By stock"
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
-                      child: Text(
-                        "Out of Stock",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    outOfStock.isEmpty
-                        ? const SizedBox(
-                            width: double.infinity,
-                            height: 150,
-                            child: Center(
-                              child: Text("No Items out of stock."),
-                            ),
-                          )
-                        : SizedBox(
-                            height: 170,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              padding:
-                                  EdgeInsets.symmetric(vertical: stockPadding),
-                              itemCount: outOfStock.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return Padding(
-                                  padding: const EdgeInsets.only(left: 20),
-                                  child: ItemCard(
-                                    onTap: () {
-                                      Get.to(
-                                        () => StockDetailPage(
-                                          index: mainConntroller.items.indexOf(
-                                            outOfStock[index],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    itemModel: outOfStock[index],
-                                  ),
-                                );
-                              },
+              ? GridView.builder(
+                  scrollDirection: Axis.vertical,
+                  padding: EdgeInsets.all(stockPadding),
+                  itemCount: stocks.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ItemCard(
+                      onTap: () {
+                        Get.to(
+                          () => StockDetailPage(
+                            index: mainConntroller.items.indexOf(
+                              stocks[index],
                             ),
                           ),
-                    const Padding(
-                      padding:
-                          EdgeInsets.symmetric(vertical: 8.0, horizontal: 20),
-                      child: Text(
-                        "In Stock",
-                        style: TextStyle(fontSize: 18),
-                      ),
-                    ),
-                    inStock.isEmpty
-                        ? const SizedBox(
-                            width: double.infinity,
-                            height: 150,
-                            child: Center(
-                              child: Text("No Item in Stock."),
-                            ),
-                          )
-                        : Expanded(
-                            child: GridView.builder(
-                              scrollDirection: Axis.vertical,
-                              padding: EdgeInsets.all(stockPadding),
-                              itemCount: inStock.length,
-                              itemBuilder: (BuildContext context, int index) {
-                                return ItemCard(
-                                  onTap: () {
-                                    Get.to(
-                                      () => StockDetailPage(
-                                        index: mainConntroller.items.indexOf(
-                                          inStock[index],
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  itemModel: inStock[index],
-                                );
-                              },
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                mainAxisSpacing: 20,
-                                crossAxisSpacing: 10,
-                                childAspectRatio: 1.16,
-                              ),
-                            ),
-                          ),
-                  ],
+                        );
+                      },
+                      itemModel: stocks[index],
+                    );
+                  },
+                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: MediaQuery.of(context).size.width / 2,
+                    childAspectRatio: 1.2,
+                    mainAxisSpacing: 15,
+                    crossAxisSpacing: 15,
+                  ),
                 )
               : mainConntroller.getNewStockActivityStatus.value.isLoading
                   ? Center(

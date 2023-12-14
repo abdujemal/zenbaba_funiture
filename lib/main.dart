@@ -43,13 +43,22 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Zenbaba Furniture',
         theme: ThemeData(
+          colorScheme: ColorScheme.dark(
+            primary: Colors.orange,
+          ),
           primarySwatch: Colors.orange, // Set your desired primary color
         ).copyWith(
           primaryColor: mainColor,
-          textTheme: TextTheme(
+          primaryTextTheme: TextTheme(
             bodyText2: GoogleFonts.montserrat().copyWith(
               fontSize: 15,
+              color: whiteColor,
             ),
+          ),
+          chipTheme: ChipThemeData(
+            backgroundColor: mainBgColor,
+            side: BorderSide.none,
+            padding: const EdgeInsets.all(2),
           ),
           appBarTheme: AppBarTheme(
             titleTextStyle: TextStyle(
@@ -63,8 +72,8 @@ class MyApp extends StatelessWidget {
             ),
           ),
           iconTheme: IconThemeData(color: whiteColor),
+          // primaryTextTheme: TextTheme(bodyText2: )
         ),
-        themeMode: ThemeMode.dark,
         home: const SplashScreen(),
       ),
     );

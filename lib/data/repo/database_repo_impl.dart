@@ -218,10 +218,10 @@ class DatabaseRepoImpl extends DatabaseRepo {
 
   @override
   Future<Either<Exception, void>> delete(String path, String id, String name,
-      bool alsoImage, int? numOfImages) async {
+      bool alsoImage, List<String> images) async {
     try {
       final res =
-          await databaseDataSrc.delete(path, id, name, alsoImage, numOfImages);
+          await databaseDataSrc.delete(path, id, name, alsoImage, images);
       return right(res);
     } on Exception catch (e) {
       return left(e);

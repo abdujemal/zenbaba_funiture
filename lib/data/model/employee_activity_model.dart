@@ -9,8 +9,8 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
   final double payment;
   final String date;
   final List<String> orders;
-  final bool morning;
-  final bool afternoon;
+  final String morning;
+  final String afternoon;
   final List<String> itemsUsed;
   const EmployeeActivityModel({
     required this.id,
@@ -54,11 +54,11 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
       employeeId: map['employeeId'] as String,
       employeeName: map['employeeName'] as String,
       date: map['date'] as String,
-      payment: map['payment'],
+      payment: double.parse(map['payment'].toString()),
       orders:
           (map['orders'] as List<dynamic>).map((e) => e.toString()).toList(),
-      morning: map['morning'] as bool,
-      afternoon: map['afternoon'] as bool,
+      morning: map['morning'] as String,
+      afternoon: map['afternoon'] as String,
       itemsUsed:
           (map['itemsUsed'] as List<dynamic>).map((e) => e.toString()).toList(),
     );
@@ -73,8 +73,8 @@ class EmployeeActivityModel extends EmployeeActivityEntity {
     String? date,
     double? payment,
     List<String>? orders,
-    bool? morning,
-    bool? afternoon,
+    String? morning,
+    String? afternoon,
     List<String>? itemsUsed,
   }) {
     return EmployeeActivityModel(

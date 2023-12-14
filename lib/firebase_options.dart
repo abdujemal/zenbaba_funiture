@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for windows - '
@@ -48,6 +42,17 @@ class DefaultFirebaseOptions {
         );
     }
   }
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyDbK_yIGsgV4sojW96R2TJekmghbuhe7UU',
+    appId: '1:367227212802:web:fe547126046a75cffe431b',
+    messagingSenderId: '367227212802',
+    projectId: 'osman-furniture-project',
+    authDomain: 'osman-furniture-project.firebaseapp.com',
+    databaseURL: 'https://osman-furniture-project-default-rtdb.firebaseio.com',
+    storageBucket: 'osman-furniture-project.appspot.com',
+    measurementId: 'G-KYFM649G52',
+  );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAlVFAkXn78Uk9VE3ckp5NSM0qhcGPCIvk',
@@ -68,5 +73,17 @@ class DefaultFirebaseOptions {
     androidClientId: '367227212802-irca8si5bukgu31033k3tr79cm72slti.apps.googleusercontent.com',
     iosClientId: '367227212802-h0tr4t30g0kq2qkcr320thshp90rmqnf.apps.googleusercontent.com',
     iosBundleId: 'com.example.zenbabaFuniture',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyAw8CREkRc7agevYionxLFhx_qJbL3vSP4',
+    appId: '1:367227212802:ios:d3a3ef75d092ab58fe431b',
+    messagingSenderId: '367227212802',
+    projectId: 'osman-furniture-project',
+    databaseURL: 'https://osman-furniture-project-default-rtdb.firebaseio.com',
+    storageBucket: 'osman-furniture-project.appspot.com',
+    androidClientId: '367227212802-irca8si5bukgu31033k3tr79cm72slti.apps.googleusercontent.com',
+    iosClientId: '367227212802-40fq6f0fc0g1uul7qurobumbdjoj1uu6.apps.googleusercontent.com',
+    iosBundleId: 'com.example.zenbabaFuniture.RunnerTests',
   );
 }

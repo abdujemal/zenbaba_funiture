@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -5,7 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:zenbaba_funiture/constants.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/Pages/add_item.dart';
+import 'package:zenbaba_funiture/view/Pages/stock_detail_page.dart';
+import 'package:zenbaba_funiture/view/Pages/stock_page.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
+import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/left_line.dart';
 
 class ItemDetail extends StatefulWidget {
@@ -18,6 +22,7 @@ class ItemDetail extends StatefulWidget {
 
 class _ItemDetailState extends State<ItemDetail> {
   LSController lsController = Get.find<LSController>();
+  MainConntroller mainConntroller = Get.find<MainConntroller>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,18 +81,34 @@ class _ItemDetailState extends State<ItemDetail> {
                     FirebaseConstants.items,
                   ),
                   builder: (context, ds) {
-                    return Container(
-                      width: 150,
-                      height: 150,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        image: ds.data != null
-                            ? ds.data!.path != ""
-                                ? DecorationImage(
-                                    image: FileImage(ds.data!),
-                                  )
-                                : null
-                            : null,
+                    return InkWell(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => StockDetailPage(
+                              index: mainConntroller.items
+                                  .indexOf(widget.itemModel),
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 150,
+                        height: 150,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: ds.data != null
+                              ? ds.data!.path != ""
+                                  ? DecorationImage(
+                                      image: FileImage(ds.data!),
+                                    )
+                                  : null
+                              : DecorationImage(
+                                  image: CachedNetworkImageProvider(
+                                      widget.itemModel.image!),
+                                ),
+                        ),
                       ),
                     );
                   },

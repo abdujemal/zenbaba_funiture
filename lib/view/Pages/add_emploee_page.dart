@@ -1,5 +1,8 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:date_time_picker/date_time_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -39,6 +42,8 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
 
   String? imageUrl;
 
+  String startDate = DateTime.now().toString();
+
   @override
   void dispose() {
     super.dispose();
@@ -60,11 +65,69 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
       phoneTc.text = widget.employeeModel!.phoneNo;
       paymentTc.text = widget.employeeModel!.payment;
       locationTc.text = widget.employeeModel!.location;
-
+      startDate = widget.employeeModel!.startFromDate;
       selectedType = widget.employeeModel!.type;
       selectedPosition = widget.employeeModel!.position;
       selectedSalaryType = widget.employeeModel!.salaryType;
     }
+  }
+
+  inputDate() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 23),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 15),
+            child: Text(
+              "Started Working from",
+              style: TextStyle(color: textColor),
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          DateTimePicker(
+            initialValue: startDate,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return "This Feild is required.";
+              }
+              return null;
+            },
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 12,
+              ),
+              suffix: const Icon(Icons.calendar_month),
+              fillColor: mainBgColor,
+              filled: true,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            type: DateTimePickerType.date,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+            // readOnly: widget.employeeModel != null,
+            dateLabelText: 'Date',
+            dateMask: 'd MMM, yyyy',
+            onChanged: (val) {
+              setState(() {
+                startDate = val;
+              });
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -94,7 +157,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 onTap: () async {
                   selectedFile = null;
                   final filex = await ImagePicker().pickImage(
-                    source: ImageSource.camera,
+                    source: ImageSource.gallery,
                     imageQuality: 25,
                   );
                   if (filex != null) {
@@ -120,9 +183,15 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                       width: 120,
                                       height: 120,
                                     )
-                                  : CircularProgressIndicator(
-                                      color: primaryColor,
-                                    );
+                                  : kIsWeb
+                                      ? CachedNetworkImage(
+                                          imageUrl: imageUrl!,
+                                          width: 120,
+                                          height: 120,
+                                        )
+                                      : CircularProgressIndicator(
+                                          color: primaryColor,
+                                        );
                             },
                           )
                         : Ink(
@@ -296,6 +365,10 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 otherColor: textColor,
               ),
               const SizedBox(
+                height: 15,
+              ),
+              inputDate(),
+              const SizedBox(
                 height: 35,
               ),
               Obx(() {
@@ -320,26 +393,27 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                   if (addEmployeeState.currentState!
                                       .validate()) {
                                     if (widget.employeeModel == null) {
-                                      if (selectedFile != null) {
-                                        mainConntroller.addUpdateEmployee(
-                                          EmployeeModel(
-                                            id: null,
-                                            imgUrl: null,
-                                            name: nameTc.text,
-                                            phoneNo: phoneTc.text,
-                                            age: ageTc.text,
-                                            location: locationTc.text,
-                                            position: selectedPosition,
-                                            type: selectedType,
-                                            payment: paymentTc.text,
-                                            salaryType: selectedSalaryType,
-                                          ),
-                                          selectedFile,
-                                        );
-                                      } else {
-                                        toast("Image is not selected.",
-                                            ToastType.error);
-                                      }
+                                      // if (selectedFile != null) {
+                                      mainConntroller.addUpdateEmployee(
+                                        EmployeeModel(
+                                          id: null,
+                                          imgUrl: null,
+                                          name: nameTc.text,
+                                          phoneNo: phoneTc.text,
+                                          age: ageTc.text,
+                                          location: locationTc.text,
+                                          position: selectedPosition,
+                                          type: selectedType,
+                                          payment: paymentTc.text,
+                                          salaryType: selectedSalaryType,
+                                          startFromDate: startDate,
+                                        ),
+                                        selectedFile,
+                                      );
+                                      // } else {
+                                      //   toast("Image is not selected.",
+                                      //       ToastType.error);
+                                      // }
                                     } else {
                                       mainConntroller.addUpdateEmployee(
                                         widget.employeeModel!.copyWith(
@@ -351,6 +425,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                           type: selectedType,
                                           payment: paymentTc.text,
                                           salaryType: selectedSalaryType,
+                                          startFromDate: startDate,
                                         ),
                                         selectedFile,
                                         isUpdate: true,
@@ -378,7 +453,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                                       widget.employeeModel!.id!,
                                       widget.employeeModel!.id!,
                                       true,
-                                      0,
+                                      [widget.employeeModel!.imgUrl!],
                                     );
                                   },
                                   text: "Delete",

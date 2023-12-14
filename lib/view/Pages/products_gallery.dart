@@ -1,5 +1,6 @@
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/add_product.dart';
@@ -163,11 +164,43 @@ class _ProductGalleryState extends State<ProductGallery> {
                             ),
                           ),
                         )
-                      : Center(
-                          child: CircularProgressIndicator(
-                            color: primaryColor,
-                          ),
-                        );
+                      : kIsWeb
+                          ? GestureDetector(
+                              onTap: () {
+                                Get.to(
+                                  () => AddProduct(
+                                    productModel:
+                                        images[index]["model"] as ProductModel,
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                height: double.infinity,
+                                decoration: snap.data!.path != ""
+                                    ? BoxDecoration(
+                                        image: DecorationImage(
+                                          fit: BoxFit.contain,
+                                          image: CachedNetworkImageProvider(
+                                              images[index]["url"].toString()),
+                                        ),
+                                      )
+                                    : null,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    snap.data!.path == ""
+                                        ? const Text("No Network.")
+                                        : const SizedBox(),
+                                  ],
+                                ),
+                              ),
+                            )
+                          : Center(
+                              child: CircularProgressIndicator(
+                                color: primaryColor,
+                              ),
+                            );
                 }),
           );
         },

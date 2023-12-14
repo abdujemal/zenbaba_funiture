@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
@@ -135,13 +137,21 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                     ),
                                   );
                                 },
-                                icon: SvgPicture.asset(
-                                  'assets/buy.svg',
-                                  color: backgroundColor,
-                                  height: 40,
-                                  width: 40,
-                                ),
-                              )
+                                icon: const RotatedBox(
+                                  quarterTurns: 2,
+                                  child: Icon(
+                                    Icons.arrow_outward,
+                                    size: 40,
+                                    color: Colors.black,
+                                  ),
+                                )
+                                // SvgPicture.asset(
+                                //   'assets/buy.svg',
+                                //   color: backgroundColor,
+                                //   height: 40,
+                                //   width: 40,
+                                // ),
+                                )
                             : const SizedBox(),
                       const Spacer(),
                       if (isExpanded && showIcons)
@@ -154,12 +164,18 @@ class _StockDetailPageState extends State<StockDetailPage> {
                               ),
                             );
                           },
-                          icon: SvgPicture.asset(
-                            'assets/used.svg',
-                            color: backgroundColor,
-                            height: 40,
-                            width: 40,
+                          icon: const Icon(
+                            Icons.arrow_outward,
+                            size: 40,
+                            color: Colors.black,
                           ),
+
+                          // SvgPicture.asset(
+                          //   'assets/used.svg',
+                          //   color: backgroundColor,
+                          //   height: 40,
+                          //   width: 40,
+                          // ),
                         ),
                       const Spacer(),
                       InkWell(
@@ -253,16 +269,23 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                           height: 150,
                                           fit: BoxFit.cover,
                                         )
-                                  : Container(
-                                      color: backgroundColor,
-                                      width: 150,
-                                      height: 150,
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          color: primaryColor,
+                                  : kIsWeb
+                                      ? CachedNetworkImage(
+                                          width: 150,
+                                          height: 150,
+                                          imageUrl: mainConntroller
+                                              .items[widget.index].image!,
+                                        )
+                                      : Container(
+                                          color: backgroundColor,
+                                          width: 150,
+                                          height: 150,
+                                          child: Center(
+                                            child: CircularProgressIndicator(
+                                              color: primaryColor,
+                                            ),
+                                          ),
                                         ),
-                                      ),
-                                    ),
                             ),
                             const SizedBox(
                               width: 30,

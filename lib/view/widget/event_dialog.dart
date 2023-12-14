@@ -1,6 +1,8 @@
 import 'package:calendar_view/calendar_view.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 
 import '../../constants.dart';
 import '../../data/model/order_model.dart';
@@ -23,6 +25,7 @@ class EventDialog extends StatefulWidget {
 
 class _EventDialogState extends State<EventDialog> {
   DateTime today = DateTime.parse(DateTime.now().toString().split(" ")[0]);
+  LSController lsController = Get.find<LSController>();
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +65,7 @@ class _EventDialogState extends State<EventDialog> {
                     itemCount: widget.events.length,
                     itemBuilder: (context, index) {
                       return OrderItem(
+                        showPrice: UserPriority.canSeeOrderPrice(lsController.currentUser.value.priority),
                         orderModel: widget.events[index].event!,
                         isDelivery:
                             widget.events[index].event!.deliveryOption ==

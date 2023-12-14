@@ -1,5 +1,8 @@
 import 'dart:io';
+// import 'dart:html' as html;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:http/http.dart' as http;
@@ -152,11 +155,11 @@ class Units {
   static String Kg = "Kg";
   static String Pcs = "Pcs";
   static String Galon = "Galon";
-  static String Packet = "Packet";
+  static String Pac = "Pac";
   static String liter = "Liter";
   static String cm = "cm";
 
-  static List<String> list = [Kg, Pcs, Galon, Packet, liter, cm];
+  static List<String> list = [Kg, Pcs, Galon, Pac, liter, cm];
 }
 
 class OrderStatus {
@@ -238,6 +241,15 @@ class ExpenseCategory {
   static String tools = 'Tools';
   static String transport = 'Transport';
   static String government = 'Government';
+  static String rent = "Rent";
+
+  static haveSeller(String category) {
+    final lst = [government, showRoom, electricity, transport];
+    if (lst.contains(category)) {
+      return false;
+    }
+    return true;
+  }
 
   static List<String> list = [
     rawMaterial,
@@ -246,7 +258,8 @@ class ExpenseCategory {
     employee,
     tools,
     transport,
-    government
+    government,
+    rent,
   ];
 }
 
@@ -274,6 +287,10 @@ class UserPriority {
       priority == WorkShopManager ||
       priority == Designer;
 
+  static canEditOrder(priority) => isAdmin(priority) || priority == Sells;
+
+  static canSeeOrderPrice(priority) => isAdmin(priority) || priority == Sells;
+
   static List<String> list = [
     Unsigned,
     Admin,
@@ -292,8 +309,36 @@ class EmployeePosition {
   static String painter = "Painter";
   static String manager = "Manager";
   static String assistant = "Assistant";
+  static String designer = "Designer";
+  static String security = "Security";
+  static String storeKeeper = "storeKeeper";
+  static String machineOperator = "Machine Operator";
 
-  static List<String> list = [woodWorker, sales, painter, manager, assistant];
+  static List<String> list = [
+    woodWorker,
+    sales,
+    painter,
+    manager,
+    assistant,
+    designer,
+    storeKeeper,
+    security,
+    machineOperator,
+  ];
+}
+
+class EmployeeAttendance {
+  static String absent = "Absent";
+  static String present = "Present";
+  static String permission = "Permission";
+  static String late = "Late";
+
+  static List<String> list = [
+    absent,
+    present,
+    permission,
+    late,
+  ];
 }
 
 class EmployeeType {
@@ -323,6 +368,7 @@ class FirebaseConstants {
   static String employeeActivity = "employees Activities";
   static String reviews = "reviews";
   static String itemsHistories = 'Items Histories';
+  static String consts = "constants";
 }
 
 void toast(String message, ToastType toastType, {bool isLong = false}) {
@@ -344,7 +390,21 @@ extension RequestStateExtention on RequestState {
   bool get isLoading => this == RequestState.loading;
 }
 
+// html.File downloadFile(String? fileUrl, String fileName) {
+//   final anchorElement = html.AnchorElement(href: fileUrl);
+//   anchorElement.download = fileName;
+//   anchorElement.style.display = 'none';
+//   html.document.body!.children.add(anchorElement);
+//   anchorElement.click();
+//   html.document.body!.children.remove(anchorElement);
+
+//   return html.File([], fileName);
+// }
+
 Future<File?> displayImage(String? imgUrl, String name, String dir) async {
+  if (kIsWeb) {
+    // downloadFile(imgUrl, "$dir/$name");
+  }
   final directory = await getApplicationSupportDirectory();
   final filePath = "${directory.path}/$dir/$name.jpg";
   // print(filePath);
@@ -444,4 +504,13 @@ String formatNumber(int number) {
 String shortenNum(int number) {
   final formatter = NumberFormat.compact();
   return formatter.format(number);
+}
+
+Future<Map> getConsts() async {
+  final docSnap = await FirebaseFirestore.instance
+      .collection(FirebaseConstants.consts)
+      .doc(FirebaseConstants.consts)
+      .get();
+
+  return docSnap.data() as Map;
 }

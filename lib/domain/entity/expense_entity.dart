@@ -7,7 +7,7 @@ class ExpenseEntity extends Equatable {
   final String description;
   final double price;
   final String expenseStatus;
-  final String seller;
+  final String? seller;
   final String date;
   final String? employeeId;
   final bool withReceipt;

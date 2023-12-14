@@ -55,7 +55,7 @@ abstract class DatabaseRepo {
       String key, String value, int length);
   Future<Either<Exception, void>> updateCustomer(CustomerModel customerModel);
   Future<Either<Exception, void>> delete(
-      String path, String id, String name, bool alsoImage, int? numOfImages);
+      String path, String id, String name, bool alsoImage, List<String> images);
   Future<Either<Exception, void>> addUpdateEmpoloyee(
       EmployeeModel employeeModel, File? file);
   Future<Either<Exception, List<EmployeeModel>>> getEmployees();

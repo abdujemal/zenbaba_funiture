@@ -11,6 +11,7 @@ import '../controller/main_controller.dart';
 import '../widget/custom_btn.dart';
 import '../widget/sl_input.dart';
 
+
 class AddExpense extends StatefulWidget {
   final ExpenseModel? expenseModel;
   const AddExpense({super.key, this.expenseModel});
@@ -81,98 +82,103 @@ class _AddExpenseState extends State<AddExpense> {
       expenseCategory = widget.expenseModel!.category;
       descriptionTc.text = widget.expenseModel!.description;
       priceTc.text = widget.expenseModel!.price.toString();
-      sellerTc.text = widget.expenseModel!.seller;
+      sellerTc.text = widget.expenseModel!.seller ?? "";
       expenseState = widget.expenseModel!.expenseStatus;
       currentDate = widget.expenseModel!.date;
       withReciept = widget.expenseModel!.withReceipt;
+      // print("WithReciept: $withReciept");
       setState(() {});
     }
   }
 
   sellerFeild() {
-    return RawAutocomplete<ExpenseModel>(
-      initialValue: TextEditingValue(text: sellerTc.text),
-      displayStringForOption: (option) {
-        return option.seller;
-      },
-      optionsBuilder: (TextEditingValue textEditingValue) async {
-        if (textEditingValue.text == '') {
-          return const Iterable<ExpenseModel>.empty();
-        } else {
-          if (mainConntroller.getExpensesStatus.value != RequestState.loading) {
-            await mainConntroller.searchExpense(textEditingValue.text);
-
-            return mainConntroller.searchExpenses;
-          } else {
-            return const Iterable<ExpenseModel>.empty();
-          }
-        }
-      },
-      fieldViewBuilder: (BuildContext context,
-          TextEditingController textEditingController,
-          FocusNode focusNode,
-          VoidCallback onFieldSubmitted) {
-        return SLInput(
-          title: expenseCategory == ExpenseCategory.employee
-              ? "Employee"
-              : "Seller",
-          hint: "Tofiq",
-          keyboardType: TextInputType.text,
-          inputColor: whiteColor,
-          otherColor: textColor,
-          controller: textEditingController,
-          isOutlined: true,
-          focusNode: focusNode,
-          onChanged: (val) {
-            sellerTc.text = val;
-          },
-        );
-      },
-      optionsViewBuilder: (context, onSelected, options) {
-        return Material(
-          color: backgroundColor,
-          child: Obx(
-            () {
-              print(options.length);
-              return mainConntroller.getExpensesStatus.value ==
-                      RequestState.loading
-                  ? Center(
-                      child: CircularProgressIndicator(color: primaryColor),
-                    )
-                  : SizedBox(
-                      height: 200,
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: options.map(
-                            (opt) {
-                              return InkWell(
-                                onTap: () {
-                                  onSelected(opt);
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 23,
-                                  ),
-                                  child: Card(
-                                    child: Container(
-                                      color: mainBgColor,
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.all(10),
-                                      child: Text(opt.seller),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ).toList(),
-                        ),
-                      ),
-                    );
+    return ExpenseCategory.haveSeller(expenseCategory)
+        ? RawAutocomplete<ExpenseModel>(
+            initialValue: TextEditingValue(text: sellerTc.text),
+            displayStringForOption: (option) {
+              return option.seller ?? "";
             },
-          ),
-        );
-      },
-    );
+            optionsBuilder: (TextEditingValue textEditingValue) async {
+              if (textEditingValue.text == '') {
+                return const Iterable<ExpenseModel>.empty();
+              } else {
+                if (mainConntroller.getExpensesStatus.value !=
+                    RequestState.loading) {
+                  await mainConntroller.searchExpense(textEditingValue.text);
+
+                  return mainConntroller.searchExpenses;
+                } else {
+                  return const Iterable<ExpenseModel>.empty();
+                }
+              }
+            },
+            fieldViewBuilder: (BuildContext context,
+                TextEditingController textEditingController,
+                FocusNode focusNode,
+                VoidCallback onFieldSubmitted) {
+              return SLInput(
+                title: expenseCategory == ExpenseCategory.employee
+                    ? "Employee"
+                    : "Seller",
+                hint: "Tofiq",
+                keyboardType: TextInputType.text,
+                inputColor: whiteColor,
+                otherColor: textColor,
+                controller: textEditingController,
+                isOutlined: true,
+                focusNode: focusNode,
+                onChanged: (val) {
+                  sellerTc.text = val;
+                },
+              );
+            },
+            optionsViewBuilder: (context, onSelected, options) {
+              return Material(
+                color: backgroundColor,
+                child: Obx(
+                  () {
+                    // print(options.length);
+                    return mainConntroller.getExpensesStatus.value ==
+                            RequestState.loading
+                        ? Center(
+                            child:
+                                CircularProgressIndicator(color: primaryColor),
+                          )
+                        : SizedBox(
+                            height: 200,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                children: options.map(
+                                  (opt) {
+                                    return InkWell(
+                                      onTap: () {
+                                        onSelected(opt);
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 23,
+                                        ),
+                                        child: Card(
+                                          child: Container(
+                                            color: mainBgColor,
+                                            width: double.infinity,
+                                            padding: const EdgeInsets.all(10),
+                                            child: Text(opt.seller ?? ""),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ).toList(),
+                              ),
+                            ),
+                          );
+                  },
+                ),
+              );
+            },
+          )
+        : const SizedBox();
   }
 
   @override
@@ -274,7 +280,7 @@ class _AddExpenseState extends State<AddExpense> {
                     ExpenseState.list.length,
                     (index) {
                       return SizedBox(
-                        width: 160,
+                        width: 170,
                         child: RadioListTile(
                           activeColor: whiteColor,
                           title: Text(ExpenseState.list[index]),
@@ -351,6 +357,7 @@ class _AddExpenseState extends State<AddExpense> {
                   child: CheckboxListTile(
                     title: const Text("With Reciept"),
                     value: withReciept,
+                    activeColor: whiteColor,
                     onChanged: (v) {
                       setState(() {
                         withReciept = v!;
@@ -358,6 +365,7 @@ class _AddExpenseState extends State<AddExpense> {
                     },
                   ),
                 ),
+                
                 const SizedBox(
                   height: 40,
                 ),
@@ -434,7 +442,7 @@ class _AddExpenseState extends State<AddExpense> {
                                             widget.expenseModel!.id!,
                                             widget.expenseModel!.category,
                                             false,
-                                            null);
+                                            []);
                                       }
                                     },
                                     text: "Delete")

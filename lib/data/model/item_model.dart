@@ -63,7 +63,7 @@ class ItemModel extends ItemEntity {
       name: map['name'] as String,
       category: map['category'] as String,
       unit: map['unit'] as String,
-      pricePerUnit: map['pricePerUnit'] as double,
+      pricePerUnit: double.parse(map['pricePerUnit'].toString()),
       description: map['description'] as String,
       lastUsedFor: map["lastUsedFor"] ?? "",
       quantity: map['quantity'] as int,

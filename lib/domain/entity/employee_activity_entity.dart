@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:equatable/equatable.dart';
 
+
+
 class EmployeeActivityEntity extends Equatable {
   final String? id;
   final String employeeId;
@@ -8,8 +10,8 @@ class EmployeeActivityEntity extends Equatable {
   final double payment;
   final String date;
   final List<String> orders;
-  final bool morning;
-  final bool afternoon;
+  final String morning;
+  final String afternoon;
   final List<String> itemsUsed;
   const EmployeeActivityEntity({
     required this.id,
@@ -20,7 +22,7 @@ class EmployeeActivityEntity extends Equatable {
     required this.afternoon,
     required this.itemsUsed,
     required this.employeeName,
-    required this.payment
+    required this.payment,
   });
 
   @override

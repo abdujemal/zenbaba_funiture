@@ -8,6 +8,7 @@ import 'package:zenbaba_funiture/data/model/order_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/custom_btn.dart';
 import 'package:zenbaba_funiture/view/widget/sl_input.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 class UpdateEmployeeActivity extends StatefulWidget {
   final EmployeeActivityModel employeeActivityModel;
@@ -21,8 +22,8 @@ class UpdateEmployeeActivity extends StatefulWidget {
 }
 
 class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
-  bool morning = false;
-  bool afternoon = false;
+  late String morning;
+  late String afternoon;
 
   bool isAdd = false;
   bool isRemove = false;
@@ -143,7 +144,7 @@ class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: Container(
-        height: 300,
+        height: 500,
         decoration: BoxDecoration(
           borderRadius: const BorderRadius.vertical(
             top: Radius.circular(20),
@@ -230,41 +231,27 @@ class _UpdateEmployeeActivityState extends State<UpdateEmployeeActivity> {
             const SizedBox(
               height: 15,
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  children: [
-                    Checkbox(
-                      value: morning,
-                      activeColor: primaryColor,
-                      onChanged: (v) {
-                        setState(() {
-                          morning = v!;
-                        });
-                      },
-                    ),
-                    const Text("Morning")
-                  ],
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: afternoon,
-                      activeColor: primaryColor,
-                      onChanged: (v) {
-                        setState(() {
-                          afternoon = v!;
-                        });
-                      },
-                    ),
-                    const Text("Afternon")
-                  ],
-                ),
-              ],
+            SpecialDropdown(
+              value: morning,
+              list: EmployeeAttendance.list,
+              title: "Morning",
+              onChange: (v) {
+                setState(() {
+                  morning = v;
+                });
+              },
+              width: 130,
+            ),
+            SpecialDropdown(
+              value: afternoon,
+              list: EmployeeAttendance.list,
+              title: "Afternoon",
+              onChange: (v) {
+                setState(() {
+                  afternoon = v;
+                });
+              },
+              width: 130,
             ),
             const SizedBox(
               height: 20,

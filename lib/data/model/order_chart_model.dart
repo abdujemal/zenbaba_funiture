@@ -18,7 +18,11 @@ class OrderChartModel extends OrderChartEntity {
 
   factory OrderChartModel.fromMap(DocumentSnapshot snap) {
     final data = snap.data() as Map<String, dynamic>;
-    return OrderChartModel(date: data["date"], price: data["price"], orderId: data['orderId']);
+    return OrderChartModel(
+      date: data["date"],
+      price: double.parse(data["price"].toString()),
+      orderId: data['orderId'],
+    );
   }
 
   toMap() {

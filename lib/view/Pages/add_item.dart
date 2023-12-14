@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -95,16 +97,22 @@ class _AddItemState extends State<AddItem> {
                   height: 200,
                   width: 200,
                 )
-          : Container(
-              color: mainBgColor,
-              height: 200,
-              width: 200,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: primaryColor,
-                ),
-              ),
-            );
+          : kIsWeb
+              ? CachedNetworkImage(
+                  imageUrl: urlImage,
+                  height: 200,
+                  width: 200,
+                )
+              : Container(
+                  color: mainBgColor,
+                  height: 200,
+                  width: 200,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: primaryColor,
+                    ),
+                  ),
+                );
     } else {
       return const Icon(Icons.image, size: 100);
     }
@@ -286,10 +294,11 @@ class _AddItemState extends State<AddItem> {
                                     }
                                   } else {
                                     mainConntroller.addItem(
-                                      selectedImage!,
+                                      selectedImage,
                                       ItemModel(
                                         id: null,
-                                        image: null,
+                                        image:
+                                            selectedImage == null ? "" : null,
                                         name: itemNameTc.text,
                                         category: selectedCategory,
                                         unit: selectedUnit,
@@ -332,7 +341,7 @@ class _AddItemState extends State<AddItem> {
                                                 widget.itemModel!.id!,
                                                 widget.itemModel!.id!,
                                                 true,
-                                                null);
+                                                [widget.itemModel!.image!]);
                                           },
                                           text: "Delete")
                                     ],

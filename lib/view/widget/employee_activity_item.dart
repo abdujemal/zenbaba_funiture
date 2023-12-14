@@ -61,10 +61,8 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
 
   @override
   Widget build(BuildContext context) {
-    String morning =
-        widget.employeeActivityModel.morning ? "Present" : "Absent";
-    String afternoon =
-        widget.employeeActivityModel.afternoon ? "Present" : "Absent";
+    String morning = widget.employeeActivityModel.morning;
+    String afternoon = widget.employeeActivityModel.afternoon;
 
     return Column(
       children: [

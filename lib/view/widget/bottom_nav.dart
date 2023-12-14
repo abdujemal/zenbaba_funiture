@@ -39,54 +39,51 @@ class _BottomNavState extends State<BottomNav> {
           shape: const CircularNotchedRectangle(),
           notchMargin: 6,
           color: primaryColor,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: List.generate(
-                widget.icons.length,
-                (index) => GestureDetector(
-                  onTap: () {
-                    if (index == 2) {
-                      if (lsController.currentUser.value.priority !=
-                          UserPriority.Sells) {
-                        widget.controller.index = index;
-                        mainConntroller.setCurrentTabIndex(index);
-                      } else {
-                        toast("You can't access this.", ToastType.error);
-                      }
-                    } else if (index == 1) {
-                      if (lsController.currentUser.value.priority !=
-                          UserPriority.Storekeeper) {
-                        widget.controller.index = index;
-                        mainConntroller.setCurrentTabIndex(index);
-                      } else {
-                        toast("You can't access this.", ToastType.error);
-                      }
-                    } else if (index == 3) {
-                      if (lsController.currentUser.value.priority !=
-                          UserPriority.Storekeeper) {
-                        widget.controller.index = index;
-                        mainConntroller.setCurrentTabIndex(index);
-                      } else {
-                        toast("You can't access this.", ToastType.error);
-                      }
-                    } else {
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(
+              widget.icons.length,
+              (index) => GestureDetector(
+                onTap: () {
+                  if (index == 2) {
+                    if (lsController.currentUser.value.priority !=
+                        UserPriority.Sells) {
                       widget.controller.index = index;
                       mainConntroller.setCurrentTabIndex(index);
+                    } else {
+                      toast("You can't access this.", ToastType.error);
                     }
-                  },
-                  child: Obx(() {
-                    return SvgPicture.asset(
-                      widget.icons[index],
-                      color: mainConntroller.currentTabIndex.value == index
-                          ? whiteColor
-                          : backgroundColor,
-                      width: 36,
-                      height: 36,
-                    );
-                  }),
-                ),
+                  } else if (index == 1) {
+                    if (lsController.currentUser.value.priority !=
+                        UserPriority.Storekeeper) {
+                      widget.controller.index = index;
+                      mainConntroller.setCurrentTabIndex(index);
+                    } else {
+                      toast("You can't access this.", ToastType.error);
+                    }
+                  } else if (index == 3) {
+                    if (lsController.currentUser.value.priority !=
+                        UserPriority.Storekeeper) {
+                      widget.controller.index = index;
+                      mainConntroller.setCurrentTabIndex(index);
+                    } else {
+                      toast("You can't access this.", ToastType.error);
+                    }
+                  } else {
+                    widget.controller.index = index;
+                    mainConntroller.setCurrentTabIndex(index);
+                  }
+                },
+                child: Obx(() {
+                  return SvgPicture.asset(
+                    widget.icons[index],
+                    color: mainConntroller.currentTabIndex.value == index
+                        ? whiteColor
+                        : backgroundColor,
+                    width: 36,
+                    height: 36,
+                  );
+                }),
               ),
             ),
           ),

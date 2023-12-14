@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, annotate_overrides, overridden_fields
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:zenbaba_funiture/domain/entity/expense_entity.dart';
 
@@ -9,7 +9,7 @@ class ExpenseModel extends ExpenseEntity {
   final double price;
   final String expenseStatus;
   final String date;
-  final String seller;
+  final String? seller;
   final String? employeeId;
   final bool withReceipt;
   const ExpenseModel({
@@ -43,7 +43,7 @@ class ExpenseModel extends ExpenseEntity {
       date: data['date'],
       category: data['category'],
       description: data['description'],
-      price: data['price'],
+      price: double.parse(data['price'].toString()),
       expenseStatus: data['expenseStatus'],
       withReceipt: data['withReceipt'] ?? false,
     );
@@ -62,17 +62,16 @@ class ExpenseModel extends ExpenseEntity {
     };
   }
 
-  ExpenseModel copyWith({
-    String? id,
-    String? category,
-    String? description,
-    double? price,
-    String? expenseStatus,
-    String? date,
-    String? seller,
-    String? employeeId,
-    bool? withRecipt
-  }) {
+  ExpenseModel copyWith(
+      {String? id,
+      String? category,
+      String? description,
+      double? price,
+      String? expenseStatus,
+      String? date,
+      String? seller,
+      String? employeeId,
+      bool? withRecipt}) {
     return ExpenseModel(
       id: id ?? this.id,
       employeeId: employeeId ?? this.employeeId,

@@ -28,6 +28,8 @@ class OrderEntity extends Equatable {
   final String deliveryOption;
   final String imgUrl;
   final String productDescription;
+  final String? bankAccount;
+  final bool withReciept;
   const OrderEntity({
     required this.itemsUsed,
     required this.employees,
@@ -55,6 +57,8 @@ class OrderEntity extends Equatable {
     required this.imgUrl,
     required this.productDescription,
     required this.payedPrice,
+    required this.withReciept,
+    this.bankAccount,
   });
 
   @override
@@ -85,5 +89,7 @@ class OrderEntity extends Equatable {
         size,
         itemsUsed,
         employees,
+        bankAccount,
+        withReciept,
       ];
 }

@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, annotate_overrides, overridden_fields
 import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -30,6 +30,8 @@ class OrderModel extends OrderEntity {
   final String imgUrl;
   final String productDescription;
   final String? customerId;
+  final String? bankAccount;
+  final bool withReciept;
   final List<String> itemsUsed;
   final List<String> employees;
   const OrderModel({
@@ -59,6 +61,8 @@ class OrderModel extends OrderEntity {
     required this.payedPrice,
     required this.color,
     required this.size,
+    required this.withReciept,
+    this.bankAccount,
   }) : super(
           id: id,
           customerName: customerName,
@@ -86,6 +90,8 @@ class OrderModel extends OrderEntity {
           customerId: customerId,
           itemsUsed: itemsUsed,
           employees: employees,
+          bankAccount: bankAccount,
+          withReciept: withReciept,
         );
 
   Map<String, dynamic> toMap() {
@@ -115,6 +121,8 @@ class OrderModel extends OrderEntity {
       'customerId': customerId,
       'itemsUsed': itemsUsed,
       'employees': employees,
+      'bankAccount': bankAccount,
+      'withReciept': withReciept,
     };
   }
 
@@ -125,9 +133,9 @@ class OrderModel extends OrderEntity {
       customerName: map['customerName'] as String,
       phoneNumber: map['phoneNumber'] as String,
       productName: map['productName'] as String,
-      productPrice: map['productPrice'] as double,
-      payedPrice: map['payedPrice'] as double,
-      deliveryPrice: map['deliveryPrice'] as double,
+      productPrice: double.parse(map['productPrice'].toString()),
+      payedPrice: double.parse(map['payedPrice'].toString()),
+      deliveryPrice: double.parse(map['deliveryPrice'].toString()),
       productSku: map['productSku'] as String,
       quantity: map['quantity'] as int,
       color: map['color'] as String,
@@ -146,8 +154,12 @@ class OrderModel extends OrderEntity {
       productDescription: map['productDescription'] as String,
       customerId:
           map['customerId'] != null ? map['customerId'] as String : null,
-      itemsUsed: (map['itemsUsed'] as List<dynamic>).map((e) => e as String).toList(),
-      employees: (map['employees'] as List<dynamic>).map((e) => e as String).toList(),
+      itemsUsed:
+          (map['itemsUsed'] as List<dynamic>).map((e) => e as String).toList(),
+      employees:
+          (map['employees'] as List<dynamic>).map((e) => e as String).toList(),
+      bankAccount: map['bankAccount'],
+      withReciept: map['withReciept'] ?? false,
     );
   }
 
@@ -180,6 +192,8 @@ class OrderModel extends OrderEntity {
     String? customerId,
     List<String>? itemsUsed,
     List<String>? employees,
+    String? bankAccount,
+    bool? withReciept,
   }) {
     return OrderModel(
       id: id ?? this.id,
@@ -208,6 +222,8 @@ class OrderModel extends OrderEntity {
       customerId: customerId ?? this.customerId,
       itemsUsed: itemsUsed ?? this.itemsUsed,
       employees: employees ?? this.employees,
+      bankAccount: bankAccount ?? this.bankAccount,
+      withReciept: withReciept ?? this.withReciept,
     );
   }
 }

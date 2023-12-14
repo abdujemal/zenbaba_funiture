@@ -10,7 +10,6 @@ class TimeLineModel extends Equatable {
     required this.date,
     required this.price,
   });
-  
 
   @override
   List<Object?> get props => [date, price];
@@ -25,11 +24,12 @@ class TimeLineModel extends Equatable {
   factory TimeLineModel.fromMap(Map<String, dynamic> map) {
     return TimeLineModel(
       date: map['date'] as String,
-      price: map['price'] as double,
+      price: double.parse(map['price'].toString()),
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory TimeLineModel.fromJson(String source) => TimeLineModel.fromMap(json.decode(source) as Map<String, dynamic>);
+  factory TimeLineModel.fromJson(String source) =>
+      TimeLineModel.fromMap(json.decode(source) as Map<String, dynamic>);
 }

@@ -413,7 +413,7 @@ class MainConntroller extends GetxController {
     String id,
     String name,
     bool alsoImage,
-    int? numOfImages,
+    List<String> images,
   ) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
@@ -441,7 +441,7 @@ class MainConntroller extends GetxController {
         id: id,
         path: path,
         name: name,
-        numOfImages: numOfImages,
+        images: images,
       ),
     );
 
@@ -650,8 +650,8 @@ class MainConntroller extends GetxController {
       List<ExpenseModel> expenses = [];
 
       for (ExpenseModel element in r) {
-        if (!sellers.contains(element.seller)) {
-          sellers.add(element.seller);
+        if (!sellers.contains(element.seller) && element.seller != null) {
+          sellers.add(element.seller!);
           expenses.add(element);
         }
       }
@@ -953,11 +953,12 @@ class MainConntroller extends GetxController {
       toast(l.toString(), ToastType.error);
     }, (r) {
       getItemsStatus.value = RequestState.loaded;
+      r.sort((a, b) => a.quantity.compareTo(b.quantity));
       items.value = r;
     });
   }
 
-  addItem(File file, ItemModel itemModel) async {
+  addItem(File? file, ItemModel itemModel) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {

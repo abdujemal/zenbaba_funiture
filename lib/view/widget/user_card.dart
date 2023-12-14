@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -39,24 +41,35 @@ class _UserCardState extends State<UserCard> {
         Get.bottomSheet(UpdateUserDialog(userModel: widget.userModel));
       },
       title: Text(widget.userModel.name),
-      leading: CircleAvatar(
-        radius: 29,
-        backgroundImage: imageFile != null && imageFile!.path != ""
-            ? FileImage(imageFile!)
-            : null,
-        backgroundColor: backgroundColor,
-        child: Center(
-            child: imageFile == null
-                ? CircularProgressIndicator(
-                    color: primaryColor,
-                  )
-                : imageFile!.path == ""
-                    ? const Icon(
-                        Icons.signal_wifi_off_sharp,
-                        size: 29,
-                      )
-                    : const SizedBox()),
-      ),
+      leading: imageFile != null
+          ? CircleAvatar(
+              radius: 29,
+              backgroundImage:
+                  imageFile!.path != "" ? FileImage(imageFile!) : null,
+              backgroundColor: backgroundColor,
+              child: Center(
+                  child: imageFile == null
+                      ? CircularProgressIndicator(
+                          color: primaryColor,
+                        )
+                      : imageFile!.path == ""
+                          ? const Icon(
+                              Icons.signal_wifi_off_sharp,
+                              size: 29,
+                            )
+                          : const SizedBox()),
+            )
+          : kIsWeb
+              ? CircleAvatar(
+                  radius: 29,
+                  backgroundImage: CachedNetworkImageProvider(
+                    widget.userModel.image!,
+                  ),
+                )
+              : const CircleAvatar(
+                  radius: 29,
+                  child: CircularProgressIndicator(),
+                ),
       subtitle: Text(widget.userModel.phoneNumber),
       trailing: Column(
         crossAxisAlignment: CrossAxisAlignment.end,

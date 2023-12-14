@@ -23,52 +23,73 @@ class _ExpenseCardState extends State<ExpenseCard> {
   LSController lsController = Get.find<LSController>();
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-        horizontal: 10,
-      ),
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            color: textColor,
-            width: .7,
+    return Stack(
+      children: [
+        widget.expenseModel.withReceipt
+            ? const Align(
+                alignment: Alignment.topRight,
+                child: Chip(
+                  padding: EdgeInsets.zero,
+                  side: BorderSide.none,
+                  label: Icon(
+                    Icons.receipt_rounded,
+                    size: 15,
+                  ),
+                ),
+              )
+            : const SizedBox(),
+        Container(
+          margin: const EdgeInsets.only(
+            right: 10,
+            left: 10,
+            top: 10,
           ),
-        ),
-      ),
-      child: ListTile(
-        onTap: () {
-          if (lsController.currentUser.value.priority !=
-              UserPriority.AdminView) {
-            Get.to(
-              () => AddExpense(
-                expenseModel: widget.expenseModel,
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: textColor,
+                width: .7,
               ),
-            );
-          }
-        },
-        leading: Icon(
-          Icons.keyboard_arrow_up,
-          color: whiteColor,
-          size: 45,
-        ),
-        title: Text(
-          widget.expenseModel.category,
-          // style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-        ),
-        trailing: Text(
-          '${formatNumber(widget.expenseModel.price.round())} Br',
-          // style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
-        ),
-        subtitle: Text(
-          widget.expenseModel.category == ExpenseCategory.employee
-              ? "Name: ${widget.expenseModel.seller}"
-              : "Seller: ${widget.expenseModel.seller}",
-          style: TextStyle(
-            color: textColor,
+            ),
           ),
-          overflow: TextOverflow.ellipsis,
+          child: ListTile(
+            onTap: () {
+              if (lsController.currentUser.value.priority !=
+                  UserPriority.AdminView) {
+                Get.to(
+                  () => AddExpense(
+                    expenseModel: widget.expenseModel,
+                  ),
+                );
+              }
+            },
+            leading: Icon(
+              Icons.keyboard_arrow_up,
+              color: whiteColor,
+              size: 45,
+            ),
+            title: Text(
+              widget.expenseModel.category,
+              // style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            trailing: Text(
+              '${formatNumber(widget.expenseModel.price.round())} Br',
+              // style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17),
+            ),
+            subtitle: Text(
+              widget.expenseModel.category == ExpenseCategory.employee
+                  ? widget.expenseModel.seller ?? ""
+                  : widget.expenseModel.description,
+              style: TextStyle(
+                color: textColor,
+                fontWeight: FontWeight.w100,
+                fontSize: 14,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

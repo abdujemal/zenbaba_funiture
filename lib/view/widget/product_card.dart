@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
@@ -27,6 +29,14 @@ class _ProductCardState extends State<ProductCard> {
     return Padding(
       padding: const EdgeInsets.only(top: 20, right: 15, left: 15),
       child: InkWell(
+        onLongPress: () {
+          Get.to(
+            () => AddProduct(
+              productModel: widget.productModel,
+              isDuplicate: true,
+            ),
+          );
+        },
         onTap: () {
           Get.to(
             () => AddProduct(
@@ -41,8 +51,8 @@ class _ProductCardState extends State<ProductCard> {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                  color: Colors.black.withAlpha(150),
-                  blurRadius: 5,
+                  color: Colors.black.withAlpha(70),
+                  blurRadius: 8,
                   offset: const Offset(-5, 5))
             ],
           ),
@@ -53,48 +63,76 @@ class _ProductCardState extends State<ProductCard> {
                 children: [
                   Stack(
                     children: [
-                      FutureBuilder(
-                          future: displayImage(
-                            widget.productModel.images[0],
-                            '${widget.productModel.sku}0',
-                            "${FirebaseConstants.products}/${widget.productModel.sku}",
-                          ),
-                          builder: (context, snap) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(20),
-                              child: snap.data == null
-                                  ? SizedBox(
-                                      height: 110,
-                                      width: 110,
-                                      child: Center(
-                                        child: CircularProgressIndicator(
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                    )
-                                  : snap.data!.path == ""
-                                      ? Container(
-                                          height: 110,
-                                          width: 110,
-                                          color: mainBgColor,
-                                          child: const Center(
-                                            child: Text("No Network"),
-                                          ),
-                                        )
-                                      : InkWell(
-                                          onTap: widget.onClickImage,
-                                          child: Ink(
-                                            child: Image.file(
-                                              snap.data!,
-                                              width: 110,
+                      widget.productModel.images.isEmpty
+                          ? Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: backgroundColor,
+                              ),
+                              width: 110,
+                              height: 110,
+                              child: Icon(
+                                Icons.image,
+                                color: primaryColor,
+                                size: 100,
+                              ),
+                            )
+                          : FutureBuilder(
+                              future: displayImage(
+                                widget.productModel.images[0],
+                                '${widget.productModel.sku}0',
+                                "${FirebaseConstants.products}/${widget.productModel.sku}",
+                              ),
+                              builder: (context, snap) {
+                                return ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: snap.data == null
+                                      ? kIsWeb
+                                          ? InkWell(
+                                              onTap: widget.onClickImage,
+                                              child: Ink(
+                                                child: CachedNetworkImage(
+                                                  imageUrl: widget
+                                                      .productModel.images[0],
+                                                  width: 110,
+                                                  height: 110,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
+                                            )
+                                          : SizedBox(
                                               height: 110,
-                                              fit: BoxFit.cover,
+                                              width: 110,
+                                              child: Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  color: primaryColor,
+                                                ),
+                                              ),
+                                            )
+                                      : snap.data!.path == ""
+                                          ? Container(
+                                              height: 110,
+                                              width: 110,
+                                              color: mainBgColor,
+                                              child: const Center(
+                                                child: Text("No Network"),
+                                              ),
+                                            )
+                                          : InkWell(
+                                              onTap: widget.onClickImage,
+                                              child: Ink(
+                                                child: Image.file(
+                                                  snap.data!,
+                                                  width: 110,
+                                                  height: 110,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                              ),
                                             ),
-                                          ),
-                                        ),
-                            );
-                          }),
-                      widget.productModel.images.length != 1
+                                );
+                              }),
+                      widget.productModel.images.length > 1
                           ? Positioned(
                               bottom: 0,
                               right: 0,
@@ -114,29 +152,31 @@ class _ProductCardState extends State<ProductCard> {
                   const SizedBox(
                     width: 30,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.productModel.name,
-                        style: const TextStyle(fontSize: 22),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        '${lsController.currentUser.value.priority == UserPriority.WorkShopManager ? "????" : formatNumber(widget.productModel.price.round())} Br',
-                        style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: primaryColor),
-                      ),
-                      const SizedBox(
-                        height: 5,
-                      ),
-                      Text(
-                        widget.productModel.sku,
-                        style: TextStyle(fontSize: 20, color: textColor),
-                      )
-                    ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.productModel.name,
+                          style: const TextStyle(fontSize: 22),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '${lsController.currentUser.value.priority == UserPriority.WorkShopManager ? "????" : formatNumber(widget.productModel.price.round())} Br',
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: primaryColor),
+                        ),
+                        const SizedBox(
+                          height: 5,
+                        ),
+                        Text(
+                          widget.productModel.sku,
+                          style: TextStyle(fontSize: 20, color: textColor),
+                        )
+                      ],
+                    ),
                   )
                 ],
               ),

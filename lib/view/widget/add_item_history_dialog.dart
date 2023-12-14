@@ -248,7 +248,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
     return RawAutocomplete<ExpenseModel>(
       initialValue: TextEditingValue(text: _sellerTc.text),
       displayStringForOption: (option) {
-        return option.seller;
+        return option.seller ?? "";
       },
       optionsBuilder: (TextEditingValue textEditingValue) async {
         if (textEditingValue.text == '') {
@@ -310,7 +310,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
                                   color: mainBgColor,
                                   width: double.infinity,
                                   padding: const EdgeInsets.all(10),
-                                  child: Text(opt.seller),
+                                  child: Text(opt.seller ?? ""),
                                 ),
                               ),
                             ),
@@ -510,6 +510,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
                   child: CheckboxListTile(
                     title: const Text("With Reciept"),
                     value: withReciept,
+                    activeColor: whiteColor,
                     onChanged: (v) {
                       setState(() {
                         withReciept = v!;

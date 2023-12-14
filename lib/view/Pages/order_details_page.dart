@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -11,8 +13,11 @@ import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/order_dialog.dart';
 import 'package:zenbaba_funiture/view/widget/review_item.dart';
+import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
+
+// TODO: cant edit except WorkShopManager, Admin, Sales
 
 class OrderDetailsPage extends StatefulWidget {
   final OrderModel orderModel;
@@ -29,9 +34,14 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   List<ReviewModel> reviews = [];
 
+  late String selectedOrderStatus;
+
   @override
   void initState() {
     super.initState();
+
+    selectedOrderStatus = widget.orderModel.status;
+    setState(() {});
 
     // geting all reviews of this order
     mainConntroller
@@ -73,7 +83,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
             },
             icon: const Icon(Icons.qr_code),
           ),
-          lsController.currentUser.value.priority != UserPriority.AdminView
+          UserPriority.canEditOrder(lsController.currentUser.value.priority)
               ? IconButton(
                   onPressed: () {
                     Get.to(
@@ -89,7 +99,7 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                     width: 20,
                   ),
                 )
-              : SizedBox(),
+              : const SizedBox()
         ],
       ),
       body: SingleChildScrollView(
@@ -98,14 +108,34 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
           children: [
             section(
               children: [
-                const Padding(
-                  padding: EdgeInsets.only(left: 20),
-                  child: Text(
-                    "Product detail",
-                    style: TextStyle(
-                      fontSize: 16,
+                Row(
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(left: 20),
+                      child: Text(
+                        "Product detail",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
-                  ),
+                    const Spacer(),
+                    widget.orderModel.withReciept
+                        ? Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                                color: backgroundColor,
+                                borderRadius: BorderRadius.circular(40),
+                                border: Border.all(color: primaryColor)),
+                            child: Text(
+                              "With Reciept",
+                              style: TextStyle(
+                                color: primaryColor,
+                              ),
+                            ),
+                          )
+                        : const SizedBox(),
+                  ],
                 ),
                 const SizedBox(
                   height: 15,
@@ -140,15 +170,21 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                                       width: 130,
                                       fit: BoxFit.cover,
                                     )
-                              : SizedBox(
-                                  height: 130,
-                                  width: 130,
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      color: whiteColor,
-                                    ),
-                                  ),
-                                );
+                              : kIsWeb
+                                  ? CachedNetworkImage(
+                                      imageUrl: widget.orderModel.imgUrl,
+                                      height: 130,
+                                      width: 130,
+                                    )
+                                  : SizedBox(
+                                      height: 130,
+                                      width: 130,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: whiteColor,
+                                        ),
+                                      ),
+                                    );
                     },
                   ),
                 ),
@@ -183,6 +219,17 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   "Description",
                   widget.orderModel.productDescription,
                 ),
+                Divider(
+                  color: greyColor,
+                  thickness: dividerThickness,
+                ),
+                keyVal(
+                  "Price",
+                  UserPriority.canSeeOrderPrice(
+                          lsController.currentUser.value.priority)
+                      ? "#### br"
+                      : formatNumber(widget.orderModel.productPrice.round()),
+                ),
                 const SizedBox(
                   height: 10,
                 ),
@@ -200,18 +247,25 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       ),
                     ),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.all(7),
-                      decoration: BoxDecoration(
-                          color: backgroundColor,
-                          borderRadius: BorderRadius.circular(40),
-                          border: Border.all(color: primaryColor)),
-                      child: Text(
-                        widget.orderModel.status,
-                        style: TextStyle(
-                          color: primaryColor,
-                        ),
-                      ),
+                    SpecialDropdown(
+                      title: '',
+                      margin: 0,
+                      noTitle: true,
+                      value: selectedOrderStatus,
+                      list: OrderStatus.list,
+                      onChange: (value) {
+                        if (lsController.currentUser.value.priority ==
+                            UserPriority.WorkShopManager) {
+                          mainConntroller.updateOrder(
+                            widget.orderModel.copyWith(status: value),
+                            selectedOrderStatus,
+                          );
+                          setState(() {
+                            selectedOrderStatus = value!;
+                          });
+                        }
+                      },
+                      width: 140,
                     ),
                   ],
                 ),
@@ -272,94 +326,110 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                 )
               ],
             ),
-            section(
-              paddingh: 28,
-              children: [
-                const Text(
-                  "Customer detail",
-                  style: TextStyle(
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(
-                  height: 10,
-                ),
-                keyVal(
-                  "Name",
-                  widget.orderModel.customerName,
-                  pl: 0,
-                ),
-                Divider(
-                  color: greyColor,
-                  thickness: dividerThickness,
-                ),
-                Row(
-                  children: [
-                    keyVal(
-                      "Phone no",
-                      widget.orderModel.phoneNumber,
-                      pl: 0,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () {
-                        launchUrl(
-                          Uri.parse(
-                            "tel:${widget.orderModel.phoneNumber}",
+            UserPriority.canEditOrder(lsController.currentUser.value.priority)
+                ? section(
+                    paddingh: 28,
+                    children: [
+                      const Text(
+                        "Customer detail",
+                        style: TextStyle(
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      keyVal(
+                        "Name",
+                        widget.orderModel.customerName,
+                        pl: 0,
+                      ),
+                      Divider(
+                        color: greyColor,
+                        thickness: dividerThickness,
+                      ),
+                      Row(
+                        children: [
+                          keyVal(
+                            "Phone no",
+                            widget.orderModel.phoneNumber,
+                            pl: 0,
                           ),
-                        );
-                      },
-                      icon: SvgPicture.asset(
-                        'assets/call.svg',
-                        color: textColor,
-                        height: 30,
-                        width: 30,
+                          const Spacer(),
+                          IconButton(
+                            onPressed: () {
+                              launchUrl(
+                                Uri.parse(
+                                  "tel:${widget.orderModel.phoneNumber}",
+                                ),
+                              );
+                            },
+                            icon: SvgPicture.asset(
+                              'assets/call.svg',
+                              color: textColor,
+                              height: 30,
+                              width: 30,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  color: greyColor,
-                  thickness: dividerThickness,
-                ),
-                Row(
-                  children: [
-                    keyVal(
-                      "Location",
-                      "${widget.orderModel.sefer}\n${widget.orderModel.kk}",
-                      pl: 0,
-                    ),
-                    const Spacer(),
-                    IconButton(
-                      onPressed: () async {
-                        if (await canLaunchUrl(
-                          Uri.parse(widget.orderModel.location),
-                        )) {
-                          await launchUrl(
-                            Uri.parse(widget.orderModel.location),
-                          );
-                        } else {
-                          toast("The Url is not launchable.", ToastType.error);
-                        }
-                      },
-                      icon: SvgPicture.asset(
-                        'assets/pickup.svg',
-                        color: textColor,
-                        height: 40,
-                        width: 40,
+                      Divider(
+                        color: greyColor,
+                        thickness: dividerThickness,
                       ),
-                    ),
-                  ],
-                ),
-                Divider(
-                  color: greyColor,
-                  thickness: dividerThickness,
-                ),
-                const SizedBox(
-                  height: 10,
-                )
-              ],
-            ),
+                      widget.orderModel.bankAccount != null
+                          ? keyVal(
+                              "Bank Account",
+                              widget.orderModel.bankAccount ?? "",
+                              pl: 0,
+                            )
+                          : const SizedBox(),
+                      widget.orderModel.bankAccount != null
+                          ? Divider(
+                              color: greyColor,
+                              thickness: dividerThickness,
+                            )
+                          : const SizedBox(),
+                      Row(
+                        children: [
+                          keyVal(
+                            "Location",
+                            "${widget.orderModel.sefer}\n${widget.orderModel.kk}",
+                            pl: 0,
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            onPressed: () async {
+                              if (await canLaunchUrl(
+                                Uri.parse(widget.orderModel.location),
+                              )) {
+                                await launchUrl(
+                                  Uri.parse(widget.orderModel.location),
+                                );
+                              } else {
+                                toast("The Url is not launchable.",
+                                    ToastType.error);
+                              }
+                            },
+                            icon: SvgPicture.asset(
+                              'assets/pickup.svg',
+                              color: textColor,
+                              height: 40,
+                              width: 40,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(
+                        color: greyColor,
+                        thickness: dividerThickness,
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      )
+                    ],
+                  )
+                : const SizedBox(),
             reviews.isEmpty
                 ? const SizedBox(
                     height: 40,

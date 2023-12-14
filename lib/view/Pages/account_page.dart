@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -75,25 +76,30 @@ class _AccountPageState extends State<AccountPage> {
             const SizedBox(
               height: 20,
             ),
-            CircleAvatar(
-              radius: 50,
-              backgroundImage: imageFile != null && imageFile!.path != ""
-                  ? FileImage(imageFile!)
-                  : null,
-              backgroundColor: backgroundColor,
-              child: Center(
-                child: imageFile == null
-                    ? CircularProgressIndicator(
-                        color: primaryColor,
-                      )
-                    : imageFile!.path == ""
-                        ? const Icon(
-                            Icons.signal_wifi_off_sharp,
-                            size: 50,
-                          )
-                        : const SizedBox(),
-              ),
-            ),
+            imageFile != null
+                ? CircleAvatar(
+                    radius: 50,
+                    backgroundImage:
+                        imageFile!.path != "" ? FileImage(imageFile!) : null,
+                    backgroundColor: backgroundColor,
+                    child: Center(
+                      child: imageFile == null
+                          ? CircularProgressIndicator(
+                              color: primaryColor,
+                            )
+                          : imageFile!.path == ""
+                              ? const Icon(
+                                  Icons.signal_wifi_off_sharp,
+                                  size: 50,
+                                )
+                              : const SizedBox(),
+                    ),
+                  )
+                : CircleAvatar(
+                    radius: 50,
+                    backgroundImage: CachedNetworkImageProvider(
+                        lsController.currentUser.value.image!),
+                  ),
             const SizedBox(
               height: 15,
             ),

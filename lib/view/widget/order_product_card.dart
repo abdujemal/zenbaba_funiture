@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../../constants.dart';
@@ -28,15 +30,21 @@ class _OrderProductCardState extends State<OrderProductCard> {
                 return ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: snap.data == null
-                      ? SizedBox(
-                          height: 50,
-                          width: 50,
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: primaryColor,
-                            ),
-                          ),
-                        )
+                      ? kIsWeb
+                          ? CachedNetworkImage(
+                              width: 50,
+                              height: 50,
+                              imageUrl: widget.productModel.images[0],
+                            )
+                          : SizedBox(
+                              height: 50,
+                              width: 50,
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  color: primaryColor,
+                                ),
+                              ),
+                            )
                       : snap.data!.path == ""
                           ? Container(
                               height: 110,
