@@ -25,7 +25,7 @@ class AddUpdateEmployeeUsecase
 
 class AddUpdateEmployeeParams extends Equatable {
   final EmployeeModel employeeModel;
-  final File? file;
+  final dynamic file;
   const AddUpdateEmployeeParams(this.employeeModel, this.file);
 
   @override

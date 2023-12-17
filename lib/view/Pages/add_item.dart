@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 import '../../constants.dart';
 import '../../data/model/item_model.dart';
@@ -34,7 +35,7 @@ class _AddItemState extends State<AddItem> {
 
   var itemDescriptionTc = TextEditingController();
 
-  File? selectedImage;
+  var selectedImage;
 
   var itemFormState = GlobalKey<FormState>();
 
@@ -78,6 +79,13 @@ class _AddItemState extends State<AddItem> {
 
   image() {
     if (selectedImage != null) {
+      if (kIsWeb) {
+        return Image.memory(
+          selectedImage,
+          height: 200,
+          width: 200,
+        );
+      }
       return Image.file(
         selectedImage!,
         height: 200,
@@ -85,7 +93,7 @@ class _AddItemState extends State<AddItem> {
       );
     } else if (urlImage != "") {
       return imageFromUrl != null
-          ? imageFromUrl!.path == ""
+          ? imageFromUrl?.path == ""
               ? Container(
                   color: mainBgColor,
                   height: 200,
@@ -147,15 +155,27 @@ class _AddItemState extends State<AddItem> {
                 ),
                 InkWell(
                   onTap: () async {
-                    XFile? xFile = await ImagePicker()
-                        .pickImage(source: ImageSource.gallery);
+                    if (kIsWeb) {
+                      Uint8List? xFile = await ImagePickerWeb.getImageAsBytes();
 
-                    if (xFile != null) {
-                      setState(() {
-                        selectedImage = File(xFile.path);
-                      });
+                      if (xFile != null) {
+                        setState(() {
+                          selectedImage = xFile;
+                        });
+                      } else {
+                        toast("No Image is selected.", ToastType.error);
+                      }
                     } else {
-                      toast("No Image is selected.", ToastType.error);
+                      XFile? xFile = await ImagePicker()
+                          .pickImage(source: ImageSource.gallery);
+
+                      if (xFile != null) {
+                        setState(() {
+                          selectedImage = File(xFile.path);
+                        });
+                      } else {
+                        toast("No Image is selected.", ToastType.error);
+                      }
                     }
                   },
                   child: Ink(child: image()),

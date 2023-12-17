@@ -7,8 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:zenbaba_funiture/view/Pages/add_product.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
@@ -20,6 +22,7 @@ import '../widget/custom_btn.dart';
 import '../widget/order_dialog.dart';
 import '../widget/order_product_card.dart';
 import '../widget/sl_input.dart';
+// import '../widget/sl_input.dart';
 
 // TODO: bankaccount should be recomanded
 
@@ -111,7 +114,7 @@ class _AddOrderState extends State<AddOrder> {
 
   CustomerModel? selectedCustomer;
 
-  List<File> selectedImages = [];
+  List selectedImages = [];
 
   bool isPickup = false;
 
@@ -420,6 +423,13 @@ class _AddOrderState extends State<AddOrder> {
                                     padding: const EdgeInsets.symmetric(
                                         horizontal: 25, vertical: 5),
                                     child: InkWell(
+                                      onLongPress: () {
+                                        Get.to(
+                                          AddProduct(
+                                            productModel: element,
+                                          ),
+                                        );
+                                      },
                                       onTap: () {
                                         _productNameTc.text = element.name;
                                         _productPriceTc.text =
@@ -431,6 +441,7 @@ class _AddOrderState extends State<AddOrder> {
                                         _sizeTc.text = element.size;
                                         _productDescriptionTc.text =
                                             element.description;
+
                                         setState(() {});
                                       },
                                       child: OrderProductCard(
@@ -474,12 +485,19 @@ class _AddOrderState extends State<AddOrder> {
                       ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(15),
-                        child: Image.file(
-                          selectedImages[index],
-                          height: 150,
-                          width: 150,
-                          fit: BoxFit.cover,
-                        ),
+                        child: kIsWeb
+                            ? Image.memory(
+                                selectedImages[index],
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                selectedImages[index],
+                                height: 150,
+                                width: 150,
+                                fit: BoxFit.cover,
+                              ),
                       ));
                 },
               ),
@@ -830,13 +848,13 @@ class _AddOrderState extends State<AddOrder> {
                             fit: BoxFit.cover,
                           )
                         : kIsWeb
-              ? CachedNetworkImage(
-                  imageUrl: widget.orderModel!.imgUrl,
-                  height: 100,
-                  width: 100,
-                  fit: BoxFit.cover,
-                )
-              : const SizedBox()
+                            ? CachedNetworkImage(
+                                imageUrl: widget.orderModel!.imgUrl,
+                                height: 100,
+                                width: 100,
+                                fit: BoxFit.cover,
+                              )
+                            : const SizedBox()
                     : const SizedBox(),
                 const SizedBox(
                   height: 20,
@@ -929,17 +947,32 @@ class _AddOrderState extends State<AddOrder> {
                 if (isNewProduct)
                   image(
                     () async {
-                      List<XFile> xFiles =
-                          await ImagePicker().pickMultiImage(imageQuality: 10);
-                      selectedImages = [];
-                      if (xFiles.isNotEmpty) {
-                        for (XFile xFile in xFiles) {
-                          selectedImages.add(File(xFile.path));
+                      if (kIsWeb) {
+                        List<Uint8List>? xFiles =
+                            await ImagePickerWeb.getMultiImagesAsBytes();
+                        selectedImages = [];
+                        if (xFiles?.isNotEmpty ?? false) {
+                          for (var xFile in xFiles!) {
+                            selectedImages.add(xFile);
+                            setState(() {});
+                          }
+                        } else {
                           setState(() {});
+                          toast("No image is selected.", ToastType.error);
                         }
                       } else {
-                        setState(() {});
-                        toast("No image is selected.", ToastType.error);
+                        List<XFile> xFiles = await ImagePicker()
+                            .pickMultiImage(imageQuality: 10);
+                        selectedImages = [];
+                        if (xFiles.isNotEmpty) {
+                          for (XFile xFile in xFiles) {
+                            selectedImages.add(File(xFile.path));
+                            setState(() {});
+                          }
+                        } else {
+                          setState(() {});
+                          toast("No image is selected.", ToastType.error);
+                        }
                       }
                     },
                   ),
@@ -1263,9 +1296,7 @@ class _AddOrderState extends State<AddOrder> {
                                 tColor: mainBgColor,
                                 text: 'Save',
                                 onTap: () async {
-                                  String? cid = selectedCustomer != null
-                                      ? selectedCustomer!.id
-                                      : null;
+                                  String? cid = selectedCustomer?.id;
 
                                   if (orderFormKey.currentState!.validate()) {
                                     if (widget.orderModel == null) {

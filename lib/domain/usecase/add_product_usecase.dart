@@ -19,7 +19,7 @@ class AddProductUsecase extends BaseUseCase<void, AddProductsParams> {
 
 class AddProductsParams extends Equatable {
   final ProductModel productModel;
-  final List<File> files;
+  final List files;
   const AddProductsParams(this.productModel, this.files);
   @override
   List<Object?> get props => [productModel, files];

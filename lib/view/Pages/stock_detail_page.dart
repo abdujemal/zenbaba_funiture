@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
+import 'package:zenbaba_funiture/view/Pages/item_details.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/widget/add_item_history_dialog.dart';
 import 'package:zenbaba_funiture/view/widget/left_line.dart';
@@ -251,41 +252,52 @@ class _StockDetailPageState extends State<StockDetailPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: imageFile != null
-                                  ? imageFile!.path == ""
-                                      ? Container(
-                                          color: backgroundColor,
-                                          width: 150,
-                                          height: 150,
-                                          child: const Center(
-                                            child: Text("No Network"),
-                                          ),
-                                        )
-                                      : Image.file(
-                                          imageFile!,
-                                          width: 150,
-                                          height: 150,
-                                          fit: BoxFit.cover,
-                                        )
-                                  : kIsWeb
-                                      ? CachedNetworkImage(
-                                          width: 150,
-                                          height: 150,
-                                          imageUrl: mainConntroller
-                                              .items[widget.index].image!,
-                                        )
-                                      : Container(
-                                          color: backgroundColor,
-                                          width: 150,
-                                          height: 150,
-                                          child: Center(
-                                            child: CircularProgressIndicator(
-                                              color: primaryColor,
+                            GestureDetector(
+                              onTap: () {
+                                Get.to(
+                                  ItemDetail(
+                                    itemModel:
+                                        mainConntroller.items[widget.index],
+                                  ),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: imageFile != null
+                                    ? imageFile!.path == ""
+                                        ? Container(
+                                            color: backgroundColor,
+                                            width: 150,
+                                            height: 150,
+                                            child: const Center(
+                                              child: Text("No Network"),
+                                            ),
+                                          )
+                                        : Image.file(
+                                            imageFile!,
+                                            width: 150,
+                                            height: 150,
+                                            fit: BoxFit.cover,
+                                          )
+                                    : kIsWeb
+                                        ? CachedNetworkImage(
+                                            width: 150,
+                                            height: 150,
+                                            imageUrl: mainConntroller
+                                                .items[widget.index].image!,
+                                                fit: BoxFit.cover,
+                                          )
+                                        : Container(
+                                            color: backgroundColor,
+                                            width: 150,
+                                            height: 150,
+                                            child: Center(
+                                              child: CircularProgressIndicator(
+                                                color: primaryColor,
+                                              ),
                                             ),
                                           ),
-                                        ),
+                              ),
                             ),
                             const SizedBox(
                               width: 30,

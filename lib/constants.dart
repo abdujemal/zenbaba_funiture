@@ -1,6 +1,7 @@
 import 'dart:io';
 // import 'dart:html' as html;
 
+import 'package:clipboard/clipboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -51,11 +52,19 @@ Gradient bgGradient = LinearGradient(
     end: Alignment.bottomCenter,
     colors: [const Color.fromRGBO(50, 70, 98, 1), mainColor]);
 
-Widget title(String val) => Text(
-      val,
-      style: const TextStyle(
-        fontSize: 27,
-        fontWeight: FontWeight.w300,
+Widget title(String val) => GestureDetector(
+      onTap: () async {
+        if (val.contains("#")) {
+          await FlutterClipboard.copy(val);
+          toast("$val is copied.", ToastType.success);
+        }
+      },
+      child: Text(
+        val,
+        style: const TextStyle(
+          fontSize: 27,
+          fontWeight: FontWeight.w300,
+        ),
       ),
     );
 
@@ -313,6 +322,7 @@ class EmployeePosition {
   static String security = "Security";
   static String storeKeeper = "storeKeeper";
   static String machineOperator = "Machine Operator";
+  static String HR = "HR";
 
   static List<String> list = [
     woodWorker,
@@ -324,6 +334,7 @@ class EmployeePosition {
     storeKeeper,
     security,
     machineOperator,
+    HR,
   ];
 }
 

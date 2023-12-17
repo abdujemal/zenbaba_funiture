@@ -1,11 +1,11 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:html' as html;
-import 'dart:io';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:zenbaba_funiture/data/model/item_history_model.dart';
 import 'package:zenbaba_funiture/data/model/review_model.dart';
@@ -29,22 +29,22 @@ abstract class DatabaseDataSrc {
   Future<void> addOrderChart(OrderChartModel orderChartModel);
   Future<void> deleteExpenseChart(String id);
   Future<void> deleteOrderChart(String id);
-  Future<void> addProduct(ProductModel productModel, List<File> files);
+  Future<void> addProduct(ProductModel productModel, List files);
   Future<List<ProductModel>> getProducts(
       int? quantity, String? category, bool isNew);
   Future<List<ProductModel>> searchProducts(
       String key, String value, int length);
   Future<int> count(String path, String key, String value);
-  Future<void> updateProduct(ProductModel productModel, List<File> files);
+  Future<void> updateProduct(ProductModel productModel, List files);
   Future<String> addOrder(OrderModel orderModel);
   Future<List<OrderModel>> getOrders(
       int? quantity, String? status, String? date, bool isNew);
   Future<OrderModel> getOrder(String id);
   Future<void> updateOrder(OrderModel orderModel, String prevState);
-  Future<void> addItem(ItemModel itemModel, File? file);
+  Future<void> addItem(ItemModel itemModel, var file);
   Future<List<ItemModel>> getItems();
   Future<List<ItemHistoryModel>> getStockActivities(int quantity, bool isNew);
-  Future<void> updateItem(ItemModel itemModel, File? file, {int? quantity});
+  Future<void> updateItem(ItemModel itemModel, var file, {int? quantity});
   Future<void> addItemHistory(ItemHistoryModel itemHistoryModel, String itemId);
   Future<void> addExpense(ExpenseModel expenseModel);
   Future<List<ExpenseModel>> searchExpense(String sellerName);
@@ -60,7 +60,7 @@ abstract class DatabaseDataSrc {
   Future<void> updateCustomer(CustomerModel customerModel);
   Future<void> delete(
       String path, String id, String name, bool alsoImage, List<String> images);
-  Future<void> addUpdateEmpoloyee(EmployeeModel employeeModel, File? file);
+  Future<void> addUpdateEmpoloyee(EmployeeModel employeeModel, var file);
   Future<List<EmployeeModel>> getEmployees();
   Future<void> addUpdateEmployeeActivity(
       EmployeeActivityModel employeeActivity);
@@ -159,7 +159,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> addItem(ItemModel itemModel, File? file) async {
+  Future<void> addItem(ItemModel itemModel, var file) async {
     int id = Random().nextInt(999999);
 
     String itemId =
@@ -175,7 +175,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       final ref = firebaseStorage
           .ref()
           .child("${FirebaseConstants.items}/${itemModel.name}");
-      UploadTask task = ref.putFile(file!);
+      UploadTask task = kIsWeb ? ref.putData(file) : ref.putFile(file!);
       String imageUrl =
           await (await task.whenComplete(() {})).ref.getDownloadURL();
 
@@ -231,7 +231,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> addProduct(ProductModel productModel, List<File> files) async {
+  Future<void> addProduct(ProductModel productModel, List files) async {
     if (productModel.images.isNotEmpty && files.isEmpty) {
       print("files is empty");
       await firebaseFirestore
@@ -242,11 +242,11 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
       List<String> imagesUrl = [];
       int i = 0;
-      for (File file in files) {
+      for (var file in files) {
         final ref = firebaseStorage
             .ref()
             .child("${FirebaseConstants.products}/${productModel.sku}$i");
-        UploadTask task = ref.putFile(file);
+        UploadTask task = kIsWeb ? ref.putData(file) : ref.putFile(file);
         String imageUrl =
             await (await task.whenComplete(() {})).ref.getDownloadURL();
         i++;
@@ -567,7 +567,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> updateItem(ItemModel itemModel, File? file,
+  Future<void> updateItem(ItemModel itemModel, var file,
       {int? quantity}) async {
     if (file == null) {
       await firebaseFirestore
@@ -640,9 +640,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> updateProduct(
-      ProductModel productModel, List<File> files) async {
-    if (files.isEmpty && productModel.images.isNotEmpty) {
+  Future<void> updateProduct(ProductModel productModel, List files) async {
+    if (productModel.images.isNotEmpty && files.isEmpty) {
       await firebaseFirestore
           .collection(FirebaseConstants.products)
           .doc(productModel.id)
@@ -650,11 +649,11 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     } else {
       List<String> imagesUrl = [];
       int i = 0;
-      for (File file in files) {
+      for (var file in files) {
         final ref = firebaseStorage
             .ref()
             .child("${FirebaseConstants.products}/${productModel.sku}$i");
-        UploadTask task = ref.putFile(file);
+        UploadTask task = kIsWeb ? ref.putData(file) : ref.putFile(file);
         String imageUrl =
             await (await task.whenComplete(() {})).ref.getDownloadURL();
         i++;
@@ -845,18 +844,22 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> addUpdateEmpoloyee(
-      EmployeeModel employeeModel, File? file) async {
+  Future<void> addUpdateEmpoloyee(EmployeeModel employeeModel, var file) async {
     String imgUrl = "";
     if (employeeModel.id == null) {
       String eid = Random().nextInt(5000000).toString();
       // it is new
 
       if (file != null) {
-        UploadTask uploadTask = firebaseStorage
-            .ref()
-            .child("${FirebaseConstants.employees}/$eid")
-            .putFile(file);
+        UploadTask uploadTask = kIsWeb
+            ? firebaseStorage
+                .ref()
+                .child("${FirebaseConstants.employees}/$eid")
+                .putData(file)
+            : firebaseStorage
+                .ref()
+                .child("${FirebaseConstants.employees}/$eid")
+                .putData(file);
         imgUrl =
             await (await uploadTask.whenComplete(() {})).ref.getDownloadURL();
       }

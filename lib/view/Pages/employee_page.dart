@@ -51,6 +51,15 @@ class _EmployeePageState extends State<EmployeePage> {
               Icons.search,
               size: 30,
             ),
+          ),
+          IconButton(
+            onPressed: () {
+              mainConntroller.getEmployees();
+            },
+            icon: const Icon(
+              Icons.refresh_rounded,
+              size: 30,
+            ),
           )
         ],
       ),

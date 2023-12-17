@@ -19,7 +19,7 @@ class UpdateItemUsecase extends BaseUseCase<void, UpdateItemParams> {
 
 class UpdateItemParams extends Equatable {
   final ItemModel itemModel;
-  final File? file;
+  final dynamic file;
   final int? quantity;
   const UpdateItemParams(this.file, this.itemModel, {this.quantity});
   @override

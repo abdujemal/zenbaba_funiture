@@ -16,9 +16,7 @@ import 'package:zenbaba_funiture/view/widget/review_item.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
-
-// TODO: cant edit except WorkShopManager, Admin, Sales
-
+ 
 class OrderDetailsPage extends StatefulWidget {
   final OrderModel orderModel;
   const OrderDetailsPage({super.key, required this.orderModel});

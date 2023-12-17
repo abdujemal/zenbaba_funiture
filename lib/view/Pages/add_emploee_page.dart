@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/custom_btn.dart';
@@ -38,7 +39,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
 
   MainConntroller mainConntroller = Get.find<MainConntroller>();
 
-  File? selectedFile;
+  var selectedFile;
 
   String? imageUrl;
 
@@ -156,16 +157,27 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               InkWell(
                 onTap: () async {
                   selectedFile = null;
-                  final filex = await ImagePicker().pickImage(
-                    source: ImageSource.gallery,
-                    imageQuality: 25,
-                  );
-                  if (filex != null) {
-                    setState(() {
-                      selectedFile = File(filex.path);
-                    });
+                  if (kIsWeb) {
+                    final filex = await ImagePickerWeb.getImageAsBytes();
+                    if (filex != null) {
+                      setState(() {
+                        selectedFile = filex;
+                      });
+                    } else {
+                      toast("Image is not picked", ToastType.error);
+                    }
                   } else {
-                    toast("Image is not picked", ToastType.error);
+                    final filex = await ImagePicker().pickImage(
+                      source: ImageSource.gallery,
+                      imageQuality: 25,
+                    );
+                    if (filex != null) {
+                      setState(() {
+                        selectedFile = File(filex.path);
+                      });
+                    } else {
+                      toast("Image is not picked", ToastType.error);
+                    }
                   }
                 },
                 child: selectedFile == null
@@ -201,11 +213,17 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                               color: textColor,
                             ),
                           )
-                    : Image.file(
-                        selectedFile!,
-                        width: 120,
-                        height: 120,
-                      ),
+                    : kIsWeb
+                        ? Image.memory(
+                            selectedFile,
+                            width: 120,
+                            height: 120,
+                          )
+                        : Image.file(
+                            selectedFile!,
+                            width: 120,
+                            height: 120,
+                          ),
               ),
               const SizedBox(
                 height: 15,

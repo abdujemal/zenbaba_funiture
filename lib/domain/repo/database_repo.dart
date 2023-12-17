@@ -1,4 +1,4 @@
-import 'dart:io';
+
 import 'package:dartz/dartz.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 
@@ -18,13 +18,13 @@ abstract class DatabaseRepo {
   Future<Either<Exception, List<ExpenseChartModel>>> getExpenseChart();
   Future<Either<Exception, List<OrderChartModel>>> getOrderChart();
   Future<Either<Exception, void>> addProduct(
-      ProductModel productModel, List<File> files);
+      ProductModel productModel, List files);
   Future<Either<Exception, List<ProductModel>>> getProducts(
       int? quantity, String? category, bool isNew);
   Future<Either<Exception, List<ProductModel>>> searchProducts(
       String key, String value, int length);
   Future<Either<Exception, void>> updateProduct(
-      ProductModel productModel, List<File> files);
+      ProductModel productModel, List files);
   Future<Either<Exception, int>> count(String path, String key, String value);
   Future<Either<Exception, String>> addOrder(OrderModel orderModel);
   Future<Either<Exception, List<OrderModel>>> getOrders(
@@ -32,11 +32,11 @@ abstract class DatabaseRepo {
   Future<Either<Exception, OrderModel>> getOrder(String id);
   Future<Either<Exception, void>> updateOrder(
       OrderModel orderModel, String prevState);
-  Future<Either<Exception, void>> addItem(ItemModel itemModel, File? file);
+  Future<Either<Exception, void>> addItem(ItemModel itemModel, var file);
   Future<Either<Exception, List<ItemModel>>> getItems();
   Future<Either<Exception, List<ItemHistoryModel>>> getStockActivities(
       int quantity, bool isNew);
-  Future<Either<Exception, void>> updateItem(ItemModel itemModel, File? file,
+  Future<Either<Exception, void>> updateItem(ItemModel itemModel, var file,
       {int? quantity});
   Future<Either<Exception, void>> addItemHistory(
       ItemHistoryModel itemHistoryModel, String itemId);
@@ -57,7 +57,7 @@ abstract class DatabaseRepo {
   Future<Either<Exception, void>> delete(
       String path, String id, String name, bool alsoImage, List<String> images);
   Future<Either<Exception, void>> addUpdateEmpoloyee(
-      EmployeeModel employeeModel, File? file);
+      EmployeeModel employeeModel, var file);
   Future<Either<Exception, List<EmployeeModel>>> getEmployees();
   Future<Either<Exception, void>> addUpdateEmployeeActivity(
       EmployeeActivityModel employeeActivityModel);

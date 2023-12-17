@@ -42,6 +42,17 @@ class _ItemsPageState extends State<ItemsPage> {
             mainConntroller.z.value.open!();
           },
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              mainConntroller.getItems();
+            },
+            icon: const Icon(
+              Icons.refresh_rounded,
+              size: 30,
+            ),
+          )
+        ],
       ),
       floatingActionButton:
           lsController.currentUser.value.priority != UserPriority.AdminView

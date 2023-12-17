@@ -20,48 +20,57 @@ class _OrderProductCardState extends State<OrderProductCard> {
       padding: const EdgeInsets.all(3),
       child: Row(
         children: [
-          FutureBuilder(
-              future: displayImage(
-                widget.productModel.images[0],
-                '${widget.productModel.sku}0',
-                "${FirebaseConstants.products}/${widget.productModel.sku}",
-              ),
-              builder: (context, snap) {
-                return ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: snap.data == null
-                      ? kIsWeb
-                          ? CachedNetworkImage(
-                              width: 50,
-                              height: 50,
-                              imageUrl: widget.productModel.images[0],
-                            )
-                          : SizedBox(
-                              height: 50,
-                              width: 50,
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: primaryColor,
+          widget.productModel.images.isEmpty
+              ? Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: mainBgColor,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                )
+              : FutureBuilder(
+                  future: displayImage(
+                    widget.productModel.images[0],
+                    '${widget.productModel.sku}0',
+                    "${FirebaseConstants.products}/${widget.productModel.sku}",
+                  ),
+                  builder: (context, snap) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: snap.data == null
+                          ? kIsWeb
+                              ? CachedNetworkImage(
+                                  width: 50,
+                                  height: 50,
+                                  imageUrl: widget.productModel.images[0],
+                                )
+                              : SizedBox(
+                                  height: 50,
+                                  width: 50,
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                )
+                          : snap.data!.path == ""
+                              ? Container(
+                                  height: 110,
+                                  width: 110,
+                                  color: mainBgColor,
+                                  child: const Center(
+                                    child: Text("No Network"),
+                                  ),
+                                )
+                              : Image.file(
+                                  snap.data!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
                                 ),
-                              ),
-                            )
-                      : snap.data!.path == ""
-                          ? Container(
-                              height: 110,
-                              width: 110,
-                              color: mainBgColor,
-                              child: const Center(
-                                child: Text("No Network"),
-                              ),
-                            )
-                          : Image.file(
-                              snap.data!,
-                              width: 50,
-                              height: 50,
-                              fit: BoxFit.cover,
-                            ),
-                );
-              }),
+                    );
+                  }),
           const SizedBox(
             width: 20,
           ),

@@ -150,8 +150,8 @@ class _StockPageState extends State<StockPage>
                       itemModel: stocks[index],
                     );
                   },
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: MediaQuery.of(context).size.width / 2,
+                  gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                    maxCrossAxisExtent: 300,
                     childAspectRatio: 1.2,
                     mainAxisSpacing: 15,
                     crossAxisSpacing: 15,

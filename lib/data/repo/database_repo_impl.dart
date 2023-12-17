@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
@@ -41,8 +39,7 @@ class DatabaseRepoImpl extends DatabaseRepo {
   }
 
   @override
-  Future<Either<Exception, void>> addItem(
-      ItemModel itemModel, File? file) async {
+  Future<Either<Exception, void>> addItem(ItemModel itemModel, var file) async {
     try {
       final res = await databaseDataSrc.addItem(itemModel, file);
       return right(res);
@@ -75,7 +72,7 @@ class DatabaseRepoImpl extends DatabaseRepo {
 
   @override
   Future<Either<Exception, void>> addProduct(
-      ProductModel productModel, List<File> files) async {
+      ProductModel productModel, List files) async {
     try {
       final res = await databaseDataSrc.addProduct(productModel, files);
       return right(res);
@@ -173,7 +170,7 @@ class DatabaseRepoImpl extends DatabaseRepo {
   }
 
   @override
-  Future<Either<Exception, void>> updateItem(ItemModel itemModel, File? file,
+  Future<Either<Exception, void>> updateItem(ItemModel itemModel, var file,
       {int? quantity}) async {
     try {
       final res =
@@ -197,12 +194,13 @@ class DatabaseRepoImpl extends DatabaseRepo {
 
   @override
   Future<Either<Exception, void>> updateProduct(
-      ProductModel productModel, List<File> files) async {
+      ProductModel productModel, List files) async {
     try {
-      final res = await databaseDataSrc.updateProduct(productModel, files);
+      final res = databaseDataSrc.updateProduct(productModel, files);
       return right(res);
-    } on Exception catch (e) {
-      return left(e);
+    } catch (e) {
+      print(e.toString());
+      return left(Exception(e.toString()));
     }
   }
 
@@ -305,7 +303,7 @@ class DatabaseRepoImpl extends DatabaseRepo {
   @override
   Future<Either<Exception, void>> addUpdateEmpoloyee(
     EmployeeModel employeeModel,
-    File? file,
+    var file,
   ) async {
     try {
       final res = await databaseDataSrc.addUpdateEmpoloyee(
@@ -388,23 +386,23 @@ class DatabaseRepoImpl extends DatabaseRepo {
       return left(e);
     }
   }
-  
+
   @override
-  Future<Either<Exception, List<EmployeeActivityModel>>> searchEmployee(String month, String year, String employeeId) async {
+  Future<Either<Exception, List<EmployeeActivityModel>>> searchEmployee(
+      String month, String year, String employeeId) async {
     try {
-      final res =
-          await databaseDataSrc.searchEmployee(month, year, employeeId);
+      final res = await databaseDataSrc.searchEmployee(month, year, employeeId);
       return right(res);
     } on Exception catch (e) {
       return left(e);
     }
   }
-  
+
   @override
-  Future<Either<Exception, List<ItemHistoryModel>>> getStockActivities(int quantity, bool isNew) async {
+  Future<Either<Exception, List<ItemHistoryModel>>> getStockActivities(
+      int quantity, bool isNew) async {
     try {
-      final res =
-          await databaseDataSrc.getStockActivities(quantity, isNew);
+      final res = await databaseDataSrc.getStockActivities(quantity, isNew);
       return right(res);
     } on Exception catch (e) {
       return left(e);

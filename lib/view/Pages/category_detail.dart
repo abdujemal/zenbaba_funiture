@@ -91,7 +91,7 @@ class _CategoryDetailState extends State<CategoryDetail> {
               Icons.refresh_rounded,
               size: 30,
             ),
-          )
+          ),
         ],
       ),
       body: Obx(() {
@@ -117,7 +117,8 @@ class _CategoryDetailState extends State<CategoryDetail> {
                   itemCount: mainConntroller.products.length,
                   // physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
-                    print(mainConntroller.products.map((e) => e.name).toString());
+                    print(
+                        mainConntroller.products.map((e) => e.name).toString());
                     return ProductCard(
                       onClickImage: () {
                         Get.to(

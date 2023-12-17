@@ -262,7 +262,7 @@ class MainConntroller extends GetxController {
   }
 
   // employeees
-  addUpdateEmployee(EmployeeModel employeeModel, File? file,
+  addUpdateEmployee(EmployeeModel employeeModel, var file,
       {bool isUpdate = false}) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
@@ -742,7 +742,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  addProduct(ProductModel productModel, List<File> files) async {
+  addProduct(ProductModel productModel, List files) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -763,15 +763,13 @@ class MainConntroller extends GetxController {
     });
   }
 
-  updateProduct(ProductModel productModel, List<File> files) async {
+  updateProduct(ProductModel productModel, List files) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
       toast("No Network", ToastType.error);
       return;
     }
-
-    final directory = await getApplicationSupportDirectory();
 
     final String sku = productModel.sku;
 
@@ -785,10 +783,13 @@ class MainConntroller extends GetxController {
       toast(l.toString(), ToastType.error);
     }, (r) {
       // deleting previously downloaded files
-      if (files.isNotEmpty) {
-        Directory("${directory.path}/${FirebaseConstants.products}/$sku")
-            .delete(recursive: true);
-      }
+      getApplicationSupportDirectory().then((directory) {
+        if (files.isNotEmpty) {
+          Directory("${directory.path}/${FirebaseConstants.products}/$sku")
+              .delete(recursive: true);
+        }
+      });
+
       productStatus.value = RequestState.loaded;
       // getProducts();
       Get.back();
@@ -958,7 +959,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  addItem(File? file, ItemModel itemModel) async {
+  addItem(var file, ItemModel itemModel) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -979,7 +980,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  Future<void> updateItem(File? file, ItemModel itemModel,
+  Future<void> updateItem(var file, ItemModel itemModel,
       {bool stayin = false, int? quantity}) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 

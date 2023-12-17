@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_web/image_picker_web.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/widget/add_raw_material.dart';
@@ -59,7 +60,7 @@ class _AddProductState extends State<AddProduct> {
 
   var productFormState = GlobalKey<FormState>();
 
-  List<File> selectedImages = [];
+  List selectedImages = [];
 
   List<String> urlImages = [];
 
@@ -239,8 +240,8 @@ class _AddProductState extends State<AddProduct> {
                 horizontal: 8.0,
               ),
               child: kIsWeb
-                  ? Image.network(
-                      selectedImages[index].path,
+                  ? Image.memory(
+                      selectedImages[index],
                       height: 200,
                       width: 200,
                       fit: BoxFit.cover,
@@ -470,16 +471,30 @@ class _AddProductState extends State<AddProduct> {
                   ),
                   InkWell(
                     onTap: () async {
-                      List<XFile> xFiles =
-                          await ImagePicker().pickMultiImage(imageQuality: 25);
-                      selectedImages = [];
-                      if (xFiles.isNotEmpty) {
-                        for (XFile xFile in xFiles) {
-                          selectedImages.add(File(xFile.path));
+                      if (kIsWeb) {
+                        List<Uint8List>? xFiles =
+                            await ImagePickerWeb.getMultiImagesAsBytes();
+                        selectedImages = [];
+                        if (xFiles?.isNotEmpty ?? false) {
+                          for (Uint8List xFile in xFiles!) {
+                            selectedImages.add(xFile);
+                          }
+                          setState(() {});
+                        } else {
+                          toast("No image is selected.", ToastType.error);
                         }
-                        setState(() {});
                       } else {
-                        toast("No image is selected.", ToastType.error);
+                        List<XFile> xFiles = await ImagePicker()
+                            .pickMultiImage(imageQuality: 25);
+                        selectedImages = [];
+                        if (xFiles.isNotEmpty) {
+                          for (XFile xFile in xFiles) {
+                            selectedImages.add(File(xFile.path));
+                          }
+                          setState(() {});
+                        } else {
+                          toast("No image is selected.", ToastType.error);
+                        }
                       }
                     },
                     child: Ink(
@@ -914,53 +929,58 @@ class _AddProductState extends State<AddProduct> {
                                         } else {
                                           if (widget.isDuplicate) {
                                             mainConntroller.addProduct(
-                                                ProductModel(
-                                                  id: null,
-                                                  name: productNameTc.text,
-                                                  sku: productSkuTc.text,
-                                                  category: selectedCategory,
-                                                  description:
-                                                      productDescriptionTc.text,
-                                                  images: const [],
-                                                  price: double.parse(
-                                                      productPriceTc.text),
-                                                  tags: _controller.getTags!,
-                                                  size: sizeTc.text,
-                                                  rawMaterials: rawMaterials,
-                                                  labourCost: double.parse(
-                                                      labourTc.text),
-                                                  overhead: double.parse(
-                                                      overheadTc.text),
-                                                  profit: double.parse(
-                                                      profitTc.text),
-                                                ),
-                                                selectedImages.isEmpty
-                                                    ? imageFromUrls
-                                                    : selectedImages);
+                                              ProductModel(
+                                                id: null,
+                                                name: productNameTc.text,
+                                                sku: productSkuTc.text,
+                                                category: selectedCategory,
+                                                description:
+                                                    productDescriptionTc.text,
+                                                images: const [],
+                                                price: double.parse(
+                                                    productPriceTc.text),
+                                                tags: _controller.getTags!,
+                                                size: sizeTc.text,
+                                                rawMaterials: rawMaterials,
+                                                labourCost:
+                                                    double.parse(labourTc.text),
+                                                overhead: double.parse(
+                                                    overheadTc.text),
+                                                profit:
+                                                    double.parse(profitTc.text),
+                                              ),
+                                              selectedImages.isEmpty
+                                                  ? imageFromUrls
+                                                  : selectedImages,
+                                            );
                                           } else {
+                                            print("works");
                                             mainConntroller.updateProduct(
-                                                ProductModel(
-                                                  id: widget.productModel!.id,
-                                                  name: productNameTc.text,
-                                                  sku: productSkuTc.text,
-                                                  category: selectedCategory,
-                                                  description:
-                                                      productDescriptionTc.text,
-                                                  images: widget
-                                                      .productModel!.images,
-                                                  price: double.parse(
-                                                      productPriceTc.text),
-                                                  tags: _controller.getTags!,
-                                                  size: sizeTc.text,
-                                                  rawMaterials: rawMaterials,
-                                                  labourCost: double.parse(
-                                                      labourTc.text),
-                                                  overhead: double.parse(
-                                                      overheadTc.text),
-                                                  profit: double.parse(
-                                                      profitTc.text),
-                                                ),
-                                                selectedImages);
+                                              widget.productModel!.copyWith(
+                                                id: widget.productModel!.id,
+                                                name: productNameTc.text,
+                                                sku: productSkuTc.text,
+                                                category: selectedCategory,
+                                                description:
+                                                    productDescriptionTc.text,
+                                                images:
+                                                    widget.productModel!.images,
+                                                price: double.parse(
+                                                    productPriceTc.text),
+                                                tags: _controller.getTags!,
+                                                size: sizeTc.text,
+                                                rawMaterials: rawMaterials,
+                                                labourCost:
+                                                    double.parse(labourTc.text),
+                                                overhead: double.parse(
+                                                    overheadTc.text),
+                                                profit:
+                                                    double.parse(profitTc.text),
+                                              ),
+                                              selectedImages.isEmpty
+                                                  ? imageFromUrls
+                                                  : selectedImages,
+                                            );
                                           }
                                         }
                                       } else {

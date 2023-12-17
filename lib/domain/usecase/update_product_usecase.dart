@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dartz/dartz.dart';
 import 'package:equatable/equatable.dart';
 
@@ -21,7 +19,7 @@ class UpdateProductUsecase extends BaseUseCase<void, UpdateProductParams> {
 
 class UpdateProductParams extends Equatable {
   final ProductModel productModel;
-  final List<File> files;
+  final List files;
   const UpdateProductParams(this.files, this.productModel);
   @override
   List<Object?> get props => [files, productModel];

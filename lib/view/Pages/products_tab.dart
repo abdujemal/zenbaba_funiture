@@ -1,4 +1,3 @@
-
 // ignore_for_file: must_call_super
 
 import 'package:flutter/material.dart';
@@ -93,14 +92,16 @@ class _ProductTabState extends State<ProductTab>
               padding: const EdgeInsets.all(10),
               itemCount: ProductCategory.listWIcons.length,
               physics: const BouncingScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisSpacing: 13,
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 13,
-                  childAspectRatio: 1 / 1.05),
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 300,
+                childAspectRatio: 1 / 1.05,
+                mainAxisSpacing: 15,
+                crossAxisSpacing: 15,
+              ),
               itemBuilder: (context, index) {
                 return CategoryCard(
-                    productCategoryModel: ProductCategory.listWIcons[index]);
+                  productCategoryModel: ProductCategory.listWIcons[index],
+                );
               },
             ),
     );
