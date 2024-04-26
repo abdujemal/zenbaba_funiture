@@ -83,6 +83,10 @@ class _EmployeeActivityItemState extends State<EmployeeActivityItem> {
             height: 5,
           ),
         LeftLined(
+          isOff: EmployeeAttendance.isOff(
+            widget.employeeActivityModel.morning,
+            widget.employeeActivityModel.afternoon,
+          ),
           circleColor: widget.employeeActivityModel.orders.isEmpty
               ? Colors.red
               : primaryColor,

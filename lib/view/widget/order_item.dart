@@ -198,7 +198,14 @@ class _OrderItemState extends State<OrderItem> {
                                 style: TextStyle(
                                   color: primaryColor,
                                 ),
-                              )
+                              ),
+                            if (widget.orderModel.status == OrderStatus.ready)
+                              Text(
+                                "Ready",
+                                style: TextStyle(
+                                  color: primaryColor,
+                                ),
+                              ),
                           ],
                         ),
                       ],

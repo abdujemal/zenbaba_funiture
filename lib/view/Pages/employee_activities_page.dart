@@ -75,23 +75,43 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
     int i = numOfDays;
     while (i > 0) {
       print("Just added: ${DateTime.now().add(Duration(days: -(i - 1))).day}");
-      mainConntroller.addUpdateEmployeeActivity(
-        EmployeeActivityModel(
-          id: null,
-          employeeId: widget.employeeModel.id!,
-          date: DateTime.now()
-              .add(Duration(days: -(i - 1)))
-              .toString()
-              .split(" ")[0],
-          employeeName: widget.employeeModel.name,
-          payment: 0,
-          orders: const [],
-          morning: EmployeeAttendance.present,
-          afternoon: EmployeeAttendance.present,
-          itemsUsed: const [],
-        ),
-        getBack: false,
-      );
+      if (isWeekEnd(DateTime.now().add(Duration(days: -(i - 1))))) {
+        mainConntroller.addUpdateEmployeeActivity(
+          EmployeeActivityModel(
+            id: null,
+            employeeId: widget.employeeModel.id!,
+            date: DateTime.now()
+                .add(Duration(days: -(i - 1)))
+                .toString()
+                .split(" ")[0],
+            employeeName: widget.employeeModel.name,
+            payment: 0,
+            orders: const [],
+            morning: EmployeeAttendance.weekend,
+            afternoon: EmployeeAttendance.weekend,
+            itemsUsed: const [],
+          ),
+          getBack: false,
+        );
+      } else {
+        mainConntroller.addUpdateEmployeeActivity(
+          EmployeeActivityModel(
+            id: null,
+            employeeId: widget.employeeModel.id!,
+            date: DateTime.now()
+                .add(Duration(days: -(i - 1)))
+                .toString()
+                .split(" ")[0],
+            employeeName: widget.employeeModel.name,
+            payment: 0,
+            orders: const [],
+            morning: EmployeeAttendance.present,
+            afternoon: EmployeeAttendance.present,
+            itemsUsed: const [],
+          ),
+          getBack: false,
+        );
+      }
       i--;
     }
   }
@@ -100,20 +120,37 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
     print("numOfDays: $numOfDays");
     int i = 0;
     while (i <= numOfDays) {
-      mainConntroller.addUpdateEmployeeActivity(
-        EmployeeActivityModel(
-          id: null,
-          employeeId: widget.employeeModel.id!,
-          date: startDateFrom.add(Duration(days: i)).toString().split(" ")[0],
-          employeeName: widget.employeeModel.name,
-          payment: 0,
-          orders: const [],
-          morning: EmployeeAttendance.present,
-          afternoon: EmployeeAttendance.present,
-          itemsUsed: const [],
-        ),
-        getBack: false,
-      );
+      if (isWeekEnd(startDateFrom.add(Duration(days: i)))) {
+        mainConntroller.addUpdateEmployeeActivity(
+          EmployeeActivityModel(
+            id: null,
+            employeeId: widget.employeeModel.id!,
+            date: startDateFrom.add(Duration(days: i)).toString().split(" ")[0],
+            employeeName: widget.employeeModel.name,
+            payment: 0,
+            orders: const [],
+            morning: EmployeeAttendance.weekend,
+            afternoon: EmployeeAttendance.weekend,
+            itemsUsed: const [],
+          ),
+          getBack: false,
+        );
+      } else {
+        mainConntroller.addUpdateEmployeeActivity(
+          EmployeeActivityModel(
+            id: null,
+            employeeId: widget.employeeModel.id!,
+            date: startDateFrom.add(Duration(days: i)).toString().split(" ")[0],
+            employeeName: widget.employeeModel.name,
+            payment: 0,
+            orders: const [],
+            morning: EmployeeAttendance.present,
+            afternoon: EmployeeAttendance.present,
+            itemsUsed: const [],
+          ),
+          getBack: false,
+        );
+      }
       i++;
     }
   }
@@ -285,39 +322,46 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
             const SizedBox(
               width: 30,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.employeeModel.name,
-                  style: TextStyle(
-                    fontSize: 23,
-                    color: whiteColor,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.employeeModel.name,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 23,
+                      color: whiteColor,
+                    ),
                   ),
-                ),
-                Text(
-                  widget.employeeModel.position,
-                  style: TextStyle(
-                    color: primaryColor,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
+                  Text(
+                    widget.employeeModel.position,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             )
           ],
         ),
-        leading: IconButton(
-          onPressed: () {
-            Get.back();
-          },
-          icon: SvgPicture.asset(
-            "assets/back.svg",
-            color: Colors.white,
-            height: 21,
-          ),
-        ),
         actions: [
+          IconButton(
+            onPressed: () async {
+              await mainConntroller.getEmployeeActivity(
+                widget.employeeModel.id!,
+                quantity:
+                    DateTime.parse(mainConntroller.employeesActivities[0].date)
+                        .add(const Duration(days: -2))
+                        .day,
+                isNew: false,
+              );
+            },
+            icon: const Icon(Icons.refresh),
+          ),
           IconButton(
             onPressed: () {
               launchUrl(Uri.parse("tel:${widget.employeeModel.phoneNo}"));
@@ -329,6 +373,16 @@ class _EmployeeActivityPageState extends State<EmployeeActivityPage> {
             ),
           )
         ],
+        leading: IconButton(
+          onPressed: () {
+            Get.back();
+          },
+          icon: SvgPicture.asset(
+            "assets/back.svg",
+            color: Colors.white,
+            height: 21,
+          ),
+        ),
       ),
       body: Obx(
         () {

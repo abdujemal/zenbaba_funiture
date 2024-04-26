@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_zoom_drawer/flutter_zoom_drawer.dart';
 import 'package:get/get.dart';
@@ -742,7 +743,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  addProduct(ProductModel productModel, List files) async {
+  addProduct(ProductModel productModel, List files, dynamic pdfFile) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -752,7 +753,7 @@ class MainConntroller extends GetxController {
 
     productStatus.value = RequestState.loading;
     final res =
-        await addProductUsecase.call(AddProductsParams(productModel, files));
+        await addProductUsecase.call(AddProductsParams(productModel, files, pdfFile));
 
     res.fold((l) {
       productStatus.value = RequestState.error;
@@ -763,7 +764,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  updateProduct(ProductModel productModel, List files) async {
+  updateProduct(ProductModel productModel, List files, dynamic pdfFile) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -776,19 +777,21 @@ class MainConntroller extends GetxController {
     productStatus.value = RequestState.loading;
 
     final res = await updateProductUsecase
-        .call(UpdateProductParams(files, productModel));
+        .call(UpdateProductParams(files, productModel, pdfFile));
 
     res.fold((l) {
       productStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
     }, (r) {
       // deleting previously downloaded files
-      getApplicationSupportDirectory().then((directory) {
-        if (files.isNotEmpty) {
-          Directory("${directory.path}/${FirebaseConstants.products}/$sku")
-              .delete(recursive: true);
-        }
-      });
+      if (!kIsWeb) {
+        getApplicationSupportDirectory().then((directory) {
+          if (files.isNotEmpty) {
+            Directory("${directory.path}/${FirebaseConstants.products}/$sku")
+                .delete(recursive: true);
+          }
+        });
+      }
 
       productStatus.value = RequestState.loaded;
       // getProducts();
@@ -827,8 +830,8 @@ class MainConntroller extends GetxController {
         } else {
           pendingOrders.addAll(r);
         }
-        pendingOrders.sort((a, b) => DateTime.parse(b.finishedDate)
-            .compareTo(DateTime.parse(a.finishedDate)));
+        // pendingOrders.sort((a, b) => DateTime.parse(b.finishedDate)
+        //     .compareTo(DateTime.parse(a.finishedDate)));
       } else if (status == OrderStatus.proccessing) {
         if (isNew) {
           processingOrders.value = r;
@@ -857,16 +860,16 @@ class MainConntroller extends GetxController {
         } else {
           processingOrders.addAll(r);
         }
-        processingOrders.sort((a, b) => DateTime.parse(a.finishedDate)
-            .compareTo(DateTime.parse(b.finishedDate)));
+        // processingOrders.sort((a, b) => DateTime.parse(a.finishedDate)
+        //     .compareTo(DateTime.parse(b.finishedDate)));
       } else {
         if (isNew) {
           completedOrders.value = r;
         } else {
           completedOrders.addAll(r);
         }
-        completedOrders.sort((a, b) => DateTime.parse(b.finishedDate)
-            .compareTo(DateTime.parse(a.finishedDate)));
+        // completedOrders.sort((a, b) => DateTime.parse(b.finishedDate)
+        //     .compareTo(DateTime.parse(a.finishedDate)));
       }
     });
   }

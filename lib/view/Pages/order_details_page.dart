@@ -16,7 +16,7 @@ import 'package:zenbaba_funiture/view/widget/review_item.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
- 
+
 class OrderDetailsPage extends StatefulWidget {
   final OrderModel orderModel;
   const OrderDetailsPage({super.key, required this.orderModel});
@@ -252,8 +252,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                       value: selectedOrderStatus,
                       list: OrderStatus.list,
                       onChange: (value) {
-                        if (lsController.currentUser.value.priority ==
-                            UserPriority.WorkShopManager) {
+                        if (UserPriority.canEditOrderStatus(
+                            lsController.currentUser.value.priority)) {
                           mainConntroller.updateOrder(
                             widget.orderModel.copyWith(status: value),
                             selectedOrderStatus,

@@ -91,6 +91,23 @@ class _OrderTabState extends State<OrderTab>
           ),
           actions: [
             IconButton(
+              onPressed: () async {
+                await mainConntroller.getOrders(
+                  quantity: numOfDocToGet,
+                  status: OrderStatus.Pending,
+                );
+                await mainConntroller.getOrders(
+                  quantity: numOfDocToGet,
+                  status: OrderStatus.proccessing,
+                );
+                await mainConntroller.getOrders(
+                  quantity: numOfDocToGet,
+                  status: OrderStatus.completed,
+                );
+              },
+              icon: const Icon(Icons.refresh),
+            ),
+            IconButton(
               onPressed: () {
                 Get.to(
                   () => const QrScannerPage(),
@@ -243,7 +260,9 @@ class _OrderTabState extends State<OrderTab>
                                     );
                                   } else {
                                     return OrderItem(
-                                      showPrice: UserPriority.canSeeOrderPrice(lsController.currentUser.value.priority),
+                                      showPrice: UserPriority.canSeeOrderPrice(
+                                          lsController
+                                              .currentUser.value.priority),
                                       isFinished: orders[index].status ==
                                           OrderStatus.completed,
                                       isDelivery:

@@ -100,6 +100,16 @@ class _StockDetailPageState extends State<StockDetailPage> {
             Get.back();
           },
         ),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await refresh();
+            },
+            icon: const Icon(
+              Icons.refresh,
+            ),
+          )
+        ],
       ),
       floatingActionButton:
           lsController.currentUser.value.priority != UserPriority.AdminView
@@ -285,7 +295,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
                                             height: 150,
                                             imageUrl: mainConntroller
                                                 .items[widget.index].image!,
-                                                fit: BoxFit.cover,
+                                            fit: BoxFit.cover,
                                           )
                                         : Container(
                                             color: backgroundColor,

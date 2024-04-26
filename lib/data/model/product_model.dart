@@ -10,6 +10,7 @@ class ProductModel extends ProductEntity {
   final String sku;
   final String category;
   final String description;
+  final String? pdfLink;
   final double? labourCost;
   final double? overhead;
   final double? profit;
@@ -18,12 +19,15 @@ class ProductModel extends ProductEntity {
   final double price;
   final List<dynamic> tags;
   final List<RawMaterial> rawMaterials;
+  final List<String> rawMaterialIds;
+
   const ProductModel({
     required this.id,
     required this.name,
     required this.sku,
     required this.category,
     required this.description,
+    required this.pdfLink,
     required this.labourCost,
     required this.overhead,
     required this.profit,
@@ -32,12 +36,14 @@ class ProductModel extends ProductEntity {
     required this.tags,
     required this.size,
     required this.rawMaterials,
+    required this.rawMaterialIds,
   }) : super(
           id: id,
           name: name,
           sku: sku,
           category: category,
           description: description,
+          pdfLink: pdfLink,
           images: images,
           price: price,
           labourCost: labourCost,
@@ -46,33 +52,31 @@ class ProductModel extends ProductEntity {
           tags: tags,
           size: size,
           rawMaterials: rawMaterials,
+          rawMaterialIds: rawMaterialIds,
         );
 
   factory ProductModel.fromFirebase(DocumentSnapshot snapshot) {
     final data = snapshot.data() as Map<String, dynamic>;
     return ProductModel(
-      id: snapshot.id,
-      name: data['name'],
-      sku: data['sku'],
-      category: data['category'],
-      description: data['description'],
-      images: data['images'],
-      price: double.parse(data['price'].toString()),
-      labourCost: double.parse(data['labourCost'].toString()),
-      overhead: double.parse(data["overhead"].toString()),
-      profit: double.parse(data['profit'].toString()),
-      tags: data['tags'],
-      size: data["size"] ?? "",
-      rawMaterials: List.from(data["rawMaterials"] ?? [])
-          .map((e) => RawMaterial(
-                name: e["name"],
-                unit: e['unit'],
-                unitPrice: e['unitPrice'],
-                quantity: e['quantity'],
-                totalPrice: e['totalPrice'],
-              ))
-          .toList(),
-    );
+        id: snapshot.id,
+        name: data['name'],
+        sku: data['sku'],
+        category: data['category'],
+        description: data['description'],
+        pdfLink: data['pdfLink'],
+        images: data['images'],
+        price: double.parse(data['price'].toString()),
+        labourCost: double.parse(data['labourCost'].toString()),
+        overhead: double.parse(data["overhead"].toString()),
+        profit: double.parse(data['profit'].toString()),
+        tags: data['tags'],
+        size: data["size"] ?? "",
+        rawMaterials: List.from(data["rawMaterials"] ?? [])
+            .map((e) => RawMaterial.fromMap(
+                  e,
+                ))
+            .toList(),
+        rawMaterialIds: data['rawMaterialIds'] ?? []);
   }
 
   Map<String, dynamic> toMap() {
@@ -81,6 +85,7 @@ class ProductModel extends ProductEntity {
       'sku': sku,
       'category': category,
       'description': description,
+      'pdfLink': pdfLink,
       'images': images,
       'price': price,
       'labourCost': labourCost,
@@ -89,6 +94,7 @@ class ProductModel extends ProductEntity {
       'tags': tags,
       "size": size,
       'rawMaterials': rawMaterials.map((e) => e.toMap()),
+      'rawMaterialIds': rawMaterialIds
     };
   }
 
@@ -101,37 +107,42 @@ class ProductModel extends ProductEntity {
     double? profit,
     double? labourCost,
     String? description,
+    String? pdfLink,
     List<dynamic>? images,
     double? price,
     List<dynamic>? tags,
     String? size,
     List<RawMaterial>? rawMaterials,
+    List<String>? rawMaterialIds,
   }) {
     return ProductModel(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      sku: sku ?? this.sku,
-      category: category ?? this.category,
-      description: description ?? this.description,
-      images: images ?? this.images,
-      price: price ?? this.price,
-      profit: profit ?? this.profit,
-      overhead: overhead ?? this.overhead,
-      labourCost: labourCost ?? this.labourCost,
-      tags: tags ?? this.tags,
-      size: size ?? this.size,
-      rawMaterials: rawMaterials ?? this.rawMaterials,
-    );
+        id: id ?? this.id,
+        name: name ?? this.name,
+        sku: sku ?? this.sku,
+        category: category ?? this.category,
+        description: description ?? this.description,
+        pdfLink: pdfLink ?? this.pdfLink,
+        images: images ?? this.images,
+        price: price ?? this.price,
+        profit: profit ?? this.profit,
+        overhead: overhead ?? this.overhead,
+        labourCost: labourCost ?? this.labourCost,
+        tags: tags ?? this.tags,
+        size: size ?? this.size,
+        rawMaterials: rawMaterials ?? this.rawMaterials,
+        rawMaterialIds: rawMaterialIds ?? this.rawMaterialIds);
   }
 }
 
 class RawMaterial {
+  final String id;
   final String name;
   final String unit;
   final double unitPrice;
   final double quantity;
   final double totalPrice;
   const RawMaterial({
+    required this.id,
     required this.name,
     required this.unit,
     required this.unitPrice,
@@ -142,11 +153,13 @@ class RawMaterial {
   RawMaterial copyWith({
     String? name,
     String? unit,
+    String? id,
     double? unitPrice,
     double? quantity,
     double? totalPrice,
   }) {
     return RawMaterial(
+      id: id ?? this.id,
       name: name ?? this.name,
       unit: unit ?? this.unit,
       unitPrice: unitPrice ?? this.unitPrice,
@@ -157,6 +170,7 @@ class RawMaterial {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      'id': id,
       'name': name,
       'unit': unit,
       'unitPrice': unitPrice,
@@ -167,6 +181,7 @@ class RawMaterial {
 
   factory RawMaterial.fromMap(Map<String, dynamic> map) {
     return RawMaterial(
+      id: map['id'] ?? "",
       name: map['name'] as String,
       unit: map['unit'] as String,
       unitPrice: double.parse(map['unitPrice'].toString()),

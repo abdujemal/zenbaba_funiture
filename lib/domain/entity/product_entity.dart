@@ -10,6 +10,7 @@ class ProductEntity extends Equatable {
   final String size;
   final String category;
   final String description;
+  final String? pdfLink;
   final double? labourCost;
   final double? overhead;
   final double? profit;
@@ -17,6 +18,7 @@ class ProductEntity extends Equatable {
   final double price;
   final List<dynamic> tags;
   final List<RawMaterial> rawMaterials;
+  final List<String> rawMaterialIds;
 
   const ProductEntity({
     required this.id,
@@ -25,6 +27,7 @@ class ProductEntity extends Equatable {
     required this.size,
     required this.category,
     required this.description,
+    required this.pdfLink,
     required this.labourCost,
     required this.overhead,
     required this.profit,
@@ -32,6 +35,7 @@ class ProductEntity extends Equatable {
     required this.price,
     required this.tags,
     required this.rawMaterials,
+    required this.rawMaterialIds,
   });
 
   @override
@@ -41,6 +45,7 @@ class ProductEntity extends Equatable {
         sku,
         category,
         description,
+        pdfLink,
         images,
         price,
         tags,
@@ -49,5 +54,6 @@ class ProductEntity extends Equatable {
         labourCost,
         overhead,
         profit,
+        rawMaterialIds,
       ];
 }

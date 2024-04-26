@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:date_time_picker/date_time_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/constants.dart';
@@ -207,9 +206,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
                         GestureDetector(
                           onTap: () {
                             setState(() {
-                              if (quantity < widget.itemModel.quantity) {
-                                quantity++;
-                              }
+                              quantity++;
                             });
                           },
                           child: Icon(
@@ -271,7 +268,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
           margin: 10,
           title: "Seller",
           hint: 'Tofiq',
-          keyboardType: TextInputType.number,
+          keyboardType: TextInputType.text,
           controller: textEditingController,
           bgColor: mainBgColor,
           inputColor: whiteColor,
@@ -434,7 +431,7 @@ class _AddItemHistoryDialogState extends State<AddItemHistoryDialog> {
                   margin: 10,
                   title: "Description",
                   hint: 'description',
-                  keyboardType: TextInputType.number,
+                  keyboardType: TextInputType.text,
                   controller: _descriptionTc,
                   bgColor: mainBgColor,
                   inputColor: whiteColor,

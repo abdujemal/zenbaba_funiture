@@ -72,9 +72,9 @@ class DatabaseRepoImpl extends DatabaseRepo {
 
   @override
   Future<Either<Exception, void>> addProduct(
-      ProductModel productModel, List files) async {
+      ProductModel productModel, List files, dynamic pdfFile) async {
     try {
-      final res = await databaseDataSrc.addProduct(productModel, files);
+      final res = await databaseDataSrc.addProduct(productModel, files, pdfFile);
       return right(res);
     } on Exception catch (e) {
       return left(e);
@@ -194,9 +194,9 @@ class DatabaseRepoImpl extends DatabaseRepo {
 
   @override
   Future<Either<Exception, void>> updateProduct(
-      ProductModel productModel, List files) async {
+      ProductModel productModel, List files, dynamic pdfFile) async {
     try {
-      final res = databaseDataSrc.updateProduct(productModel, files);
+      final res = await databaseDataSrc.updateProduct(productModel, files, pdfFile);
       return right(res);
     } catch (e) {
       print(e.toString());

@@ -84,7 +84,7 @@ class _StockPageState extends State<StockPage>
             icon: const Icon(
               Icons.refresh,
             ),
-          )
+          ),
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(40),

@@ -9,6 +9,7 @@ class LeftLined extends StatelessWidget {
   final Widget child;
   final double pt;
   final bool showBottomBorder;
+  final bool isOff;
   const LeftLined({
     super.key,
     required this.circleColor,
@@ -16,6 +17,7 @@ class LeftLined extends StatelessWidget {
     required this.onTap,
     required this.isLast,
     required this.child,
+    this.isOff = false,
     this.pt = 10,
     this.showBottomBorder = true,
   });
@@ -67,15 +69,29 @@ class LeftLined extends StatelessWidget {
             ),
           ),
         Positioned(
-          top: topHeight,
-          child: Container(
-            height: 7,
-            width: 7,
-            decoration: BoxDecoration(
-              color: circleColor,
-              shape: BoxShape.circle,
-            ),
-          ),
+          top: isOff ? 25 : topHeight,
+          child: isOff
+              ? Container(
+                  height: 20,
+                  width: 20,
+                  decoration: const BoxDecoration(
+                    color: Colors.green,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.work_off_outlined,
+                    color: Colors.white,
+                    size: 19,
+                  ),
+                )
+              : Container(
+                  height: 7,
+                  width: 7,
+                  decoration: BoxDecoration(
+                    color: circleColor,
+                    shape: BoxShape.circle,
+                  ),
+                ),
         ),
       ],
     );

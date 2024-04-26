@@ -29,13 +29,15 @@ abstract class DatabaseDataSrc {
   Future<void> addOrderChart(OrderChartModel orderChartModel);
   Future<void> deleteExpenseChart(String id);
   Future<void> deleteOrderChart(String id);
-  Future<void> addProduct(ProductModel productModel, List files);
+  Future<void> addProduct(
+      ProductModel productModel, List files, dynamic pdfFile);
   Future<List<ProductModel>> getProducts(
       int? quantity, String? category, bool isNew);
   Future<List<ProductModel>> searchProducts(
       String key, String value, int length);
   Future<int> count(String path, String key, String value);
-  Future<void> updateProduct(ProductModel productModel, List files);
+  Future<void> updateProduct(
+      ProductModel productModel, List files, dynamic pdfFile);
   Future<String> addOrder(OrderModel orderModel);
   Future<List<OrderModel>> getOrders(
       int? quantity, String? status, String? date, bool isNew);
@@ -231,9 +233,21 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> addProduct(ProductModel productModel, List files) async {
+  Future<void> addProduct(
+      ProductModel productModel, List files, dynamic pdfFile) async {
     if (productModel.images.isNotEmpty && files.isEmpty) {
       print("files is empty");
+
+      if (pdfFile != null) {
+        final ref = firebaseStorage.ref().child(
+            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
+        UploadTask task =
+            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
+        String pdfUrl =
+            await (await task.whenComplete(() {})).ref.getDownloadURL();
+        productModel = productModel.copyWith(pdfLink: pdfUrl);
+      }
+
       await firebaseFirestore
           .collection(FirebaseConstants.products)
           .add(productModel.toMap());
@@ -251,6 +265,16 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
             await (await task.whenComplete(() {})).ref.getDownloadURL();
         i++;
         imagesUrl.add(imageUrl);
+      }
+
+      if (pdfFile != null) {
+        final ref = firebaseStorage.ref().child(
+            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
+        UploadTask task =
+            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
+        String pdfUrl =
+            await (await task.whenComplete(() {})).ref.getDownloadURL();
+        productModel = productModel.copyWith(pdfLink: pdfUrl);
       }
 
       ProductModel newItem = productModel.copyWith(images: imagesUrl);
@@ -402,7 +426,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
     if (status == OrderStatus.Pending) {
       lastDoc = lastPendingOrder;
     } else if (status == OrderStatus.proccessing) {
-      lastDoc = lastPendingOrder;
+      lastDoc = lastProccessingOrder;
     } else {
       lastDoc = lastCompletedOrder;
     }
@@ -411,41 +435,101 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       lastDoc = null;
     }
     if (quantity != null && status != null) {
+      print("status: $status");
       bool isCompleted = status == OrderStatus.completed;
+      bool isPending = status == OrderStatus.Pending;
       if (date == null) {
         if (lastDoc == null) {
-          orderqs = await firebaseFirestore
-              .collection(FirebaseConstants.orders)
-              .where(
-                "status",
-                isEqualTo: !isCompleted ? status : null,
-                whereIn: isCompleted
-                    ? [
-                        OrderStatus.Delivered,
-                        OrderStatus.completed,
-                      ]
-                    : null,
-              )
-              .orderBy('finishedDate', descending: true)
-              .limit(quantity)
-              .get();
+          orderqs = isCompleted
+              ? await firebaseFirestore
+                  .collection(FirebaseConstants.orders)
+                  .where(
+                    "status",
+                    whereIn: [
+                      OrderStatus.completed,
+                      OrderStatus.Delivered,
+                    ],
+                  )
+                  .orderBy('finishedDate', descending: true)
+                  .limit(quantity)
+                  .get()
+              : isPending
+                  ? await firebaseFirestore
+                      .collection(FirebaseConstants.orders)
+                      .where(
+                        "status",
+                        whereIn: [
+                          OrderStatus.Pending,
+                          OrderStatus.ready,
+                        ],
+                      )
+                      .orderBy('finishedDate', descending: false)
+                      .limit(quantity)
+                      .get()
+                  : await firebaseFirestore
+                      .collection(FirebaseConstants.orders)
+                      .where(
+                        "status",
+                        isEqualTo: status,
+                      )
+                      .orderBy('finishedDate', descending: false)
+                      .limit(quantity)
+                      .get();
         } else {
-          orderqs = await firebaseFirestore
-              .collection(FirebaseConstants.orders)
-              .where(
-                "status",
-                isEqualTo: !isCompleted ? status : null,
-                whereIn: isCompleted
-                    ? [
-                        OrderStatus.Delivered,
-                        OrderStatus.completed,
-                      ]
-                    : null,
-              )
-              .orderBy('finishedDate', descending: true)
-              .startAfterDocument(lastDoc)
-              .limit(quantity)
-              .get();
+          orderqs = isCompleted
+              ? await firebaseFirestore
+                  .collection(FirebaseConstants.orders)
+                  .where(
+                    "status",
+                    whereIn: [
+                      OrderStatus.completed,
+                      OrderStatus.Delivered,
+                    ],
+                  )
+                  .orderBy('finishedDate', descending: true)
+                  .startAfterDocument(lastDoc)
+                  .limit(quantity)
+                  .get()
+              : isPending
+                  ? await firebaseFirestore
+                      .collection(FirebaseConstants.orders)
+                      .where(
+                        "status",
+                        whereIn: [
+                          OrderStatus.Pending,
+                          OrderStatus.ready,
+                        ],
+                      )
+                      .orderBy('finishedDate', descending: false)
+                      .startAfterDocument(lastDoc)
+                      .limit(quantity)
+                      .get()
+                  : await firebaseFirestore
+                      .collection(FirebaseConstants.orders)
+                      .where(
+                        "status",
+                        isEqualTo: status,
+                      )
+                      .orderBy('finishedDate', descending: false)
+                      .startAfterDocument(lastDoc)
+                      .limit(quantity)
+                      .get();
+          // orderqs = await firebaseFirestore
+          //     .collection(FirebaseConstants.orders)
+          //     .where(
+          //       "status",
+          //       isEqualTo: !isCompleted ? status : null,
+          //       whereIn: isCompleted
+          //           ? [
+          //               OrderStatus.Delivered,
+          //               OrderStatus.completed,
+          //             ]
+          //           : null,
+          //     )
+          //     .orderBy('finishedDate', descending: true)
+          //     .startAfterDocument(lastDoc)
+          //     .limit(quantity)
+          //     .get();
         }
 
         if (orderqs.docs.isNotEmpty) {
@@ -640,8 +724,19 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> updateProduct(ProductModel productModel, List files) async {
+  Future<void> updateProduct(
+      ProductModel productModel, List files, dynamic pdfFile) async {
     if (productModel.images.isNotEmpty && files.isEmpty) {
+      if (pdfFile != null) {
+        final ref = firebaseStorage.ref().child(
+            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
+        UploadTask task =
+            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
+        String pdfUrl =
+            await (await task.whenComplete(() {})).ref.getDownloadURL();
+        productModel = productModel.copyWith(pdfLink: pdfUrl);
+      }
+
       await firebaseFirestore
           .collection(FirebaseConstants.products)
           .doc(productModel.id)
@@ -658,6 +753,16 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
             await (await task.whenComplete(() {})).ref.getDownloadURL();
         i++;
         imagesUrl.add(imageUrl);
+      }
+
+      if (pdfFile != null) {
+        final ref = firebaseStorage.ref().child(
+            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
+        UploadTask task =
+            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
+        String pdfUrl =
+            await (await task.whenComplete(() {})).ref.getDownloadURL();
+        productModel = productModel.copyWith(pdfLink: pdfUrl);
       }
 
       ProductModel newItem = productModel.copyWith(images: imagesUrl);
@@ -1006,6 +1111,11 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
           .collection(firebasePath)
           .where(key, isEqualTo: val)
           .get();
+    } else if (searchType == SearchType.normalCustomer) {
+      ds = await firebaseFirestore
+          .collection(firebasePath)
+          .where(key, isEqualTo: val)
+          .get();
     } else if (searchType == SearchType.normalItemHistories) {
       if (val == "*") {
         ds =
@@ -1031,6 +1141,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         lst.add(ReviewModel.fromMap(data));
       } else if (searchType == SearchType.normalItemHistories) {
         lst.add(ItemHistoryModel.fromMap(data));
+      } else if (searchType == SearchType.normalCustomer) {
+        lst.add(CustomerModel.fromFirebase(data));
       }
     }
     return lst;
@@ -1061,6 +1173,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
 
 enum SearchType {
   normalOrder,
+  normalCustomer,
   specificOrder,
   fromArrayOfValEmployeeActivitty,
   normalreviews,

@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker_web/image_picker_web.dart';
+// import 'package:image_picker_web/image_picker_web.dart'; // TODO: free up every thing to load web
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/view/Pages/add_product.dart';
@@ -39,20 +39,21 @@ class _AddOrderState extends State<AddOrder> {
 
   List<ProductModel> products = [
     ProductModel(
-      id: "1",
-      name: "Custom",
-      sku: " ",
-      category: ProductCategory.Custom,
-      description: " ",
-      images: const [],
-      price: 0,
-      tags: const [],
-      size: " ",
-      rawMaterials: const [],
-      labourCost: 0,
-      overhead: 0,
-      profit: 0,
-    ),
+        id: "1",
+        name: "Custom",
+        sku: " ",
+        category: ProductCategory.Custom,
+        description: " ",
+        images: const [],
+        price: 0,
+        tags: const [],
+        size: " ",
+        rawMaterials: const [],
+        rawMaterialIds: const [],
+        labourCost: 0,
+        overhead: 0,
+        profit: 0,
+        pdfLink: null),
   ];
 
   int numOfProduct = 1;
@@ -89,20 +90,21 @@ class _AddOrderState extends State<AddOrder> {
   bool isCustomerExist = false;
 
   ProductModel selectedProduct = ProductModel(
-    id: "1",
-    name: "Custom",
-    sku: " ",
-    category: ProductCategory.Custom,
-    description: " ",
-    images: const [],
-    price: 0,
-    tags: const [],
-    size: " ",
-    rawMaterials: const [],
-    labourCost: 0,
-    overhead: 0,
-    profit: 0,
-  );
+      id: "1",
+      name: "Custom",
+      sku: " ",
+      category: ProductCategory.Custom,
+      description: " ",
+      images: const [],
+      price: 0,
+      tags: const [],
+      size: " ",
+      rawMaterials: const [],
+      rawMaterialIds: const [],
+      labourCost: 0,
+      overhead: 0,
+      profit: 0,
+      pdfLink: null);
 
   String selectedGender = Gender.Male;
 
@@ -948,18 +950,20 @@ class _AddOrderState extends State<AddOrder> {
                   image(
                     () async {
                       if (kIsWeb) {
-                        List<Uint8List>? xFiles =
-                            await ImagePickerWeb.getMultiImagesAsBytes();
-                        selectedImages = [];
-                        if (xFiles?.isNotEmpty ?? false) {
-                          for (var xFile in xFiles!) {
-                            selectedImages.add(xFile);
-                            setState(() {});
-                          }
-                        } else {
-                          setState(() {});
-                          toast("No image is selected.", ToastType.error);
-                        }
+                        // TODO: free up every thing to load web
+
+                        // List<Uint8List>? xFiles =
+                        //     await ImagePickerWeb.getMultiImagesAsBytes();
+                        // selectedImages = [];
+                        // if (xFiles?.isNotEmpty ?? false) {
+                        //   for (var xFile in xFiles!) {
+                        //     selectedImages.add(xFile);
+                        //     setState(() {});
+                        //   }
+                        // } else {
+                        //   setState(() {});
+                        //   toast("No image is selected.", ToastType.error);
+                        // }
                       } else {
                         List<XFile> xFiles = await ImagePicker()
                             .pickMultiImage(imageQuality: 10);
@@ -1322,6 +1326,8 @@ class _AddOrderState extends State<AddOrder> {
                                           await mainConntroller.addProduct(
                                             ProductModel(
                                               id: null,
+                                              pdfLink:
+                                                  null, // but it is not implemented
                                               name: _productNameTc.text,
                                               sku: _productSkuTc.text,
                                               category: selectedCategory,
@@ -1332,12 +1338,14 @@ class _AddOrderState extends State<AddOrder> {
                                                   _productPriceTc.text),
                                               tags: tagsController.getTags!,
                                               size: _sizeTc.text,
-                                              rawMaterials: [],
+                                              rawMaterials: const [],
+                                              rawMaterialIds: const [],
                                               labourCost: 0,
                                               overhead: 0,
                                               profit: 0,
                                             ),
                                             selectedImages,
+                                            null, // TODO: not emplement yet
                                           );
                                         } else {
                                           toast("images are not selected",

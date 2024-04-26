@@ -2,14 +2,17 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+// import 'package:file_picker/_internal/file_picker_web.dart'; //TODO: free up every thing to load web
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker_web/image_picker_web.dart';
+// import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web;
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/widget/add_raw_material.dart';
+import 'package:zenbaba_funiture/view/widget/pdf_selector.dart';
 import 'package:zenbaba_funiture/view/widget/raw_material_item.dart';
 
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
@@ -62,11 +65,15 @@ class _AddProductState extends State<AddProduct> {
 
   List selectedImages = [];
 
+  var selectedPdf;
+
   List<String> urlImages = [];
 
   List<File> imageFromUrls = [];
 
   List<RawMaterial> rawMaterials = [];
+
+  List<String> rawMaterialIds = [];
 
   List<ItemModel> items = [];
 
@@ -173,6 +180,7 @@ class _AddProductState extends State<AddProduct> {
       consts = value;
       setState(() {});
     });
+
     items = mainConntroller.items;
     if (widget.productModel != null) {
       urlImages = widget.productModel!.images.map((e) => e as String).toList();
@@ -187,11 +195,35 @@ class _AddProductState extends State<AddProduct> {
       sizeTc.text = widget.productModel!.size;
       initialTags = widget.productModel!.tags.map((e) => e as String).toList();
       rawMaterials = widget.productModel!.rawMaterials;
+      rawMaterialIds = widget.productModel!.rawMaterialIds;
       setImageFile();
+
+      if (widget.isDuplicate && widget.productModel?.pdfLink != null) {
+        downloadFileWeb(widget.productModel!.pdfLink!).then((unit8List) {
+          selectedPdf = unit8List;
+          setState(() {});
+        });
+      }
+
+      if (widget.isDuplicate) {
+        getSku(widget.productModel!.category).then((sku) {
+          setState(() {
+            productSkuTc.text = sku;
+          });
+        });
+      }
     }
 
     if (widget.category != null) {
       selectedCategory = widget.category!;
+
+      if (widget.productModel == null) {
+        getSku(widget.category!).then((sku) {
+          setState(() {
+            productSkuTc.text = sku;
+          });
+        });
+      }
     }
   }
 
@@ -210,13 +242,21 @@ class _AddProductState extends State<AddProduct> {
     imageFromUrls = [];
     int i = 0;
     for (String url in urlImages) {
-      File? file = await displayImage(
-        url,
-        "${widget.productModel!.sku}$i",
-        "${FirebaseConstants.products}/${widget.productModel!.sku}",
-      );
-      if (file != null) {
-        imageFromUrls.add(file);
+      if (kIsWeb) {
+        Uint8List file = await downloadFileWeb(url);
+        // if (file != null) {
+        selectedImages.add(file);
+        print("Worked");
+        // }
+      } else {
+        File? file = await displayImage(
+          url,
+          "${widget.productModel!.sku}$i",
+          "${FirebaseConstants.products}/${widget.productModel!.sku}",
+        );
+        if (file != null) {
+          imageFromUrls.add(file);
+        }
       }
       i++;
     }
@@ -449,6 +489,19 @@ class _AddProductState extends State<AddProduct> {
             onPressed: () {
               Get.back();
             }),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              getConsts().then((value) {
+                print(value);
+                consts = value;
+                setState(() {});
+              });
+              await mainConntroller.getItems();
+            },
+            icon: const Icon(Icons.refresh),
+          )
+        ],
       ),
       body: RefreshIndicator(
         onRefresh: () async {
@@ -472,17 +525,19 @@ class _AddProductState extends State<AddProduct> {
                   InkWell(
                     onTap: () async {
                       if (kIsWeb) {
-                        List<Uint8List>? xFiles =
-                            await ImagePickerWeb.getMultiImagesAsBytes();
-                        selectedImages = [];
-                        if (xFiles?.isNotEmpty ?? false) {
-                          for (Uint8List xFile in xFiles!) {
-                            selectedImages.add(xFile);
-                          }
-                          setState(() {});
-                        } else {
-                          toast("No image is selected.", ToastType.error);
-                        }
+                        // TODO: free up every thing to load web
+
+                        // List<Uint8List>? xFiles =
+                        //     await ImagePickerWeb.getMultiImagesAsBytes();
+                        // selectedImages = [];
+                        // if (xFiles?.isNotEmpty ?? false) {
+                        //   for (Uint8List xFile in xFiles!) {
+                        //     selectedImages.add(xFile);
+                        //   }
+                        //   setState(() {});
+                        // } else {
+                        //   toast("No image is selected.", ToastType.error);
+                        // }
                       } else {
                         List<XFile> xFiles = await ImagePicker()
                             .pickMultiImage(imageQuality: 25);
@@ -503,6 +558,41 @@ class _AddProductState extends State<AddProduct> {
                   ),
                   const SizedBox(
                     height: 15,
+                  ),
+                  PdfSelector(
+                    file: selectedPdf,
+                    pdfLink: widget.productModel?.pdfLink,
+                    onTap: () async {
+                      if (kIsWeb) {
+                        //TODO: free up every thing to load web
+
+                        // final result = await FilePickerWeb.platform.pickFiles();
+                        // if (result != null) {
+                        //   if (result.files[0].name.contains(".pdf")) {
+                        //     selectedPdf = result.files[0].bytes;
+                        //     setState(() {});
+                        //   } else {
+                        //     toast(
+                        //         "Please selected .pdf file.", ToastType.error);
+                        //   }
+                        // } else {
+                        //   toast("Some thing wrong.", ToastType.error);
+                        // }
+                      } else {
+                        final result = await FilePicker.platform.pickFiles();
+                        if (result != null) {
+                          if (result.files[0].path!.contains(".pdf")) {
+                            selectedPdf = File(result.files[0].path!);
+                            setState(() {});
+                          } else {
+                            toast(
+                                "Please selected .pdf file.", ToastType.error);
+                          }
+                        } else {
+                          toast("Some thing wrong.", ToastType.error);
+                        }
+                      }
+                    },
                   ),
                   SLInput(
                     title: "Product name",
@@ -557,6 +647,11 @@ class _AddProductState extends State<AddProduct> {
                     list: ProductCategory.list,
                     title: "Category",
                     onChange: (value) {
+                      getSku(value).then((sku) {
+                        setState(() {
+                          productSkuTc.text = sku;
+                        });
+                      });
                       setState(() {
                         selectedCategory = value!;
                       });
@@ -630,6 +725,8 @@ class _AddProductState extends State<AddProduct> {
                                         rawMaterial: rawMaterials[index],
                                         onSave: (RawMaterial rawMaterial) {
                                           rawMaterials[index] = rawMaterial;
+                                          rawMaterialIds[index] =
+                                              rawMaterial.id;
                                           setState(() {});
                                           Get.back();
                                         },
@@ -644,6 +741,7 @@ class _AddProductState extends State<AddProduct> {
                                 },
                                 onDelete: () {
                                   rawMaterials.remove(rawMaterials[index]);
+                                  rawMaterialIds.remove(rawMaterials[index].id);
                                   setState(() {});
                                 },
                               ),
@@ -665,6 +763,7 @@ class _AddProductState extends State<AddProduct> {
                                       items: items,
                                       onSave: (RawMaterial rawMaterial) {
                                         rawMaterials.add(rawMaterial);
+                                        rawMaterialIds.add(rawMaterial.id);
                                         setState(() {});
                                         Get.back();
                                       },
@@ -899,27 +998,31 @@ class _AddProductState extends State<AddProduct> {
                                         if (widget.productModel == null) {
                                           // if (selectedImages.isNotEmpty) {
                                           mainConntroller.addProduct(
-                                              ProductModel(
-                                                id: null,
-                                                name: productNameTc.text,
-                                                sku: productSkuTc.text,
-                                                category: selectedCategory,
-                                                description:
-                                                    productDescriptionTc.text,
-                                                images: const [],
-                                                price: double.parse(
-                                                    productPriceTc.text),
-                                                tags: _controller.getTags!,
-                                                size: sizeTc.text,
-                                                rawMaterials: rawMaterials,
-                                                labourCost:
-                                                    double.parse(labourTc.text),
-                                                overhead: double.parse(
-                                                    overheadTc.text),
-                                                profit:
-                                                    double.parse(profitTc.text),
-                                              ),
-                                              selectedImages);
+                                            ProductModel(
+                                              id: null,
+                                              pdfLink: null,
+                                              name: productNameTc.text,
+                                              sku: productSkuTc.text,
+                                              category: selectedCategory,
+                                              description:
+                                                  productDescriptionTc.text,
+                                              images: const [],
+                                              price: double.parse(
+                                                  productPriceTc.text),
+                                              tags: _controller.getTags!,
+                                              size: sizeTc.text,
+                                              rawMaterials: rawMaterials,
+                                              rawMaterialIds: rawMaterialIds,
+                                              labourCost:
+                                                  double.parse(labourTc.text),
+                                              overhead:
+                                                  double.parse(overheadTc.text),
+                                              profit:
+                                                  double.parse(profitTc.text),
+                                            ),
+                                            selectedImages,
+                                            selectedPdf,
+                                          );
                                           // } else {
                                           //   toast(
                                           //     "Please select the images.",
@@ -931,6 +1034,7 @@ class _AddProductState extends State<AddProduct> {
                                             mainConntroller.addProduct(
                                               ProductModel(
                                                 id: null,
+                                                pdfLink: null,
                                                 name: productNameTc.text,
                                                 sku: productSkuTc.text,
                                                 category: selectedCategory,
@@ -942,6 +1046,7 @@ class _AddProductState extends State<AddProduct> {
                                                 tags: _controller.getTags!,
                                                 size: sizeTc.text,
                                                 rawMaterials: rawMaterials,
+                                                rawMaterialIds: rawMaterialIds,
                                                 labourCost:
                                                     double.parse(labourTc.text),
                                                 overhead: double.parse(
@@ -952,6 +1057,7 @@ class _AddProductState extends State<AddProduct> {
                                               selectedImages.isEmpty
                                                   ? imageFromUrls
                                                   : selectedImages,
+                                              selectedPdf,
                                             );
                                           } else {
                                             print("works");
@@ -980,6 +1086,7 @@ class _AddProductState extends State<AddProduct> {
                                               selectedImages.isEmpty
                                                   ? imageFromUrls
                                                   : selectedImages,
+                                              selectedPdf,
                                             );
                                           }
                                         }
@@ -1009,7 +1116,11 @@ class _AddProductState extends State<AddProduct> {
                                                   widget.productModel!.id!,
                                                   widget.productModel!.sku,
                                                   true,
-                                                  widget.productModel!.images
+                                                  [
+                                                    ...widget
+                                                        .productModel!.images,
+                                                    widget.productModel!.pdfLink
+                                                  ]
                                                       .map((e) => e as String)
                                                       .toList(),
                                                 );

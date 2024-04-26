@@ -176,8 +176,15 @@ class OrderStatus {
   static String proccessing = "Proccessing";
   static String completed = "Completed";
   static String Delivered = 'Delivered';
+  static String ready = "Ready";
 
-  static List<String> list = [Pending, proccessing, completed, Delivered];
+  static List<String> list = [
+    Pending,
+    proccessing,
+    completed,
+    ready,
+    Delivered,
+  ];
 }
 
 class ProductCategory {
@@ -296,7 +303,11 @@ class UserPriority {
       priority == WorkShopManager ||
       priority == Designer;
 
-  static canEditOrder(priority) => isAdmin(priority) || priority == Sells;
+  static canEditOrderStatus(priority) =>
+      isAdmin(priority) || priority == WorkShopManager || priority == Designer;
+
+  static canEditOrder(priority) =>
+      isAdmin(priority) || priority == Sells || priority == Designer;
 
   static canSeeOrderPrice(priority) => isAdmin(priority) || priority == Sells;
 
@@ -323,6 +334,7 @@ class EmployeePosition {
   static String storeKeeper = "storeKeeper";
   static String machineOperator = "Machine Operator";
   static String HR = "HR";
+  static String driver = "Driver";
 
   static List<String> list = [
     woodWorker,
@@ -335,6 +347,7 @@ class EmployeePosition {
     security,
     machineOperator,
     HR,
+    driver,
   ];
 }
 
@@ -343,11 +356,22 @@ class EmployeeAttendance {
   static String present = "Present";
   static String permission = "Permission";
   static String late = "Late";
+  static String weekend = "Weekend";
+  static String holiday = "Holiday";
+
+  static bool isOff(String morning, String afternoon) {
+    return morning == weekend ||
+        afternoon == weekend ||
+        morning == holiday ||
+        afternoon == holiday;
+  }
 
   static List<String> list = [
     absent,
     present,
     permission,
+    late,
+    weekend,
     late,
   ];
 }
@@ -412,9 +436,14 @@ extension RequestStateExtention on RequestState {
 //   return html.File([], fileName);
 // }
 
+Future<Uint8List> downloadFileWeb(String url) async {
+  final response = await http.get(Uri.parse(url));
+  return response.bodyBytes;
+}
+
 Future<File?> displayImage(String? imgUrl, String name, String dir) async {
   if (kIsWeb) {
-    // downloadFile(imgUrl, "$dir/$name");
+    return null;
   }
   final directory = await getApplicationSupportDirectory();
   final filePath = "${directory.path}/$dir/$name.jpg";
@@ -441,6 +470,24 @@ Future<File?> displayImage(String? imgUrl, String name, String dir) async {
     }
   } else {
     return null;
+  }
+}
+
+Future<String> getSku(String category) async {
+  final as = await FirebaseFirestore.instance
+      .collection(FirebaseConstants.products)
+      .where('category', isEqualTo: category)
+      .count()
+      .get();
+
+  int numOfProducts = as.count;
+
+  int indexOfCategory = ProductCategory.list.indexOf(category) + 1;
+
+  if (indexOfCategory < 10) {
+    return "ZF0$indexOfCategory$numOfProducts";
+  } else {
+    return "ZF$indexOfCategory$numOfProducts";
   }
 }
 
@@ -524,4 +571,8 @@ Future<Map> getConsts() async {
       .get();
 
   return docSnap.data() as Map;
+}
+
+bool isWeekEnd(DateTime dateTime) {
+  return dateTime.weekday == 6 || dateTime.weekday == 7;
 }

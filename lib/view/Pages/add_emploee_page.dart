@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker_web/image_picker_web.dart';
+// import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/custom_btn.dart';
@@ -14,6 +14,7 @@ import 'package:zenbaba_funiture/view/widget/sl_input.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
+
 
 class AddEmployeePage extends StatefulWidget {
   final EmployeeModel? employeeModel;
@@ -158,14 +159,16 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 onTap: () async {
                   selectedFile = null;
                   if (kIsWeb) {
-                    final filex = await ImagePickerWeb.getImageAsBytes();
-                    if (filex != null) {
-                      setState(() {
-                        selectedFile = filex;
-                      });
-                    } else {
-                      toast("Image is not picked", ToastType.error);
-                    }
+                    //TODO: free up every thing to load web
+                    
+                    // final filex = await ImagePickerWeb.getImageAsBytes();
+                    // if (filex != null) {
+                    //   setState(() {
+                    //     selectedFile = filex;
+                    //   });
+                    // } else {
+                    //   toast("Image is not picked", ToastType.error);
+                    // }
                   } else {
                     final filex = await ImagePicker().pickImage(
                       source: ImageSource.gallery,

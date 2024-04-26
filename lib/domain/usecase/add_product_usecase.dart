@@ -11,8 +11,8 @@ class AddProductUsecase extends BaseUseCase<void, AddProductsParams> {
   AddProductUsecase(this.databaseRepo);
   @override
   Future<Either<Exception, void>> call(AddProductsParams parameters) async {
-    final res =
-        await databaseRepo.addProduct(parameters.productModel, parameters.files);
+    final res = await databaseRepo.addProduct(
+        parameters.productModel, parameters.files, parameters.pdfFile);
     return res;
   }
 }
@@ -20,7 +20,8 @@ class AddProductUsecase extends BaseUseCase<void, AddProductsParams> {
 class AddProductsParams extends Equatable {
   final ProductModel productModel;
   final List files;
-  const AddProductsParams(this.productModel, this.files);
+  final dynamic pdfFile;
+  const AddProductsParams(this.productModel, this.files, this.pdfFile);
   @override
   List<Object?> get props => [productModel, files];
 }

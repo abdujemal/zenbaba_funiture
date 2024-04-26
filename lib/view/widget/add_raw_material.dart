@@ -7,7 +7,6 @@ import 'package:zenbaba_funiture/data/model/product_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/sl_btn.dart';
 import 'package:zenbaba_funiture/view/widget/sl_input.dart';
-import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 class AddRawMaterial extends StatefulWidget {
   final List<ItemModel> items;
@@ -259,6 +258,7 @@ class _AddRawMaterialState extends State<AddRawMaterial> {
                 if (selectedItem != null && double.parse(quantityTc.text) > 0) {
                   widget.onSave(
                     RawMaterial(
+                      id: selectedItem!.id!,
                       name: selectedItem!.name,
                       unit: selectedItem!.unit,
                       unitPrice: selectedItem!.pricePerUnit,
