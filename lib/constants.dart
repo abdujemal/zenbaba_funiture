@@ -480,7 +480,7 @@ Future<String> getSku(String category) async {
       .count()
       .get();
 
-  int numOfProducts = as.count;
+  int numOfProducts = as.count ?? 0;
 
   int indexOfCategory = ProductCategory.list.indexOf(category) + 1;
 

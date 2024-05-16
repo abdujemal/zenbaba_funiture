@@ -102,7 +102,7 @@ class _CalenderPageState extends State<CalenderPage> {
         controller: calController,
 
         // to provide custom UI for month cells.
-        cellBuilder: (date, events, isToday, isInMonth) {
+        cellBuilder: (date, events, isToday, isInMonth, hideDaysNotInMonth) {
           DateTime today =
               DateTime.parse(DateTime.now().toString().split(" ")[0]);
           // Return your widget to display as month cell.

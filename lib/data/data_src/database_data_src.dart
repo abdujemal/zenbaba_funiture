@@ -858,7 +858,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         .count()
         .get();
 
-    return productQs.count;
+    return productQs.count ?? 0;
   }
 
   @override
@@ -1032,7 +1032,7 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         .count()
         .get();
 
-    return aq.count;
+    return aq.count ?? 0;
   }
 
   @override

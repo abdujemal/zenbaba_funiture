@@ -52,8 +52,9 @@ class EmployeeItem extends StatelessWidget {
                     )
                   : kIsWeb
                       ? CircleAvatar(
-                          backgroundImage:
-                              CachedNetworkImageProvider(employeeModel.imgUrl!),
+                          backgroundImage: CachedNetworkImageProvider(
+                            employeeModel.imgUrl!,
+                          ),
                           radius: 30,
                         )
                       : const CircleAvatar(
