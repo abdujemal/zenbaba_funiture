@@ -11,6 +11,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:zenbaba_funiture/data/model/product_category_model.dart';
+import 'package:zenbaba_funiture/data/model/product_model.dart';
 
 Color darkOrange = const Color(0xFFf7941f);
 
@@ -288,12 +289,14 @@ class UserPriority {
   static String WorkShopManager = "Work Shop Manager";
   static String HR = 'HR';
   static String Designer = 'Designer';
+  static String HrAndStoreKeeper = "Hr and Storekeeper";
 
   static isAdmin(priority) => priority == Admin || priority == AdminView;
 
   static canAccessStock(priority) =>
       isAdmin(priority) ||
       priority == Storekeeper ||
+      priority == HrAndStoreKeeper||
       priority == WorkShopManager ||
       priority == Designer;
 
@@ -441,6 +444,15 @@ Future<Uint8List> downloadFileWeb(String url) async {
   return response.bodyBytes;
 }
 
+Future<List<Uint8List>> downloadFilesWeb(List<String> urls) async {
+  List<Uint8List> lst = [];
+  for (String url in urls) {
+    final response = await http.get(Uri.parse(url));
+    lst.add(response.bodyBytes);
+  }
+  return lst;
+}
+
 Future<File?> displayImage(String? imgUrl, String name, String dir) async {
   if (kIsWeb) {
     return null;
@@ -575,4 +587,123 @@ Future<Map> getConsts() async {
 
 bool isWeekEnd(DateTime dateTime) {
   return dateTime.weekday == 6 || dateTime.weekday == 7;
+}
+
+double materialCost(List<RawMaterial> rawMaterials) {
+  double v = 0;
+  for (RawMaterial raw in rawMaterials) {
+    v = v + raw.totalPrice;
+  }
+  return v;
+}
+
+double totalOverhead(Map consts, String overHead) {
+  if (overHead.isNotEmpty) {
+    return consts["total overhead"] * double.parse(overHead);
+  }
+  return 0;
+}
+
+double totalProductionCost(
+  Map consts,
+  String overHead,
+  String labourText,
+  List<RawMaterial> rawMaterials,
+) {
+  if (overHead.isNotEmpty &&
+      labourText.isNotEmpty &&
+      consts["total overhead"] != null) {
+    double over = double.parse(overHead);
+    double labour = double.parse(labourText);
+    return materialCost(rawMaterials) +
+        (consts["total overhead"] * over) +
+        labour;
+  } else {
+    return 0;
+  }
+}
+
+double generalAdministration(
+  Map consts,
+  String overHead,
+  String labourText,
+  List<RawMaterial> rawMaterials,
+) {
+  if (consts["general and adminstration"] != null) {
+    return totalProductionCost(consts, overHead, labourText, rawMaterials) *
+        (consts["general and adminstration"] / 100);
+  }
+  return 0;
+}
+
+double sellingDistribution(
+  Map consts,
+  String overHead,
+  String labourText,
+  List<RawMaterial> rawMaterials,
+) {
+  if (consts["selling and distribution"] != null) {
+    return totalProductionCost(consts, overHead, labourText, rawMaterials) *
+        (consts["selling and distribution"] / 100);
+  }
+  return 0;
+}
+
+double totalCostAndExpention(
+  Map consts,
+  String overHead,
+  String labourText,
+  List<RawMaterial> rawMaterials,
+) {
+  return totalProductionCost(consts, overHead, labourText, rawMaterials) +
+      generalAdministration(consts, overHead, labourText, rawMaterials) +
+      sellingDistribution(consts, overHead, labourText, rawMaterials);
+}
+
+double contengency(
+  Map consts,
+  String overHead,
+  String labourText,
+  List<RawMaterial> rawMaterials,
+) {
+  if (consts["contingency"] != null) {
+    return totalCostAndExpention(consts, overHead, labourText, rawMaterials) *
+        (consts["contingency"] / 100);
+  }
+  return 0;
+}
+
+double manufacturingCost(
+  Map consts,
+  String overHead,
+  String labourText,
+  List<RawMaterial> rawMaterials,
+) {
+  return totalCostAndExpention(consts, overHead, labourText, rawMaterials) +
+      contengency(consts, overHead, labourText, rawMaterials);
+}
+
+double profit(
+  Map consts,
+  String overHead,
+  String labourText,
+  String profit,
+  List<RawMaterial> rawMaterials,
+) {
+  if (profit.isNotEmpty) {
+    return manufacturingCost(consts, overHead, labourText, rawMaterials) *
+        (double.parse(profit) / 100);
+  }
+  return 0;
+}
+
+double sellingPrice(
+  Map consts,
+  String overHead,
+  String labourText,
+  String profitText,
+  List<RawMaterial> rawMaterials,
+) {
+  return manufacturingCost(consts, overHead, labourText, rawMaterials) +
+      profit(consts, overHead, labourText, profitText, rawMaterials);
 }

@@ -12,7 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/widget/add_raw_material.dart';
-import 'package:zenbaba_funiture/view/widget/pdf_selector.dart';
+import 'package:zenbaba_funiture/view/widget/additional_files_selector.dart';
 import 'package:zenbaba_funiture/view/widget/raw_material_item.dart';
 
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
@@ -66,7 +66,7 @@ class _AddProductState extends State<AddProduct> {
 
   List selectedImages = [];
 
-  var selectedPdf;
+  List selectedFiles = [];
 
   List<String> urlImages = [];
 
@@ -97,75 +97,7 @@ class _AddProductState extends State<AddProduct> {
 
   var _distanceToField;
 
-  double materialCost() {
-    double v = 0;
-    for (RawMaterial raw in rawMaterials) {
-      v = v + raw.totalPrice;
-    }
-    return v;
-  }
-
-  double totalOverhead() {
-    if (overheadTc.text.isNotEmpty) {
-      return consts["total overhead"] * double.parse(overheadTc.text);
-    }
-    return 0;
-  }
-
-  double totalProductionCost() {
-    if (overheadTc.text.isNotEmpty &&
-        labourTc.text.isNotEmpty &&
-        consts["total overhead"] != null) {
-      double over = double.parse(overheadTc.text);
-      double labour = double.parse(labourTc.text);
-      return materialCost() + (consts["total overhead"] * over) + labour;
-    } else {
-      return 0;
-    }
-  }
-
-  double generalAdministration() {
-    if (consts["general and adminstration"] != null) {
-      return totalProductionCost() *
-          (consts["general and adminstration"] / 100);
-    }
-    return 0;
-  }
-
-  double sellingDistribution() {
-    if (consts["selling and distribution"] != null) {
-      return totalProductionCost() * (consts["selling and distribution"] / 100);
-    }
-    return 0;
-  }
-
-  double totalCostAndExpention() {
-    return totalProductionCost() +
-        generalAdministration() +
-        sellingDistribution();
-  }
-
-  double contengency() {
-    if (consts["contingency"] != null) {
-      return totalCostAndExpention() * (consts["contingency"] / 100);
-    }
-    return 0;
-  }
-
-  double manufacturingCost() {
-    return totalCostAndExpention() + contengency();
-  }
-
-  double profit() {
-    if (profitTc.text.isNotEmpty) {
-      return manufacturingCost() * (double.parse(profitTc.text) / 100);
-    }
-    return 0;
-  }
-
-  double sellingPrice() {
-    return manufacturingCost() + profit();
-  }
+  List<String> fileNames = [];
 
   @override
   void didChangeDependencies() {
@@ -197,11 +129,12 @@ class _AddProductState extends State<AddProduct> {
       initialTags = widget.productModel!.tags.map((e) => e as String).toList();
       rawMaterials = widget.productModel!.rawMaterials;
       rawMaterialIds = widget.productModel!.rawMaterialIds;
+      print(widget.productModel!.toMap());
       setImageFile();
 
-      if (widget.isDuplicate && widget.productModel?.pdfLink != null) {
-        downloadFileWeb(widget.productModel!.pdfLink!).then((unit8List) {
-          selectedPdf = unit8List;
+      if (widget.isDuplicate && widget.productModel?.relatedFiles != null) {
+        downloadFilesWeb(widget.productModel!.relatedFiles!).then((unit8Lists) {
+          selectedFiles = unit8Lists;
           setState(() {});
         });
       }
@@ -471,7 +404,9 @@ class _AddProductState extends State<AddProduct> {
 
   @override
   Widget build(BuildContext context) {
-    productPriceTc.text = sellingPrice().toStringAsFixed(2);
+    productPriceTc.text = sellingPrice(
+            consts, overheadTc.text, labourTc.text, profitTc.text, rawMaterials)
+        .toStringAsFixed(2);
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -558,9 +493,9 @@ class _AddProductState extends State<AddProduct> {
                   const SizedBox(
                     height: 15,
                   ),
-                  PdfSelector(
-                    file: selectedPdf,
-                    pdfLink: widget.productModel?.pdfLink,
+                  AdditionalFilesSelector(
+                    files: selectedFiles,
+                    relatedFiles: widget.productModel?.relatedFiles,
                     onTap: () async {
                       if (kIsWeb) {
                         //TODO: free up every thing to load web
@@ -578,15 +513,18 @@ class _AddProductState extends State<AddProduct> {
                         //   toast("Some thing wrong.", ToastType.error);
                         // }
                       } else {
-                        final result = await FilePicker.platform.pickFiles();
+                        print("Works.....");
+                        final result = await FilePicker.platform.pickFiles(
+                          allowMultiple: true,
+                          allowCompression: false,
+                        );
                         if (result != null) {
-                          if (result.files[0].path!.contains(".pdf")) {
-                            selectedPdf = File(result.files[0].path!);
-                            setState(() {});
-                          } else {
-                            toast(
-                                "Please selected .pdf file.", ToastType.error);
-                          }
+                          selectedFiles =
+                              result.files.map((e) => e.path).toList();
+                          fileNames = result.files
+                              .map((e) => e.path?.split("/").last ?? "Unknown")
+                              .toList();
+                          setState(() {});
                         } else {
                           toast("Some thing wrong.", ToastType.error);
                         }
@@ -750,7 +688,8 @@ class _AddProductState extends State<AddProduct> {
                             ),
                             Align(
                               alignment: Alignment.bottomRight,
-                              child: Text("Total: ${materialCost()}"),
+                              child:
+                                  Text("Total: ${materialCost(rawMaterials)}"),
                             ),
                             Align(
                               alignment: Alignment.bottomRight,
@@ -868,7 +807,8 @@ class _AddProductState extends State<AddProduct> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text("\u2211 overhead"),
-                                  Text("${totalOverhead()}"),
+                                  Text(
+                                      "${totalOverhead(consts, overheadTc.text)}"),
                                 ],
                               ),
                               Row(
@@ -876,8 +816,12 @@ class _AddProductState extends State<AddProduct> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   const Text("total productn"),
-                                  Text(
-                                      totalProductionCost().toStringAsFixed(2)),
+                                  Text(totalProductionCost(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2)),
                                 ],
                               ),
                               Row(
@@ -887,8 +831,12 @@ class _AddProductState extends State<AddProduct> {
                                   const Text("general and admin"),
                                   Text(
                                       "${consts["general and adminstration"]}%"),
-                                  Text(generalAdministration()
-                                      .toStringAsFixed(2))
+                                  Text(generalAdministration(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2))
                                 ],
                               ),
                               Row(
@@ -898,7 +846,12 @@ class _AddProductState extends State<AddProduct> {
                                   const Text("selling and distributn"),
                                   Text(
                                       "${consts["selling and distribution"]}%"),
-                                  Text(sellingDistribution().toStringAsFixed(2))
+                                  Text(sellingDistribution(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2))
                                 ],
                               ),
                               Row(
@@ -911,8 +864,12 @@ class _AddProductState extends State<AddProduct> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Text(totalCostAndExpention()
-                                      .toStringAsFixed(2))
+                                  Text(totalCostAndExpention(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2))
                                 ],
                               ),
                               Row(
@@ -921,7 +878,12 @@ class _AddProductState extends State<AddProduct> {
                                 children: [
                                   const Text("contingency"),
                                   Text("${consts["contingency"]}%"),
-                                  Text(contengency().toStringAsFixed(2))
+                                  Text(contengency(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2))
                                 ],
                               ),
                               Row(
@@ -934,7 +896,12 @@ class _AddProductState extends State<AddProduct> {
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  Text(manufacturingCost().toStringAsFixed(2))
+                                  Text(manufacturingCost(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2))
                                 ],
                               ),
                               Row(
@@ -949,7 +916,13 @@ class _AddProductState extends State<AddProduct> {
                                       fontSize: 18,
                                     ),
                                   ),
-                                  Text(profit().toStringAsFixed(2))
+                                  Text(profit(
+                                    consts,
+                                    overheadTc.text,
+                                    labourTc.text,
+                                    profitTc.text,
+                                    rawMaterials,
+                                  ).toStringAsFixed(2))
                                 ],
                               ),
                             ]),
@@ -993,13 +966,14 @@ class _AddProductState extends State<AddProduct> {
                                   onTap: () async {
                                     if (productFormState.currentState!
                                         .validate()) {
-                                      if (_controller.getTags?.isNotEmpty == true) {
+                                      if (_controller.getTags?.isNotEmpty ==
+                                          true) {
                                         if (widget.productModel == null) {
                                           // if (selectedImages.isNotEmpty) {
                                           mainConntroller.addProduct(
                                             ProductModel(
                                               id: null,
-                                              pdfLink: null,
+                                              relatedFiles: null,
                                               name: productNameTc.text,
                                               sku: productSkuTc.text,
                                               category: selectedCategory,
@@ -1011,7 +985,9 @@ class _AddProductState extends State<AddProduct> {
                                               tags: _controller.getTags!,
                                               size: sizeTc.text,
                                               rawMaterials: rawMaterials,
-                                              rawMaterialIds: rawMaterialIds,
+                                              rawMaterialIds: rawMaterials
+                                                  .map((e) => e.id)
+                                                  .toList(),
                                               labourCost:
                                                   double.parse(labourTc.text),
                                               overhead:
@@ -1020,20 +996,15 @@ class _AddProductState extends State<AddProduct> {
                                                   double.parse(profitTc.text),
                                             ),
                                             selectedImages,
-                                            selectedPdf,
+                                            selectedFiles,
+                                            fileNames,
                                           );
-                                          // } else {
-                                          //   toast(
-                                          //     "Please select the images.",
-                                          //     ToastType.error,
-                                          //   );
-                                          // }
                                         } else {
                                           if (widget.isDuplicate) {
                                             mainConntroller.addProduct(
                                               ProductModel(
                                                 id: null,
-                                                pdfLink: null,
+                                                relatedFiles: null,
                                                 name: productNameTc.text,
                                                 sku: productSkuTc.text,
                                                 category: selectedCategory,
@@ -1045,7 +1016,9 @@ class _AddProductState extends State<AddProduct> {
                                                 tags: _controller.getTags!,
                                                 size: sizeTc.text,
                                                 rawMaterials: rawMaterials,
-                                                rawMaterialIds: rawMaterialIds,
+                                                rawMaterialIds: rawMaterials
+                                                    .map((e) => e.id)
+                                                    .toList(),
                                                 labourCost:
                                                     double.parse(labourTc.text),
                                                 overhead: double.parse(
@@ -1056,7 +1029,8 @@ class _AddProductState extends State<AddProduct> {
                                               selectedImages.isEmpty
                                                   ? imageFromUrls
                                                   : selectedImages,
-                                              selectedPdf,
+                                              selectedFiles,
+                                              fileNames,
                                             );
                                           } else {
                                             print("works");
@@ -1075,6 +1049,9 @@ class _AddProductState extends State<AddProduct> {
                                                 tags: _controller.getTags!,
                                                 size: sizeTc.text,
                                                 rawMaterials: rawMaterials,
+                                                rawMaterialIds: rawMaterials
+                                                    .map((e) => e.id)
+                                                    .toList(),
                                                 labourCost:
                                                     double.parse(labourTc.text),
                                                 overhead: double.parse(
@@ -1085,7 +1062,8 @@ class _AddProductState extends State<AddProduct> {
                                               selectedImages.isEmpty
                                                   ? imageFromUrls
                                                   : selectedImages,
-                                              selectedPdf,
+                                              selectedFiles,
+                                              fileNames,
                                             );
                                           }
                                         }
@@ -1118,7 +1096,9 @@ class _AddProductState extends State<AddProduct> {
                                                   [
                                                     ...widget
                                                         .productModel!.images,
-                                                    widget.productModel!.pdfLink
+                                                    ...widget.productModel!
+                                                            .relatedFiles ??
+                                                        [],
                                                   ]
                                                       .map((e) => e as String)
                                                       .toList(),

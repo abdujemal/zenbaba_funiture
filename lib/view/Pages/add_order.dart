@@ -53,7 +53,7 @@ class _AddOrderState extends State<AddOrder> {
         labourCost: 0,
         overhead: 0,
         profit: 0,
-        pdfLink: null),
+        relatedFiles: null),
   ];
 
   int numOfProduct = 1;
@@ -105,7 +105,7 @@ class _AddOrderState extends State<AddOrder> {
       labourCost: 0,
       overhead: 0,
       profit: 0,
-      pdfLink: null);
+      relatedFiles: null);
 
   String selectedGender = Gender.Male;
 
@@ -182,6 +182,7 @@ class _AddOrderState extends State<AddOrder> {
       _productDescriptionTc.text = widget.orderModel!.productDescription;
       _bankAccountTc.text = widget.orderModel!.bankAccount ?? "";
       withReciept = widget.orderModel!.withReciept;
+      print(widget.orderModel!.toMap());
     }
 
     if (widget.orderModel != null) {
@@ -439,7 +440,9 @@ class _AddOrderState extends State<AddOrder> {
                                             element.price.toString();
                                         _productSkuTc.text = element.sku;
                                         selectedProductImage =
-                                            element.images[0];
+                                            element.images.isEmpty
+                                                ? ""
+                                                : element.images[0];
 
                                         _sizeTc.text = element.size;
                                         _productDescriptionTc.text =
@@ -705,7 +708,7 @@ class _AddOrderState extends State<AddOrder> {
                       controller: textFieldTagValues.textEditingController,
                       focusNode: textFieldTagValues.focusNode,
                       validator: (value) {
-                        if (tagsController.getTags?.isNotEmpty == true) {
+                        if (textFieldTagValues.tags.isEmpty) {
                           return "This Feild is required";
                         }
                         return null;
@@ -738,10 +741,12 @@ class _AddOrderState extends State<AddOrder> {
                             )),
                         prefixIcon: textFieldTagValues.tags.isNotEmpty
                             ? SingleChildScrollView(
-                                controller: textFieldTagValues.tagScrollController,
+                                controller:
+                                    textFieldTagValues.tagScrollController,
                                 scrollDirection: Axis.horizontal,
                                 child: Row(
-                                  children: textFieldTagValues.tags.map((String tag) {
+                                  children:
+                                      textFieldTagValues.tags.map((String tag) {
                                     return Container(
                                       decoration: BoxDecoration(
                                         borderRadius: const BorderRadius.all(
@@ -776,7 +781,8 @@ class _AddOrderState extends State<AddOrder> {
                                                   255, 233, 233, 233),
                                             ),
                                             onTap: () {
-                                              textFieldTagValues.onTagDelete(tag);
+                                              textFieldTagValues
+                                                  .onTagDelete(tag);
                                             },
                                           )
                                         ],
@@ -1318,12 +1324,14 @@ class _AddOrderState extends State<AddOrder> {
                                           ),
                                         );
                                       }
+                                      List<String>? imgs;
                                       if (isNewProduct) {
                                         if (selectedImages.isNotEmpty) {
-                                          await mainConntroller.addProduct(
+                                          imgs =
+                                              await mainConntroller.addProduct(
                                             ProductModel(
                                               id: null,
-                                              pdfLink:
+                                              relatedFiles:
                                                   null, // but it is not implemented
                                               name: _productNameTc.text,
                                               sku: _productSkuTc.text,
@@ -1342,7 +1350,8 @@ class _AddOrderState extends State<AddOrder> {
                                               profit: 0,
                                             ),
                                             selectedImages,
-                                            null, // TODO: not emplement yet
+                                            [], // TODO: not emplement yet
+                                            [], //TODO: not implemented yet
                                           );
                                         } else {
                                           toast("images are not selected",
@@ -1352,6 +1361,7 @@ class _AddOrderState extends State<AddOrder> {
                                       await mainConntroller.addOrder(
                                         OrderModel(
                                           id: null,
+                                          productId: selectedProduct.id!,
                                           withReciept: withReciept,
                                           bankAccount:
                                               _bankAccountTc.text.isEmpty
@@ -1381,7 +1391,9 @@ class _AddOrderState extends State<AddOrder> {
                                           paymentMethod: selectedPaymentMethod,
                                           deliveryOption: deliveryState,
                                           customerGender: selectedGender,
-                                          imgUrl: selectedProductImage,
+                                          imgUrl: imgs?.isNotEmpty == true
+                                              ? imgs!.first
+                                              : selectedProductImage,
                                           productDescription:
                                               _productDescriptionTc.text,
                                           employees: const [],
@@ -1391,6 +1403,7 @@ class _AddOrderState extends State<AddOrder> {
                                     } else {
                                       await mainConntroller.updateOrder(
                                         OrderModel(
+                                          productId: selectedProduct.id!,
                                           id: widget.orderModel!.id,
                                           withReciept: withReciept,
                                           bankAccount:

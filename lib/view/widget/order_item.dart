@@ -91,7 +91,7 @@ class _OrderItemState extends State<OrderItem> {
                           '${widget.orderModel.productSku}0',
                           "${FirebaseConstants.products}/${widget.orderModel.productSku}"),
                       builder: (context, snapshot) {
-                        return widget.orderModel.imgUrl == ""
+                        return widget.orderModel.imgUrl.isEmpty
                             ? const Icon(
                                 Icons.more_horiz,
                                 size: 70,

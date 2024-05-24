@@ -7,7 +7,6 @@ import 'package:zenbaba_funiture/constants.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/Pages/add_item.dart';
 import 'package:zenbaba_funiture/view/Pages/stock_detail_page.dart';
-import 'package:zenbaba_funiture/view/Pages/stock_page.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/left_line.dart';
@@ -202,7 +201,7 @@ class _ItemDetailState extends State<ItemDetail> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            DateFormat("EEE / dd MMMM / yyyy").format(
+                            DateFormat("EEE  dd MMMM / yyyy").format(
                               DateTime.parse(
                                 (widget.itemModel.timeLine[index].date),
                               ),

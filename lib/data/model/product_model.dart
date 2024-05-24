@@ -10,7 +10,7 @@ class ProductModel extends ProductEntity {
   final String sku;
   final String category;
   final String description;
-  final String? pdfLink;
+  final List<String>? relatedFiles;
   final double? labourCost;
   final double? overhead;
   final double? profit;
@@ -27,7 +27,7 @@ class ProductModel extends ProductEntity {
     required this.sku,
     required this.category,
     required this.description,
-    required this.pdfLink,
+    required this.relatedFiles,
     required this.labourCost,
     required this.overhead,
     required this.profit,
@@ -43,7 +43,7 @@ class ProductModel extends ProductEntity {
           sku: sku,
           category: category,
           description: description,
-          pdfLink: pdfLink,
+          relatedFiles: relatedFiles,
           images: images,
           price: price,
           labourCost: labourCost,
@@ -63,7 +63,11 @@ class ProductModel extends ProductEntity {
         sku: data['sku'],
         category: data['category'],
         description: data['description'],
-        pdfLink: data['pdfLink'],
+        relatedFiles: data['relatedFiles'] != null
+            ? (data['relatedFiles'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList()
+            : null,
         images: data['images'],
         price: double.parse(data['price'].toString()),
         labourCost: double.parse(data['labourCost'].toString()),
@@ -76,7 +80,11 @@ class ProductModel extends ProductEntity {
                   e,
                 ))
             .toList(),
-        rawMaterialIds: data['rawMaterialIds'] ?? []);
+        rawMaterialIds: data['rawMaterialIds'] != null
+            ? (data['rawMaterialIds'] as List<dynamic>)
+                .map((e) => e as String)
+                .toList()
+            : []);
   }
 
   Map<String, dynamic> toMap() {
@@ -85,7 +93,7 @@ class ProductModel extends ProductEntity {
       'sku': sku,
       'category': category,
       'description': description,
-      'pdfLink': pdfLink,
+      'relatedFiles': relatedFiles,
       'images': images,
       'price': price,
       'labourCost': labourCost,
@@ -107,7 +115,7 @@ class ProductModel extends ProductEntity {
     double? profit,
     double? labourCost,
     String? description,
-    String? pdfLink,
+    List<String>? relatedFiles,
     List<dynamic>? images,
     double? price,
     List<dynamic>? tags,
@@ -121,7 +129,7 @@ class ProductModel extends ProductEntity {
         sku: sku ?? this.sku,
         category: category ?? this.category,
         description: description ?? this.description,
-        pdfLink: pdfLink ?? this.pdfLink,
+        relatedFiles: relatedFiles ?? this.relatedFiles,
         images: images ?? this.images,
         price: price ?? this.price,
         profit: profit ?? this.profit,

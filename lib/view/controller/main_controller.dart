@@ -743,28 +743,36 @@ class MainConntroller extends GetxController {
     });
   }
 
-  addProduct(ProductModel productModel, List files, dynamic pdfFile) async {
+  Future<List<String>?> addProduct(ProductModel productModel, List files,
+      dynamic pdfFile, List<String> names,
+      {bool goBack = true}) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
       toast("No Network", ToastType.error);
-      return;
+      return null;
     }
 
     productStatus.value = RequestState.loading;
-    final res =
-        await addProductUsecase.call(AddProductsParams(productModel, files, pdfFile));
+    final res = await addProductUsecase
+        .call(AddProductsParams(productModel, files, pdfFile, names));
+    List<String>? imgs;
 
     res.fold((l) {
       productStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
     }, (r) {
       productStatus.value = RequestState.loaded;
-      Get.back();
+      imgs = r;
+      if (goBack) {
+        Get.back();
+      }
     });
+    return imgs;
   }
 
-  updateProduct(ProductModel productModel, List files, dynamic pdfFile) async {
+  updateProduct(ProductModel productModel, List files, dynamic pdfFile,
+      List<String> names) async {
     var connectivityResult = await Connectivity().checkConnectivity();
 
     if (connectivityResult == ConnectivityResult.none) {
@@ -777,7 +785,7 @@ class MainConntroller extends GetxController {
     productStatus.value = RequestState.loading;
 
     final res = await updateProductUsecase
-        .call(UpdateProductParams(files, productModel, pdfFile));
+        .call(UpdateProductParams(files, productModel, pdfFile, names));
 
     res.fold((l) {
       productStatus.value = RequestState.error;
@@ -874,7 +882,7 @@ class MainConntroller extends GetxController {
     });
   }
 
-  getOrder(String id) async {
+  Future<OrderModel?> getOrder(String id) async {
     orderStatus.value = RequestState.loading;
 
     final res = await getSingleOrderUsecase.call(GetSingleOrderParams(id));

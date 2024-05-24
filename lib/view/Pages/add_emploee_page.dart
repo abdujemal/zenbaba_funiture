@@ -15,7 +15,6 @@ import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
 
-
 class AddEmployeePage extends StatefulWidget {
   final EmployeeModel? employeeModel;
   const AddEmployeePage({super.key, this.employeeModel});
@@ -160,7 +159,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                   selectedFile = null;
                   if (kIsWeb) {
                     //TODO: free up every thing to load web
-                    
+
                     // final filex = await ImagePickerWeb.getImageAsBytes();
                     // if (filex != null) {
                     //   setState(() {

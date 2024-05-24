@@ -14,6 +14,7 @@ class OrderModel extends OrderEntity {
   final double payedPrice;
   final double deliveryPrice;
   final String productSku;
+  final String productId;
   final int quantity;
   final String color;
   final String size;
@@ -62,6 +63,7 @@ class OrderModel extends OrderEntity {
     required this.color,
     required this.size,
     required this.withReciept,
+    required this.productId,
     this.bankAccount,
   }) : super(
           id: id,
@@ -71,6 +73,7 @@ class OrderModel extends OrderEntity {
           productPrice: productPrice,
           deliveryPrice: deliveryPrice,
           productSku: productSku,
+          productId: productId,
           quantity: quantity,
           orderedDate: orderedDate,
           finishedDate: finishedDate,
@@ -98,6 +101,7 @@ class OrderModel extends OrderEntity {
     return <String, dynamic>{
       'customerName': customerName,
       'phoneNumber': phoneNumber,
+      'productId': productId,
       'productName': productName,
       'productPrice': productPrice,
       'payedPrice': payedPrice,
@@ -130,6 +134,7 @@ class OrderModel extends OrderEntity {
     final map = snap.data() as Map;
     return OrderModel(
       id: snap.id,
+      productId: map['productId'] ?? "",
       customerName: map['customerName'] as String,
       phoneNumber: map['phoneNumber'] as String,
       productName: map['productName'] as String,
@@ -179,6 +184,7 @@ class OrderModel extends OrderEntity {
     String? size,
     String? orderedDate,
     String? finishedDate,
+    String? productId,
     String? status,
     String? sefer,
     String? customerSource,
@@ -197,6 +203,7 @@ class OrderModel extends OrderEntity {
   }) {
     return OrderModel(
       id: id ?? this.id,
+      productId: productId ?? this.productId,
       customerName: customerName ?? this.customerName,
       phoneNumber: phoneNumber ?? this.phoneNumber,
       productName: productName ?? this.productName,

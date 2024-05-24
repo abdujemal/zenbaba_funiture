@@ -154,7 +154,8 @@ class _InitialPageState extends State<InitialPage> {
       return storeKeeperTabs;
     } else if (priority == UserPriority.WorkShopManager) {
       return workShopManagerTabs;
-    } else if (priority == UserPriority.HR) {
+    } else if (priority == UserPriority.HR ||
+        priority == UserPriority.HrAndStoreKeeper) {
       return adminViewTabs;
     } else {
       return designerTabs;

@@ -9,6 +9,7 @@ class OrderEntity extends Equatable {
   final String customerName;
   final String customerGender;
   final String phoneNumber;
+  final String productId;
   final String productName;
   final double productPrice;
   final double deliveryPrice;
@@ -58,6 +59,7 @@ class OrderEntity extends Equatable {
     required this.productDescription,
     required this.payedPrice,
     required this.withReciept,
+    required this.productId,
     this.bankAccount,
   });
 
@@ -67,6 +69,7 @@ class OrderEntity extends Equatable {
         customerId,
         customerName,
         phoneNumber,
+        productId,
         productName,
         productPrice,
         deliveryPrice,

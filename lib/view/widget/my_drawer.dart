@@ -212,7 +212,8 @@ class _MyDrawerState extends State<MyDrawer> {
       return storeKeeperMenu;
     } else if (priority == UserPriority.WorkShopManager) {
       return workshopManagerMenu;
-    } else if (priority == UserPriority.HR) {
+    } else if (priority == UserPriority.HR ||
+        priority == UserPriority.HrAndStoreKeeper) {
       return adminViewMenu;
     } else {
       return designerMenu;

@@ -10,7 +10,7 @@ class ProductEntity extends Equatable {
   final String size;
   final String category;
   final String description;
-  final String? pdfLink;
+  final List<String>? relatedFiles;
   final double? labourCost;
   final double? overhead;
   final double? profit;
@@ -27,7 +27,7 @@ class ProductEntity extends Equatable {
     required this.size,
     required this.category,
     required this.description,
-    required this.pdfLink,
+    required this.relatedFiles,
     required this.labourCost,
     required this.overhead,
     required this.profit,
@@ -45,7 +45,7 @@ class ProductEntity extends Equatable {
         sku,
         category,
         description,
-        pdfLink,
+        relatedFiles,
         images,
         price,
         tags,

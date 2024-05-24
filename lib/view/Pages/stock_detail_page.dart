@@ -265,7 +265,7 @@ class _StockDetailPageState extends State<StockDetailPage> {
                             GestureDetector(
                               onTap: () {
                                 Get.to(
-                                  ItemDetail(
+                                  () => ItemDetail(
                                     itemModel:
                                         mainConntroller.items[widget.index],
                                   ),

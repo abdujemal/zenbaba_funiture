@@ -21,7 +21,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   tz.initializeTimeZones();
-  await NotificationService().initNotification();
+  // await NotificationService().initNotification();
   setup();
   runApp(
     const MyApp(),
@@ -36,25 +36,25 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MediaQuery(
       data: MediaQuery.of(context).copyWith(
-        textScaleFactor: 1.0,
+        textScaler: const TextScaler.linear(1.0),
       ),
       child: GetMaterialApp(
         initialBinding: GetBindings(),
         debugShowCheckedModeBanner: false,
         title: 'Zenbaba Furniture',
         theme: ThemeData(
-          colorScheme: ColorScheme.dark(
+          colorScheme: const ColorScheme.dark(
             primary: Colors.orange,
           ),
           primarySwatch: Colors.orange, // Set your desired primary color
         ).copyWith(
           primaryColor: mainColor,
-          primaryTextTheme: TextTheme(
-            bodyText2: GoogleFonts.montserrat().copyWith(
-              fontSize: 15,
-              color: whiteColor,
-            ),
-          ),
+          primaryTextTheme: const TextTheme(
+              // bodyText2: GoogleFonts.montserrat().copyWith(
+              //   fontSize: 15,
+              //   color: whiteColor,
+              // ),
+              ),
           chipTheme: ChipThemeData(
             backgroundColor: mainBgColor,
             side: BorderSide.none,

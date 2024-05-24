@@ -1,5 +1,6 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -29,15 +30,15 @@ abstract class DatabaseDataSrc {
   Future<void> addOrderChart(OrderChartModel orderChartModel);
   Future<void> deleteExpenseChart(String id);
   Future<void> deleteOrderChart(String id);
-  Future<void> addProduct(
-      ProductModel productModel, List files, dynamic pdfFile);
+  Future<List<String>?> addProduct(
+      ProductModel productModel, List files, List pdfFiles, List<String> names);
   Future<List<ProductModel>> getProducts(
       int? quantity, String? category, bool isNew);
   Future<List<ProductModel>> searchProducts(
       String key, String value, int length);
   Future<int> count(String path, String key, String value);
   Future<void> updateProduct(
-      ProductModel productModel, List files, dynamic pdfFile);
+      ProductModel productModel, List files, List pdfFiles, List<String> names);
   Future<String> addOrder(OrderModel orderModel);
   Future<List<OrderModel>> getOrders(
       int? quantity, String? status, String? date, bool isNew);
@@ -233,24 +234,36 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> addProduct(
-      ProductModel productModel, List files, dynamic pdfFile) async {
+  Future<List<String>?> addProduct(ProductModel productModel, List files,
+      List pdfFiles, List<String> names) async {
     if (productModel.images.isNotEmpty && files.isEmpty) {
       print("files is empty");
 
-      if (pdfFile != null) {
-        final ref = firebaseStorage.ref().child(
-            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
-        UploadTask task =
-            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
-        String pdfUrl =
-            await (await task.whenComplete(() {})).ref.getDownloadURL();
-        productModel = productModel.copyWith(pdfLink: pdfUrl);
+      if (pdfFiles.isNotEmpty) {
+        List<String> fileUrls = [];
+        int i = 0;
+        for (String file in productModel.relatedFiles ?? []) {
+          if (file.isNotEmpty) {
+            String filePath = firebaseStorage.refFromURL(file).fullPath;
+            await firebaseStorage.ref().child(filePath).delete();
+          }
+        }
+        for (var file in pdfFiles) {
+          final ref = firebaseStorage.ref().child(
+              "${FirebaseConstants.products}/PDFs/${productModel.name}/${names[i]}");
+          UploadTask task =
+              kIsWeb ? ref.putData(file) : ref.putFile(File(file));
+          String fileUrl =
+              await (await task.whenComplete(() {})).ref.getDownloadURL();
+          i++;
+          fileUrls.add(fileUrl);
+        }
+        productModel = productModel.copyWith(relatedFiles: fileUrls);
       }
-
       await firebaseFirestore
           .collection(FirebaseConstants.products)
           .add(productModel.toMap());
+      return null;
     } else {
       print("files is not empty");
 
@@ -267,14 +280,26 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         imagesUrl.add(imageUrl);
       }
 
-      if (pdfFile != null) {
-        final ref = firebaseStorage.ref().child(
-            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
-        UploadTask task =
-            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
-        String pdfUrl =
-            await (await task.whenComplete(() {})).ref.getDownloadURL();
-        productModel = productModel.copyWith(pdfLink: pdfUrl);
+      if (pdfFiles.isNotEmpty) {
+        List<String> fileUrls = [];
+        int i = 0;
+        for (String file in productModel.relatedFiles ?? []) {
+          if (file.isNotEmpty) {
+            String filePath = firebaseStorage.refFromURL(file).fullPath;
+            await firebaseStorage.ref().child(filePath).delete();
+          }
+        }
+        for (var file in pdfFiles) {
+          final ref = firebaseStorage.ref().child(
+              "${FirebaseConstants.products}/PDFs/${productModel.name}/${names[i]}");
+          UploadTask task =
+              kIsWeb ? ref.putData(file) : ref.putFile(File(file));
+          String fileUrl =
+              await (await task.whenComplete(() {})).ref.getDownloadURL();
+          i++;
+          fileUrls.add(fileUrl);
+        }
+        productModel = productModel.copyWith(relatedFiles: fileUrls);
       }
 
       ProductModel newItem = productModel.copyWith(images: imagesUrl);
@@ -282,6 +307,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       await firebaseFirestore
           .collection(FirebaseConstants.products)
           .add(newItem.toMap());
+
+      return imagesUrl;
     }
   }
 
@@ -700,6 +727,45 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         'description': newItem.description,
       });
     }
+
+    final products = await firebaseFirestore
+        .collection(FirebaseConstants.products)
+        .where(
+          'rawMaterialIds',
+          arrayContains: itemModel.id,
+        )
+        .get();
+
+    Map consts = await getConsts();
+
+    for (var product in products.docs) {
+      ProductModel productModel = ProductModel.fromFirebase(product);
+      final newRawMaterials = productModel.rawMaterials.map((e) {
+        if (e.id == itemModel.id) {
+          return e.copyWith(
+            unitPrice: itemModel.pricePerUnit,
+            totalPrice: itemModel.pricePerUnit * e.quantity,
+          );
+        }
+        return e;
+      }).toList();
+      final price = sellingPrice(
+              consts,
+              productModel.overhead.toString(),
+              productModel.labourCost.toString(),
+              productModel.profit.toString(),
+              newRawMaterials)
+          .toStringAsFixed(2);
+      await firebaseFirestore
+          .collection(FirebaseConstants.products)
+          .doc(productModel.id)
+          .update(productModel
+              .copyWith(
+                rawMaterials: newRawMaterials,
+                price: double.parse(price),
+              )
+              .toMap());
+    }
   }
 
   @override
@@ -724,17 +790,29 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
   }
 
   @override
-  Future<void> updateProduct(
-      ProductModel productModel, List files, dynamic pdfFile) async {
+  Future<void> updateProduct(ProductModel productModel, List files,
+      List pdfFiles, List<String> names) async {
     if (productModel.images.isNotEmpty && files.isEmpty) {
-      if (pdfFile != null) {
-        final ref = firebaseStorage.ref().child(
-            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
-        UploadTask task =
-            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
-        String pdfUrl =
-            await (await task.whenComplete(() {})).ref.getDownloadURL();
-        productModel = productModel.copyWith(pdfLink: pdfUrl);
+      if (pdfFiles.isNotEmpty) {
+        List<String> fileUrls = [];
+        int i = 0;
+        for (String file in productModel.relatedFiles ?? []) {
+          if (file.isNotEmpty) {
+            String filePath = firebaseStorage.refFromURL(file).fullPath;
+            await firebaseStorage.ref().child(filePath).delete();
+          }
+        }
+        for (var file in pdfFiles) {
+          final ref = firebaseStorage.ref().child(
+              "${FirebaseConstants.products}/PDFs/${productModel.name}/${names[i]}");
+          UploadTask task =
+              kIsWeb ? ref.putData(file) : ref.putFile(File(file));
+          String fileUrl =
+              await (await task.whenComplete(() {})).ref.getDownloadURL();
+          i++;
+          fileUrls.add(fileUrl);
+        }
+        productModel = productModel.copyWith(relatedFiles: fileUrls);
       }
 
       await firebaseFirestore
@@ -755,14 +833,26 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
         imagesUrl.add(imageUrl);
       }
 
-      if (pdfFile != null) {
-        final ref = firebaseStorage.ref().child(
-            "${FirebaseConstants.products}/PDFs/${productModel.name}${productModel.sku}");
-        UploadTask task =
-            pdfFile is Uint8List ? ref.putData(pdfFile) : ref.putFile(pdfFile);
-        String pdfUrl =
-            await (await task.whenComplete(() {})).ref.getDownloadURL();
-        productModel = productModel.copyWith(pdfLink: pdfUrl);
+      if (pdfFiles.isNotEmpty) {
+        List<String> fileUrls = [];
+        int i = 0;
+        for (String file in productModel.relatedFiles ?? []) {
+          if (file.isNotEmpty) {
+            String filePath = firebaseStorage.refFromURL(file).fullPath;
+            await firebaseStorage.ref().child(filePath).delete();
+          }
+        }
+        for (var file in pdfFiles) {
+          final ref = firebaseStorage.ref().child(
+              "${FirebaseConstants.products}/PDFs/${productModel.name}/${names[i]}");
+          UploadTask task =
+              kIsWeb ? ref.putData(file) : ref.putFile(File(file));
+          String fileUrl =
+              await (await task.whenComplete(() {})).ref.getDownloadURL();
+          i++;
+          fileUrls.add(fileUrl);
+        }
+        productModel = productModel.copyWith(relatedFiles: fileUrls);
       }
 
       ProductModel newItem = productModel.copyWith(images: imagesUrl);
@@ -771,6 +861,22 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
           .collection(FirebaseConstants.products)
           .doc(productModel.id)
           .update(newItem.toMap());
+    }
+    final orders = await firebaseFirestore
+        .collection(FirebaseConstants.orders)
+        .where('productSku', isEqualTo: productModel.sku)
+        .get();
+
+    for (var order in orders.docs) {
+      final OrderModel orderModel = OrderModel.fromFirebase(order);
+      await firebaseFirestore
+          .collection(FirebaseConstants.orders)
+          .doc(orderModel.id)
+          .update(orderModel
+              .copyWith(
+                productPrice: productModel.price,
+              )
+              .toMap());
     }
   }
 

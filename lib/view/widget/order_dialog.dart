@@ -117,27 +117,44 @@ class _OrderDialogState extends State<OrderDialog> {
                 ),
                 child: Column(
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    Stack(
                       children: [
-                        const SizedBox(
-                          width: 10,
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const SizedBox(
+                              width: 10,
+                            ),
+                            Image.asset(
+                              'assets/logo.png',
+                              height: 75,
+                              width: 75,
+                            ),
+                            // const Spacer(),
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 14.0),
+                              child: Text(
+                                "Zenbaba Furniture",
+                                style: TextStyle(
+                                  color: mainBgColor,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                          ],
                         ),
-                        Image.asset(
-                          'assets/logo.png',
-                          height: 75,
-                          width: 75,
-                        ),
-                        const Spacer(),
-                        Text(
-                          "Order No #${widget.orderModel.id}",
-                          style: TextStyle(
-                            color: mainBgColor,
-                            fontSize: 16,
+                        Positioned(
+                          right: 10,
+                          child: Text(
+                            "Order No #${widget.orderModel.id}",
+                            style: TextStyle(
+                              color: mainBgColor,
+                              fontSize: 16,
+                            ),
                           ),
-                        ),
-                        const SizedBox(
-                          width: 20,
                         ),
                       ],
                     ),
@@ -156,7 +173,7 @@ class _OrderDialogState extends State<OrderDialog> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: mainBgColor,
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -178,7 +195,7 @@ class _OrderDialogState extends State<OrderDialog> {
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               color: mainBgColor,
-                              fontSize: 16,
+                              fontSize: 12,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -353,14 +370,14 @@ class _OrderDialogState extends State<OrderDialog> {
                     Column(
                       children: [
                         Text(
-                          "0930331313",
+                          "0996994690",
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          "0996994690",
+                          "0984983221",
                           style: TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.bold,
