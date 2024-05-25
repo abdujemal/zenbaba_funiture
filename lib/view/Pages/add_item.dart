@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
+//import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 import '../../constants.dart';
 import '../../data/model/item_model.dart';
@@ -158,15 +158,15 @@ class _AddItemState extends State<AddItem> {
                     if (kIsWeb) {
                       // TODO: free up every thing to load web
                       
-                      Uint8List? xFile = await ImagePickerWeb.getImageAsBytes();
+                      // Uint8List? xFile = await ImagePickerWeb.getImageAsBytes();
 
-                      if (xFile != null) {
-                        setState(() {
-                          selectedImage = xFile;
-                        });
-                      } else {
-                        toast("No Image is selected.", ToastType.error);
-                      }
+                      // if (xFile != null) {
+                      //   setState(() {
+                      //     selectedImage = xFile;
+                      //   });
+                      // } else {
+                      //   toast("No Image is selected.", ToastType.error);
+                      // }
                     } else {
                       XFile? xFile = await ImagePicker()
                           .pickImage(source: ImageSource.gallery);

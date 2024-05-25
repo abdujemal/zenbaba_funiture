@@ -15,6 +15,8 @@ import 'notification_service.dart';
 // ui : 11,231 lines
 // total : 14,334 lines
 
+// flutter build web --dart-define=FLUTTER_WEB_USE_SKIA=true --dart-define=FLUTTER_WEB_CANVASKIT_URL=https://example.com/canvaskit
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(

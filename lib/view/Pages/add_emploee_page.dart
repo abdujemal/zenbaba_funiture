@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
+//import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/custom_btn.dart';
@@ -160,14 +160,14 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                   if (kIsWeb) {
                     //TODO: free up every thing to load web
 
-                    final filex = await ImagePickerWeb.getImageAsBytes();
-                    if (filex != null) {
-                      setState(() {
-                        selectedFile = filex;
-                      });
-                    } else {
-                      toast("Image is not picked", ToastType.error);
-                    }
+                    // final filex = await ImagePickerWeb.getImageAsBytes();
+                    // if (filex != null) {
+                    //   setState(() {
+                    //     selectedFile = filex;
+                    //   });
+                    // } else {
+                    //   toast("Image is not picked", ToastType.error);
+                    // }
                   } else {
                     final filex = await ImagePicker().pickImage(
                       source: ImageSource.gallery,
