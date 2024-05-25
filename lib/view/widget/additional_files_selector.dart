@@ -5,10 +5,12 @@ import 'package:zenbaba_funiture/constants.dart';
 class AdditionalFilesSelector extends StatefulWidget {
   final VoidCallback onTap;
   final List files;
+  final List<String> names;
   final List<String>? relatedFiles;
   const AdditionalFilesSelector({
     super.key,
     required this.files,
+    required this.names,
     required this.onTap,
     required this.relatedFiles,
   });
@@ -72,7 +74,7 @@ class _AdditionalFilesSelectorState extends State<AdditionalFilesSelector> {
                           children: List.generate(
                             widget.files.length,
                             (index) =>
-                                Text(widget.files[index].split("/").last),
+                                Text(widget.names[index]),
                           ),
                         )
                       : widget.relatedFiles != null

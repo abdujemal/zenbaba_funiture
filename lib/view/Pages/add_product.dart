@@ -2,13 +2,13 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-// import 'package:file_picker/_internal/file_picker_web.dart'; //TODO: free up every thing to load web
+import 'package:file_picker/_internal/file_picker_web.dart'; //TODO: free up every thing to load web
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web;
+import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web;
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/widget/add_raw_material.dart';
@@ -461,17 +461,17 @@ class _AddProductState extends State<AddProduct> {
                       if (kIsWeb) {
                         // TODO: free up every thing to load web
 
-                        // List<Uint8List>? xFiles =
-                        //     await ImagePickerWeb.getMultiImagesAsBytes();
-                        // selectedImages = [];
-                        // if (xFiles?.isNotEmpty ?? false) {
-                        //   for (Uint8List xFile in xFiles!) {
-                        //     selectedImages.add(xFile);
-                        //   }
-                        //   setState(() {});
-                        // } else {
-                        //   toast("No image is selected.", ToastType.error);
-                        // }
+                        List<Uint8List>? xFiles =
+                            await ImagePickerWeb.getMultiImagesAsBytes();
+                        selectedImages = [];
+                        if (xFiles?.isNotEmpty ?? false) {
+                          for (Uint8List xFile in xFiles!) {
+                            selectedImages.add(xFile);
+                          }
+                          setState(() {});
+                        } else {
+                          toast("No image is selected.", ToastType.error);
+                        }
                       } else {
                         List<XFile> xFiles = await ImagePicker()
                             .pickMultiImage(imageQuality: 25);
@@ -494,24 +494,30 @@ class _AddProductState extends State<AddProduct> {
                     height: 15,
                   ),
                   AdditionalFilesSelector(
+                    names: fileNames,
                     files: selectedFiles,
                     relatedFiles: widget.productModel?.relatedFiles,
                     onTap: () async {
                       if (kIsWeb) {
                         //TODO: free up every thing to load web
 
-                        // final result = await FilePickerWeb.platform.pickFiles();
-                        // if (result != null) {
-                        //   if (result.files[0].name.contains(".pdf")) {
-                        //     selectedPdf = result.files[0].bytes;
-                        //     setState(() {});
-                        //   } else {
-                        //     toast(
-                        //         "Please selected .pdf file.", ToastType.error);
-                        //   }
-                        // } else {
-                        //   toast("Some thing wrong.", ToastType.error);
-                        // }
+                        final result = await FilePickerWeb.platform.pickFiles(
+                          allowMultiple: true,
+                          allowCompression: false,
+                        );
+
+                        if (result != null) {
+                          selectedFiles =
+                              result.files.map((e) => e.bytes).toList();
+                          fileNames = result.files.map((e) => e.name).toList();
+                          setState(() {});
+                          // } else {
+                          // toast(
+                          //     "Please selected .pdf file.", ToastType.error);
+                          // }
+                        } else {
+                          toast("Some thing wrong.", ToastType.error);
+                        }
                       } else {
                         print("Works.....");
                         final result = await FilePicker.platform.pickFiles(

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
+// import 'package:ai_barcode_scanner/ai_barcode_scanner.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:zenbaba_funiture/view/Pages/order_details_page.dart';
@@ -29,22 +29,23 @@ class _QrScannerPageState extends State<QrScannerPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: MobileScanner(
-        // fit: BoxFit.contain,
-        onDetect: (capture) {
-          final List<Barcode> barcodes = capture.barcodes;
-          final Uint8List? image = capture.image;
-          for (final barcode in barcodes) {
-            if(barcode.rawValue != null){
+      body: Container(),
+      //  MobileScanner(
+      //   // fit: BoxFit.contain,
+      //   onDetect: (capture) {
+      //     final List<Barcode> barcodes = capture.barcodes;
+      //     final Uint8List? image = capture.image;
+      //     for (final barcode in barcodes) {
+      //       if(barcode.rawValue != null){
               
-            }
-            mainConntroller.getOrder(barcode.rawValue!).then((order) {
-              Get.to(() => OrderDetailsPage(orderModel: order!));
-              debugPrint('Barcode found! ${barcode.rawValue}');
-            });
-          }
-        },
-      ),
+      //       }
+      //       mainConntroller.getOrder(barcode.rawValue!).then((order) {
+      //         Get.to(() => OrderDetailsPage(orderModel: order!));
+      //         debugPrint('Barcode found! ${barcode.rawValue}');
+      //       });
+      //     }
+      //   },
+      // ),
       // Column(
       //   children: <Widget>[
       //     const Expanded(

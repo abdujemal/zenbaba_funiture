@@ -296,7 +296,7 @@ class UserPriority {
   static canAccessStock(priority) =>
       isAdmin(priority) ||
       priority == Storekeeper ||
-      priority == HrAndStoreKeeper||
+      priority == HrAndStoreKeeper ||
       priority == WorkShopManager ||
       priority == Designer;
 
@@ -322,6 +322,7 @@ class UserPriority {
     Storekeeper,
     WorkShopManager,
     HR,
+    HrAndStoreKeeper,
     Designer,
   ];
 }
