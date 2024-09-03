@@ -9,14 +9,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.34"
-  ai_barcode_scanner:
-    dependency: "direct main"
-    description:
-      name: ai_barcode_scanner
-      sha256: "1d6ce239d84a40c0d586891291eee9b958c748f7de3de75daaa7be79ee511dee"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.4.3"
   archive:
     dependency: transitive
     description:
@@ -414,6 +406,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
+  flutter_local_notifications:
+    dependency: "direct main"
+    description:
+      name: flutter_local_notifications
+      sha256: c500d5d9e7e553f06b61877ca6b9c8b92c570a4c8db371038702e8ce57f8a50f
+      url: "https://pub.dev"
+    source: hosted
+    version: "17.2.2"
+  flutter_local_notifications_linux:
+    dependency: transitive
+    description:
+      name: flutter_local_notifications_linux
+      sha256: c49bd06165cad9beeb79090b18cd1eb0296f4bf4b23b84426e37dd7c027fc3af
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
+  flutter_local_notifications_platform_interface:
+    dependency: transitive
+    description:
+      name: flutter_local_notifications_platform_interface
+      sha256: "85f8d07fe708c1bdcf45037f2c0109753b26ae077e9d9e899d55971711a4ea66"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.2.0"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -624,6 +640,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.10.0"
+  image_picker_web:
+    dependency: "direct main"
+    description:
+      name: image_picker_web
+      sha256: e1656f1ce48a614aefdf22ab73c0cc7e498fa7b78893ffdcc83171e7289092e0
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.1"
   image_picker_windows:
     dependency: transitive
     description:
@@ -728,14 +752,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  mobile_scanner:
-    dependency: transitive
-    description:
-      name: mobile_scanner
-      sha256: "827765afbd4792ff3fd105ad593821ac0f6d8a7d352689013b07ee85be336312"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.1"
   nm:
     dependency: transitive
     description:

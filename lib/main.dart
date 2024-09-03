@@ -1,15 +1,13 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:zenbaba_funiture/notification_service.dart';
 import 'package:zenbaba_funiture/view/Pages/splash_screen.dart';
 import 'package:zenbaba_funiture/view/controller/get_bindings.dart';
-
 import 'constants.dart';
 import 'firebase_options.dart';
 import 'injection.dart';
-import 'notification_service.dart';
 
 // business logic : 3,103 lines
 // ui : 11,231 lines
@@ -23,7 +21,7 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   tz.initializeTimeZones();
-  // await NotificationService().initNotification();
+  await NotificationService().init();
   setup();
   runApp(
     const MyApp(),

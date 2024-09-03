@@ -7,10 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-//import 'package:image_picker_web/image_picker_web.dart'; // TODO: free up every thing to load web
+// import 'package:image_picker_web/image_picker_web.dart'; // TODO: free up every thing to load web
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/view/Pages/add_product.dart';
+import 'package:zenbaba_funiture/view/widget/sl_btn.dart';
 import 'package:zenbaba_funiture/view/widget/special_dropdown.dart';
 
 import '../../constants.dart';
@@ -110,6 +111,8 @@ class _AddOrderState extends State<AddOrder> {
   String selectedGender = Gender.Male;
 
   String selectedSource = CustomerSource.customer;
+
+  String selectedKey = "name";
 
   String selectedKK = KK.AddisKetema;
 
@@ -330,7 +333,7 @@ class _AddOrderState extends State<AddOrder> {
         if (val.isNotEmpty && !isNewProduct) {
           if (mainConntroller.getCustomersStatus.value !=
               RequestState.loading) {
-            mainConntroller.searchProducts('name', val, 5);
+            mainConntroller.searchProducts(selectedKey, val, 5);
           }
         }
       },
@@ -338,130 +341,148 @@ class _AddOrderState extends State<AddOrder> {
   }
 
   productsAndQuantity() {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 23),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 23),
+      child: Column(
+        children: [
+          Row(
             children: [
-              Expanded(
+              Flexible(
+                flex: 4,
                 child: inputProduct(),
               ),
               const SizedBox(
                 width: 10,
               ),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: mainBgColor,
+              Flexible(
+                flex: 3,
+                child: SpecialDropdown<String>(
+                  margin: 0,
+                  value: selectedKey,
+                  list: const ["name", "sku"],
+                  title: "Search Key",
+                  width: double.infinity,
+                  onChange: (value) {
+                    setState(() {
+                      selectedKey = value!;
+                    });
+                  },
                 ),
-                child: Row(
+              ),
+            ],
+          ),
+          const SizedBox(
+            height: 15,
+          ),
+          if (!isNewProduct)
+            Obx(
+              () {
+                return mainConntroller.getProductsStatus.value ==
+                        RequestState.loading
+                    ? SizedBox(
+                        height: 70,
+                        width: MediaQuery.of(context).size.width,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                          color: primaryColor,
+                        )),
+                      )
+                    : SizedBox(
+                        height: 82,
+                        width: MediaQuery.of(context).size.width,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: mainConntroller.products
+                                .map((element) => Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 25, vertical: 5),
+                                      child: InkWell(
+                                        onLongPress: () {
+                                          Get.to(
+                                            AddProduct(
+                                              productModel: element,
+                                            ),
+                                          );
+                                        },
+                                        onTap: () {
+                                          _productNameTc.text = element.name;
+                                          _productPriceTc.text =
+                                              element.price.toString();
+                                          _productSkuTc.text = element.sku;
+                                          selectedProductImage =
+                                              element.images.isEmpty
+                                                  ? ""
+                                                  : element.images[0];
+
+                                          _sizeTc.text = element.size;
+                                          _productDescriptionTc.text =
+                                              element.description;
+
+                                          setState(() {});
+                                        },
+                                        child: OrderProductCard(
+                                          productModel: element,
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ),
+                      );
+              },
+            ),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              color: mainBgColor,
+            ),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                ),
+                Expanded(child: Text('$numOfProduct')),
+                Column(
                   children: [
-                    const SizedBox(
-                      width: 20,
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          numOfProduct++;
+                        });
+                      },
+                      child: Icon(
+                        Icons.keyboard_arrow_up,
+                        color: textColor,
+                      ),
                     ),
-                    Text('$numOfProduct'),
-                    const SizedBox(
-                      width: 10,
-                    ),
-                    Column(
-                      children: [
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              numOfProduct++;
-                            });
+                    GestureDetector(
+                      onTap: () {
+                        setState(
+                          () {
+                            if (numOfProduct > 1) {
+                              numOfProduct--;
+                            }
                           },
-                          child: Icon(
-                            Icons.keyboard_arrow_up,
-                            color: textColor,
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            setState(
-                              () {
-                                if (numOfProduct > 1) {
-                                  numOfProduct--;
-                                }
-                              },
-                            );
-                          },
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
-                            color: textColor,
-                          ),
-                        ),
-                      ],
+                        );
+                      },
+                      child: Icon(
+                        Icons.keyboard_arrow_down,
+                        color: textColor,
+                      ),
                     ),
                   ],
                 ),
-              )
-            ],
-          ),
-        ),
-        if (!isNewProduct)
-          Obx(
-            () {
-              return mainConntroller.getProductsStatus.value ==
-                      RequestState.loading
-                  ? SizedBox(
-                      height: 70,
-                      width: MediaQuery.of(context).size.width,
-                      child: Center(
-                          child: CircularProgressIndicator(
-                        color: primaryColor,
-                      )),
-                    )
-                  : SizedBox(
-                      height: 82,
-                      width: MediaQuery.of(context).size.width,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: mainConntroller.products
-                              .map((element) => Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 25, vertical: 5),
-                                    child: InkWell(
-                                      onLongPress: () {
-                                        Get.to(
-                                          AddProduct(
-                                            productModel: element,
-                                          ),
-                                        );
-                                      },
-                                      onTap: () {
-                                        _productNameTc.text = element.name;
-                                        _productPriceTc.text =
-                                            element.price.toString();
-                                        _productSkuTc.text = element.sku;
-                                        selectedProductImage =
-                                            element.images.isEmpty
-                                                ? ""
-                                                : element.images[0];
-
-                                        _sizeTc.text = element.size;
-                                        _productDescriptionTc.text =
-                                            element.description;
-
-                                        setState(() {});
-                                      },
-                                      child: OrderProductCard(
-                                        productModel: element,
-                                      ),
-                                    ),
-                                  ))
-                              .toList(),
-                        ),
-                      ),
-                    );
-            },
+                const SizedBox(
+                  width: 20,
+                ),
+              ],
+            ),
           )
-      ],
+        ],
+      ),
     );
   }
 
@@ -937,17 +958,46 @@ class _AddOrderState extends State<AddOrder> {
                 const SizedBox(
                   height: 15,
                 ),
-                CheckboxListTile(
-                  value: isNewProduct,
-                  title: const Text("New Product"),
-                  activeColor: primaryColor,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 23),
-                  onChanged: (val) {
-                    setState(() {
-                      isNewProduct = val!;
-                    });
+                // CheckboxListTile(
+                //   value: isNewProduct,
+                //   title: const Text("New Product"),
+                //   activeColor: primaryColor,
+                //   contentPadding: const EdgeInsets.symmetric(horizontal: 23),
+                //   onChanged: (val) {
+                //     setState(() {
+                //       isNewProduct = val!;
+                //     });
+                //   },
+                //   controlAffinity: ListTileControlAffinity.leading,
+                // ),
+                SLBtn(
+                  text: "Add New Product",
+                  outlined: true,
+                  onTap: () async {
+                    final newProduct = await Navigator.push<ProductModel?>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (ctx) => const AddProduct(
+                          returnIfAdded: true,
+                        ),
+                      ),
+                    );
+                    if (newProduct != null) {
+                      selectedProduct = newProduct;
+                      _productPriceTc.text = newProduct.price.toString();
+                      _productSkuTc.text = newProduct.sku;
+                      selectedProductImage =
+                          newProduct.images.isEmpty ? "" : newProduct.images[0];
+                      _sizeTc.text = newProduct.size;
+                      _productDescriptionTc.text = newProduct.description;
+                      _productNameTc.text = newProduct.name;
+                      _productPriceTc.text = newProduct.price.toString();
+                      setState(() {});
+                    }
                   },
-                  controlAffinity: ListTileControlAffinity.leading,
+                ),
+                const SizedBox(
+                  height: 15,
                 ),
                 if (isNewProduct)
                   image(

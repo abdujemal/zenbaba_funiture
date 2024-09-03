@@ -30,6 +30,10 @@ class _ProductCardState extends State<ProductCard> {
       padding: const EdgeInsets.only(top: 20, right: 15, left: 15),
       child: InkWell(
         onLongPress: () {
+          if (!UserPriority.canUpdateProduct(
+              lsController.currentUser.value.priority)) {
+            return;
+          }
           Get.to(
             () => AddProduct(
               productModel: widget.productModel,

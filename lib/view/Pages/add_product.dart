@@ -2,13 +2,13 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
-//import 'package:file_picker/_internal/file_picker_web.dart'; //TODO: free up every thing to load web
+// import 'package:file_picker/_internal/file_picker_web.dart'; //TODO: free up every thing to load web
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-//import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web;
+// import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web;
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:zenbaba_funiture/data/model/item_model.dart';
 import 'package:zenbaba_funiture/view/widget/add_raw_material.dart';
@@ -27,10 +27,12 @@ class AddProduct extends StatefulWidget {
   final ProductModel? productModel;
   final bool isDuplicate;
   final String? category;
+  final bool returnIfAdded;
   const AddProduct({
     super.key,
     this.productModel,
     this.category,
+    this.returnIfAdded = false,
     this.isDuplicate = false,
   });
 
@@ -404,9 +406,11 @@ class _AddProductState extends State<AddProduct> {
 
   @override
   Widget build(BuildContext context) {
-    productPriceTc.text = sellingPrice(
-            consts, overheadTc.text, labourTc.text, profitTc.text, rawMaterials)
-        .toStringAsFixed(2);
+    if (int.tryParse(profitTc.text.isEmpty ? "0" : profitTc.text) != 0) {
+      productPriceTc.text = sellingPrice(consts, overheadTc.text, labourTc.text,
+              profitTc.text, rawMaterials)
+          .toStringAsFixed(2);
+    }
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -946,7 +950,7 @@ class _AddProductState extends State<AddProduct> {
                     keyboardType: TextInputType.number,
                     controller: productPriceTc,
                     isOutlined: true,
-                    readOnly: true,
+                    // readOnly: true,
                   ),
                   const SizedBox(
                     height: 15,
@@ -976,35 +980,52 @@ class _AddProductState extends State<AddProduct> {
                                           true) {
                                         if (widget.productModel == null) {
                                           // if (selectedImages.isNotEmpty) {
-                                          mainConntroller.addProduct(
-                                            ProductModel(
-                                              id: null,
-                                              relatedFiles: null,
-                                              name: productNameTc.text,
-                                              sku: productSkuTc.text,
-                                              category: selectedCategory,
-                                              description:
-                                                  productDescriptionTc.text,
-                                              images: const [],
-                                              price: double.parse(
-                                                  productPriceTc.text),
-                                              tags: _controller.getTags!,
-                                              size: sizeTc.text,
-                                              rawMaterials: rawMaterials,
-                                              rawMaterialIds: rawMaterials
-                                                  .map((e) => e.id)
-                                                  .toList(),
-                                              labourCost:
-                                                  double.parse(labourTc.text),
-                                              overhead:
-                                                  double.parse(overheadTc.text),
-                                              profit:
-                                                  double.parse(profitTc.text),
-                                            ),
-                                            selectedImages,
-                                            selectedFiles,
-                                            fileNames,
+                                          final model = ProductModel(
+                                            id: null,
+                                            relatedFiles: null,
+                                            name: productNameTc.text,
+                                            sku: productSkuTc.text,
+                                            category: selectedCategory,
+                                            description:
+                                                productDescriptionTc.text,
+                                            images: const [],
+                                            price: double.parse(
+                                                productPriceTc.text),
+                                            tags: _controller.getTags!,
+                                            size: sizeTc.text,
+                                            rawMaterials: rawMaterials,
+                                            rawMaterialIds: rawMaterials
+                                                .map((e) => e.id)
+                                                .toList(),
+                                            labourCost:
+                                                double.parse(labourTc.text),
+                                            overhead:
+                                                double.parse(overheadTc.text),
+                                            profit: double.parse(profitTc.text),
                                           );
+                                          if (widget.returnIfAdded) {
+                                            String? id = await mainConntroller
+                                                .addProductRid(
+                                                    model,
+                                                    selectedImages,
+                                                    selectedFiles,
+                                                    fileNames,
+                                                    goBack:
+                                                        !widget.returnIfAdded);
+                                            if (mounted && id != null) {
+                                              Navigator.pop(
+                                                context,
+                                                model.copyWith(id: id),
+                                              );
+                                            }
+                                          } else {
+                                            await mainConntroller.addProduct(
+                                              model,
+                                              selectedImages,
+                                              selectedFiles,
+                                              fileNames,
+                                            );
+                                          }
                                         } else {
                                           if (widget.isDuplicate) {
                                             mainConntroller.addProduct(

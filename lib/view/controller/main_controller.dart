@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
+import 'package:zenbaba_funiture/domain/usecase/add_product_rid_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/count_doc_usecase.dart';
 import 'package:zenbaba_funiture/domain/usecase/get_employee_usecase.dart';
 
@@ -112,6 +113,7 @@ class MainConntroller extends GetxController {
   UpdateExpenseUsecase updateExpenseUsecase;
   GetExpenseUsecase getExpenseUsecase;
   AddProductUsecase addProductUsecase;
+  AddProductRIDUsecase addProductRidUsecase;
   UpdateProductUsecase updateProductUsecase;
   GetProductsUsecase getProductsUsecase;
   SearchProductsUsecase searchProductsUsecase;
@@ -179,6 +181,7 @@ class MainConntroller extends GetxController {
     this.countDocUsecase,
     this.searchEmployeeUsecase,
     this.getStockActivitiesUsecase,
+    this.addProductRidUsecase,
   );
 
   setCurrentTabIndex(int val) {
@@ -771,6 +774,34 @@ class MainConntroller extends GetxController {
     return imgs;
   }
 
+  Future<String?> addProductRid(ProductModel productModel, List files,
+      dynamic pdfFile, List<String> names,
+      {bool goBack = true}) async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+
+    if (connectivityResult == ConnectivityResult.none) {
+      toast("No Network", ToastType.error);
+      return null;
+    }
+
+    productStatus.value = RequestState.loading;
+    final res = await addProductRidUsecase
+        .call(AddProductsParams(productModel, files, pdfFile, names));
+    String? id;
+
+    res.fold((l) {
+      productStatus.value = RequestState.error;
+      toast(l.toString(), ToastType.error);
+    }, (r) {
+      productStatus.value = RequestState.loaded;
+      id = r;
+      if (goBack) {
+        Get.back();
+      }
+    });
+    return id;
+  }
+
   updateProduct(ProductModel productModel, List files, dynamic pdfFile,
       List<String> names) async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -822,6 +853,8 @@ class MainConntroller extends GetxController {
       isNew: isNew,
     ));
 
+    String? currentDate = pref.getString("CurrentDate");
+
     res.fold((l) {
       getOrdersStatus.value = RequestState.error;
       toast(l.toString(), ToastType.error);
@@ -829,7 +862,6 @@ class MainConntroller extends GetxController {
     }, (r) {
       getOrdersStatus.value = RequestState.loaded;
 
-      String? currentDate = pref.getString("CurrentDate");
       String today = DateTime.now().toString().split(" ")[0];
 
       if (status == OrderStatus.Pending) {
@@ -859,8 +891,8 @@ class MainConntroller extends GetxController {
               NotificationService().showNotification(
                 i,
                 orderModel.productName,
-                "for: ${orderModel.customerName},   ${daysLeft - 1} days left",
-                const Duration(days: 1),
+                "for: ${orderModel.customerName}, ${daysLeft.abs()} ${daysLeft > 0 ? "days left" : "late"}",
+                const Duration(seconds: 10),
               );
               i++;
             }

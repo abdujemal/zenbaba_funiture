@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-//import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
+// import 'package:image_picker_web/image_picker_web.dart'; //TODO: free up every thing to load web
 import 'package:zenbaba_funiture/data/model/employee_model.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/custom_btn.dart';

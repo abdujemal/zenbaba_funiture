@@ -32,6 +32,8 @@ abstract class DatabaseDataSrc {
   Future<void> deleteOrderChart(String id);
   Future<List<String>?> addProduct(
       ProductModel productModel, List files, List pdfFiles, List<String> names);
+  Future<String?> addProductReturnId(
+      ProductModel productModel, List files, List pdfFiles, List<String> names);
   Future<List<ProductModel>> getProducts(
       int? quantity, String? category, bool isNew);
   Future<List<ProductModel>> searchProducts(
@@ -309,6 +311,85 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
           .add(newItem.toMap());
 
       return imagesUrl;
+    }
+  }
+
+  @override
+  Future<String?> addProductReturnId(ProductModel productModel, List files,
+      List pdfFiles, List<String> names) async {
+    if (productModel.images.isNotEmpty && files.isEmpty) {
+      print("files is empty");
+
+      if (pdfFiles.isNotEmpty) {
+        List<String> fileUrls = [];
+        int i = 0;
+        for (String file in productModel.relatedFiles ?? []) {
+          if (file.isNotEmpty) {
+            String filePath = firebaseStorage.refFromURL(file).fullPath;
+            await firebaseStorage.ref().child(filePath).delete();
+          }
+        }
+        for (var file in pdfFiles) {
+          final ref = firebaseStorage.ref().child(
+              "${FirebaseConstants.products}/PDFs/${productModel.name}/${names[i]}");
+          UploadTask task =
+              kIsWeb ? ref.putData(file) : ref.putFile(File(file));
+          String fileUrl =
+              await (await task.whenComplete(() {})).ref.getDownloadURL();
+          i++;
+          fileUrls.add(fileUrl);
+        }
+        productModel = productModel.copyWith(relatedFiles: fileUrls);
+      }
+      DocumentReference ref = await firebaseFirestore
+          .collection(FirebaseConstants.products)
+          .add(productModel.toMap());
+      return ref.id;
+    } else {
+      print("files is not empty");
+
+      List<String> imagesUrl = [];
+      int i = 0;
+      for (var file in files) {
+        final ref = firebaseStorage
+            .ref()
+            .child("${FirebaseConstants.products}/${productModel.sku}$i");
+        UploadTask task = kIsWeb ? ref.putData(file) : ref.putFile(file);
+        String imageUrl =
+            await (await task.whenComplete(() {})).ref.getDownloadURL();
+        i++;
+        imagesUrl.add(imageUrl);
+      }
+
+      if (pdfFiles.isNotEmpty) {
+        List<String> fileUrls = [];
+        int i = 0;
+        for (String file in productModel.relatedFiles ?? []) {
+          if (file.isNotEmpty) {
+            String filePath = firebaseStorage.refFromURL(file).fullPath;
+            await firebaseStorage.ref().child(filePath).delete();
+          }
+        }
+        for (var file in pdfFiles) {
+          final ref = firebaseStorage.ref().child(
+              "${FirebaseConstants.products}/PDFs/${productModel.name}/${names[i]}");
+          UploadTask task =
+              kIsWeb ? ref.putData(file) : ref.putFile(File(file));
+          String fileUrl =
+              await (await task.whenComplete(() {})).ref.getDownloadURL();
+          i++;
+          fileUrls.add(fileUrl);
+        }
+        productModel = productModel.copyWith(relatedFiles: fileUrls);
+      }
+
+      ProductModel newItem = productModel.copyWith(images: imagesUrl);
+
+      DocumentReference ref = await firebaseFirestore
+          .collection(FirebaseConstants.products)
+          .add(newItem.toMap());
+
+      return ref.id;
     }
   }
 
@@ -1241,6 +1322,8 @@ class DatabaseDataSrcImpl extends DatabaseDataSrc {
       }
       if (searchType == SearchType.specificOrder) {
         lst.add(OrderModel.fromFirebase(data));
+      } else if (searchType == SearchType.product) {
+        lst.add(ProductModel.fromFirebase(data));
       } else if (searchType == SearchType.fromArrayOfValEmployeeActivitty) {
         lst.add(EmployeeActivityModel.fromMap(data));
       } else if (searchType == SearchType.normalreviews) {
@@ -1284,4 +1367,5 @@ enum SearchType {
   fromArrayOfValEmployeeActivitty,
   normalreviews,
   normalItemHistories,
+  product
 }

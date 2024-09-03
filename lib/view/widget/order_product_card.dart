@@ -36,39 +36,61 @@ class _OrderProductCardState extends State<OrderProductCard> {
                     "${FirebaseConstants.products}/${widget.productModel.sku}",
                   ),
                   builder: (context, snap) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(15),
-                      child: snap.data == null
-                          ? kIsWeb
-                              ? CachedNetworkImage(
-                                  width: 50,
-                                  height: 50,
-                                  imageUrl: widget.productModel.images[0],
-                                )
-                              : SizedBox(
-                                  height: 50,
-                                  width: 50,
-                                  child: Center(
-                                    child: CircularProgressIndicator(
-                                      color: primaryColor,
+                    return Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(15),
+                          child: snap.data == null
+                              ? kIsWeb
+                                  ? CachedNetworkImage(
+                                      width: 50,
+                                      height: 50,
+                                      imageUrl: widget.productModel.images[0],
+                                    )
+                                  : SizedBox(
+                                      height: 50,
+                                      width: 50,
+                                      child: Center(
+                                        child: CircularProgressIndicator(
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    )
+                              : snap.data!.path == ""
+                                  ? Container(
+                                      height: 110,
+                                      width: 110,
+                                      color: mainBgColor,
+                                      child: const Center(
+                                        child: Text("No Network"),
+                                      ),
+                                    )
+                                  : Image.file(
+                                      snap.data!,
+                                      width: 50,
+                                      height: 50,
+                                      fit: BoxFit.cover,
                                     ),
-                                  ),
-                                )
-                          : snap.data!.path == ""
-                              ? Container(
-                                  height: 110,
-                                  width: 110,
-                                  color: mainBgColor,
-                                  child: const Center(
-                                    child: Text("No Network"),
-                                  ),
-                                )
-                              : Image.file(
-                                  snap.data!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
+                        ),
+                        Positioned.fill(
+                          bottom: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              color: const Color.fromARGB(136, 0, 0, 0),
+                            ),
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Text(
+                                widget.productModel.sku,
+                                style: const TextStyle(
+                                  fontSize: 13,
                                 ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     );
                   }),
           const SizedBox(

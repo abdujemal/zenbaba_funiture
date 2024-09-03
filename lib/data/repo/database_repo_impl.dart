@@ -72,9 +72,20 @@ class DatabaseRepoImpl extends DatabaseRepo {
 
   @override
   Future<Either<Exception, List<String>?>> addProduct(
-      ProductModel productModel, List files, dynamic pdfFile, List<String> names) async {
+      ProductModel productModel, List files, dynamic pdfFile, List<String> names, {bool returnId = false}) async {
     try {
       final res = await databaseDataSrc.addProduct(productModel, files, pdfFile, names);
+      return right(res);
+    } on Exception catch (e) {
+      return left(e);
+    }
+  }
+
+  @override
+  Future<Either<Exception, String?>> addProductReturnId(
+      ProductModel productModel, List files, dynamic pdfFile, List<String> names, {bool returnId = false}) async {
+    try {
+      final res = await databaseDataSrc.addProductReturnId(productModel, files, pdfFile, names);
       return right(res);
     } on Exception catch (e) {
       return left(e);

@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -7,6 +8,7 @@ import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/data/data_src/database_data_src.dart';
 import 'package:zenbaba_funiture/data/model/order_model.dart';
+import 'package:zenbaba_funiture/data/model/product_model.dart';
 import 'package:zenbaba_funiture/data/model/review_model.dart';
 import 'package:zenbaba_funiture/view/Pages/add_order.dart';
 import 'package:zenbaba_funiture/view/controller/l_s_controller.dart';
@@ -34,12 +36,40 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
 
   late String selectedOrderStatus;
 
+  ProductModel? productModel;
+
+  Map consts = {
+    "contingency": 0,
+    "general and adminstration": 0,
+    "selling and distribution": 0,
+    "total overhead": 0,
+  };
+
   @override
   void initState() {
     super.initState();
 
+    getConsts().then((value) {
+      print(value);
+      consts = value;
+      setState(() {});
+    });
+
     selectedOrderStatus = widget.orderModel.status;
     setState(() {});
+
+    print("productId: ${widget.orderModel.productId}");
+
+    FirebaseFirestore.instance
+        .collection(FirebaseConstants.products)
+        .doc(widget.orderModel.productId.isEmpty
+            ? "1"
+            : widget.orderModel.productId)
+        .get()
+        .then((e) {
+      productModel = ProductModel.fromFirebase(e);
+      setState(() {});
+    });
 
     // geting all reviews of this order
     mainConntroller
@@ -225,8 +255,8 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   "Price",
                   UserPriority.canSeeOrderPrice(
                           lsController.currentUser.value.priority)
-                      ? "#### br"
-                      : formatNumber(widget.orderModel.productPrice.round()),
+                      ? formatNumber(widget.orderModel.productPrice.round())
+                      : "#### br",
                 ),
                 const SizedBox(
                   height: 10,
@@ -281,6 +311,23 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                   color: greyColor,
                   thickness: dividerThickness,
                 ),
+                lsController.currentUser.value.priority != UserPriority.Sells
+                    ? keyVal(
+                        "Raw Materials",
+                        productModel?.rawMaterials
+                                .map((r) =>
+                                    "=> ${r.name} ${r.quantity}${r.unit} ${r.totalPrice} br")
+                                .join("\n") ??
+                            "Not Raw material",
+                        pl: 0,
+                      )
+                    : const SizedBox(),
+                lsController.currentUser.value.priority != UserPriority.Sells
+                    ? Divider(
+                        color: greyColor,
+                        thickness: dividerThickness,
+                      )
+                    : const SizedBox(),
                 keyVal(
                   "Item used",
                   widget.orderModel.itemsUsed.isEmpty
@@ -346,82 +393,90 @@ class _OrderDetailsPageState extends State<OrderDetailsPage> {
                         color: greyColor,
                         thickness: dividerThickness,
                       ),
-                      Row(
-                        children: [
-                          keyVal(
-                            "Phone no",
-                            widget.orderModel.phoneNumber,
-                            pl: 0,
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: () {
-                              launchUrl(
-                                Uri.parse(
-                                  "tel:${widget.orderModel.phoneNumber}",
+                      !UserPriority.canSeeCustomer(
+                              lsController.currentUser.value.priority)
+                          ? Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    keyVal(
+                                      "Phone no",
+                                      widget.orderModel.phoneNumber,
+                                      pl: 0,
+                                    ),
+                                    const Spacer(),
+                                    IconButton(
+                                      onPressed: () {
+                                        launchUrl(
+                                          Uri.parse(
+                                            "tel:${widget.orderModel.phoneNumber}",
+                                          ),
+                                        );
+                                      },
+                                      icon: SvgPicture.asset(
+                                        'assets/call.svg',
+                                        color: textColor,
+                                        height: 30,
+                                        width: 30,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              );
-                            },
-                            icon: SvgPicture.asset(
-                              'assets/call.svg',
-                              color: textColor,
-                              height: 30,
-                              width: 30,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        color: greyColor,
-                        thickness: dividerThickness,
-                      ),
-                      widget.orderModel.bankAccount != null
-                          ? keyVal(
-                              "Bank Account",
-                              widget.orderModel.bankAccount ?? "",
-                              pl: 0,
+                                Divider(
+                                  color: greyColor,
+                                  thickness: dividerThickness,
+                                ),
+                                widget.orderModel.bankAccount != null
+                                    ? keyVal(
+                                        "Bank Account",
+                                        widget.orderModel.bankAccount ?? "",
+                                        pl: 0,
+                                      )
+                                    : const SizedBox(),
+                                widget.orderModel.bankAccount != null
+                                    ? Divider(
+                                        color: greyColor,
+                                        thickness: dividerThickness,
+                                      )
+                                    : const SizedBox(),
+                                Row(
+                                  children: [
+                                    keyVal(
+                                      "Location",
+                                      "${widget.orderModel.sefer}\n${widget.orderModel.kk}",
+                                      pl: 0,
+                                    ),
+                                    const Spacer(),
+                                    IconButton(
+                                      onPressed: () async {
+                                        if (await canLaunchUrl(
+                                          Uri.parse(widget.orderModel.location),
+                                        )) {
+                                          await launchUrl(
+                                            Uri.parse(
+                                                widget.orderModel.location),
+                                          );
+                                        } else {
+                                          toast("The Url is not launchable.",
+                                              ToastType.error);
+                                        }
+                                      },
+                                      icon: SvgPicture.asset(
+                                        'assets/pickup.svg',
+                                        color: textColor,
+                                        height: 40,
+                                        width: 40,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Divider(
+                                  color: greyColor,
+                                  thickness: dividerThickness,
+                                ),
+                              ],
                             )
                           : const SizedBox(),
-                      widget.orderModel.bankAccount != null
-                          ? Divider(
-                              color: greyColor,
-                              thickness: dividerThickness,
-                            )
-                          : const SizedBox(),
-                      Row(
-                        children: [
-                          keyVal(
-                            "Location",
-                            "${widget.orderModel.sefer}\n${widget.orderModel.kk}",
-                            pl: 0,
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: () async {
-                              if (await canLaunchUrl(
-                                Uri.parse(widget.orderModel.location),
-                              )) {
-                                await launchUrl(
-                                  Uri.parse(widget.orderModel.location),
-                                );
-                              } else {
-                                toast("The Url is not launchable.",
-                                    ToastType.error);
-                              }
-                            },
-                            icon: SvgPicture.asset(
-                              'assets/pickup.svg',
-                              color: textColor,
-                              height: 40,
-                              width: 40,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Divider(
-                        color: greyColor,
-                        thickness: dividerThickness,
-                      ),
                       const SizedBox(
                         height: 10,
                       )

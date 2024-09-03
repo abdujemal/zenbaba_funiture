@@ -311,8 +311,13 @@ class UserPriority {
 
   static canEditOrder(priority) =>
       isAdmin(priority) || priority == Sells || priority == Designer;
+  
+  static canSeeCustomer(priority) =>
+      isAdmin(priority) || priority == Sells;
 
   static canSeeOrderPrice(priority) => isAdmin(priority) || priority == Sells;
+
+  static canUpdateProduct(priority) => isAdmin(priority) || priority == Designer;
 
   static List<String> list = [
     Unsigned,

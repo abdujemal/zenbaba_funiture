@@ -1,4 +1,3 @@
-
 import 'package:dartz/dartz.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
 
@@ -17,14 +16,16 @@ import '../../data/model/user_model.dart';
 abstract class DatabaseRepo {
   Future<Either<Exception, List<ExpenseChartModel>>> getExpenseChart();
   Future<Either<Exception, List<OrderChartModel>>> getOrderChart();
-  Future<Either<Exception, List<String>?>> addProduct(
-      ProductModel productModel, List files, dynamic pdfFile, List<String> names);
+  Future<Either<Exception, List<String>?>> addProduct(ProductModel productModel,
+      List files, dynamic pdfFile, List<String> names);
+  Future<Either<Exception, String?>> addProductReturnId(
+      ProductModel productModel, List files, List pdfFiles, List<String> names);
   Future<Either<Exception, List<ProductModel>>> getProducts(
       int? quantity, String? category, bool isNew);
   Future<Either<Exception, List<ProductModel>>> searchProducts(
       String key, String value, int length);
-  Future<Either<Exception, void>> updateProduct(
-      ProductModel productModel, List files, dynamic pdfFile, List<String> names);
+  Future<Either<Exception, void>> updateProduct(ProductModel productModel,
+      List files, dynamic pdfFile, List<String> names);
   Future<Either<Exception, int>> count(String path, String key, String value);
   Future<Either<Exception, String>> addOrder(OrderModel orderModel);
   Future<Either<Exception, List<OrderModel>>> getOrders(
