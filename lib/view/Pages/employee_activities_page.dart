@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/data/model/employee_activity_model.dart';
-import 'package:zenbaba_funiture/domain/entity/employee_activity_entity.dart';
 import 'package:zenbaba_funiture/view/controller/main_controller.dart';
 import 'package:zenbaba_funiture/view/widget/employee_activity_item.dart';
 

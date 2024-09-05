@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:image_picker_web/image_picker_web.dart'; // TODO: free up every thing to load web
+import 'package:image_picker_web/image_picker_web.dart'; // TODO: free up every thing to load web
 import 'package:textfield_tags/textfield_tags.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:zenbaba_funiture/view/Pages/add_product.dart';
@@ -1005,18 +1005,18 @@ class _AddOrderState extends State<AddOrder> {
                       if (kIsWeb) {
                         // TODO: free up every thing to load web
 
-                        // List<Uint8List>? xFiles =
-                        //     await ImagePickerWeb.getMultiImagesAsBytes();
-                        // selectedImages = [];
-                        // if (xFiles?.isNotEmpty ?? false) {
-                        //   for (var xFile in xFiles!) {
-                        //     selectedImages.add(xFile);
-                        //     setState(() {});
-                        //   }
-                        // } else {
-                        //   setState(() {});
-                        //   toast("No image is selected.", ToastType.error);
-                        // }
+                        List<Uint8List>? xFiles =
+                            await ImagePickerWeb.getMultiImagesAsBytes();
+                        selectedImages = [];
+                        if (xFiles?.isNotEmpty ?? false) {
+                          for (var xFile in xFiles!) {
+                            selectedImages.add(xFile);
+                            setState(() {});
+                          }
+                        } else {
+                          setState(() {});
+                          toast("No image is selected.", ToastType.error);
+                        }
                       } else {
                         List<XFile> xFiles = await ImagePicker()
                             .pickMultiImage(imageQuality: 10);
